@@ -1,0 +1,714 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Button } from './ui/button';
+import { X, ChevronDown, ChevronUp, Plus, Minus, Square, CheckSquare, List } from 'lucide-react';
+
+interface LifetimeViewProps {
+  onClose: () => void;
+  dateOfBirth: string | null;
+  onSaveDateOfBirth: (date: string) => void;
+  expectedLifespan: number;
+  onSaveLifespan: (years: number) => void;
+  weekNotes: { [weekIndex: number]: string };
+  onSaveWeekNote: (weekIndex: number, note: string) => void;
+  bucketList: { id: string; text: string; completed: boolean }[];
+  onSaveBucketList: (list: { id: string; text: string; completed: boolean }[]) => void;
+  totalMeditationMinutes: number;
+}
+
+export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, weekNotes, onSaveWeekNote, bucketList, onSaveBucketList, totalMeditationMinutes }: LifetimeViewProps) => {
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
+  const [searchDate, setSearchDate] = useState('');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [popupPosition, setPopupPosition] = useState<{ top: number; left: number } | null>(null);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [showBucketList, setShowBucketList] = useState(false);
+  const [newBucketItem, setNewBucketItem] = useState('');
+  const [editingBucketId, setEditingBucketId] = useState<string | null>(null);
+  const [editingBucketText, setEditingBucketText] = useState('');
+
+  // Check if user has seen the onboarding
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('lifetimeViewOnboarding');
+    if (!hasSeenOnboarding && dateOfBirth) {
+      setShowOnboarding(true);
+    }
+  }, [dateOfBirth]);
+
+  const handleDismissOnboarding = (dontShowAgain: boolean) => {
+    if (dontShowAgain) {
+      localStorage.setItem('lifetimeViewOnboarding', 'seen');
+    }
+    setShowOnboarding(false);
+  };
+
+  // Calculate age and remaining weeks based on expected lifespan
+  const calculateLifetimeStats = () => {
+    if (!dateOfBirth) return null;
+
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+    const averageLifespan = expectedLifespan;
+    const weeksInYear = 52;
+    const totalWeeks = averageLifespan * weeksInYear;
+
+    // Calculate weeks lived
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weeksLived = Math.floor((today.getTime() - birth.getTime()) / msPerWeek);
+    
+    // Calculate age in years, months, days
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
+
+    if (days < 0) {
+      months--;
+      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += lastMonth.getDate();
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    const weeksRemaining = Math.max(0, totalWeeks - weeksLived);
+    const yearsRemaining = Math.max(0, averageLifespan - years);
+    const monthsRemaining = Math.max(0, yearsRemaining * 12 - months);
+
+    return {
+      weeksLived,
+      weeksRemaining,
+      totalWeeks,
+      years,
+      months,
+      days,
+      yearsRemaining,
+      monthsRemaining,
+      percentageLived: Math.min(100, (weeksLived / totalWeeks) * 100)
+    };
+  };
+
+  const stats = calculateLifetimeStats();
+
+  // Calculate stats for a specific week
+  const getWeekStats = (weekIndex: number) => {
+    if (!dateOfBirth || !stats) return null;
+
+    const birth = new Date(dateOfBirth);
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    
+    // Calculate the date for this week
+    const weekDate = new Date(birth.getTime() + (weekIndex * msPerWeek));
+    
+    // Calculate age at this week
+    const daysLived = weekIndex * 7;
+    const yearsAtWeek = Math.floor(daysLived / 365.25);
+    const monthsAtWeek = Math.floor((daysLived % 365.25) / 30.44);
+    
+    // Calculate percentage
+    const percentageAtWeek = Math.min(100, (weekIndex / stats.totalWeeks) * 100);
+    
+    return {
+      date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      age: `${yearsAtWeek} years, ${monthsAtWeek} months`,
+      daysLived,
+      percentage: percentageAtWeek.toFixed(2)
+    };
+  };
+
+  // Convert a date to week index
+  const dateToWeekIndex = (targetDate: string) => {
+    if (!dateOfBirth) return null;
+    
+    const birth = new Date(dateOfBirth);
+    const target = new Date(targetDate);
+    
+    if (isNaN(target.getTime())) return null;
+    
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekIndex = Math.floor((target.getTime() - birth.getTime()) / msPerWeek);
+    
+    if (weekIndex < 0 || (stats && weekIndex >= stats.totalWeeks)) return null;
+    
+    return weekIndex;
+  };
+
+  // Handle date search
+  const handleDateSearch = () => {
+    const weekIndex = dateToWeekIndex(searchDate);
+    if (weekIndex !== null) {
+      setSelectedWeek(weekIndex);
+      setPopupPosition(null); // Clear popup position when using search
+      // Scroll to the week
+      const weekElement = document.getElementById(`week-${weekIndex}`);
+      if (weekElement) {
+        weekElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
+  // Handle week click
+  const handleWeekClick = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setSelectedWeek(index);
+    
+    // Calculate popup position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+    
+    // Position popup to the right of the square, or left if too close to right edge
+    const popupWidth = 340; // Updated width with padding
+    const popupHeight = 450; // Updated height estimate
+    const padding = 20; // Padding from screen edges
+    
+    let left = rect.right + scrollX + 10;
+    let top = rect.top + scrollY;
+    
+    // Ensure popup doesn't go off the right edge
+    if (left + popupWidth > window.innerWidth + scrollX - padding) {
+      left = rect.left + scrollX - popupWidth - 10;
+    }
+    
+    // Ensure popup doesn't go off the left edge
+    if (left < scrollX + padding) {
+      left = scrollX + padding;
+    }
+    
+    // Ensure popup doesn't go off the bottom edge
+    if (top + popupHeight > window.innerHeight + scrollY - padding) {
+      top = window.innerHeight + scrollY - popupHeight - padding;
+    }
+    
+    // Ensure popup doesn't go off the top edge
+    if (top < scrollY + padding) {
+      top = scrollY + padding;
+    }
+    
+    // Final bounds check
+    const maxLeft = window.innerWidth + scrollX - popupWidth - padding;
+    const maxTop = window.innerHeight + scrollY - popupHeight - padding;
+    
+    left = Math.max(scrollX + padding, Math.min(left, maxLeft));
+    top = Math.max(scrollY + padding, Math.min(top, maxTop));
+    
+    setPopupPosition({ top, left });
+  };
+
+  // Bucket list handlers
+  const addBucketItem = () => {
+    if (newBucketItem.trim()) {
+      const newItem = {
+        id: `${Date.now()}-${Math.random()}`,
+        text: newBucketItem.trim(),
+        completed: false
+      };
+      onSaveBucketList([...bucketList, newItem]);
+      setNewBucketItem('');
+    }
+  };
+
+  const toggleBucketItem = (id: string) => {
+    onSaveBucketList(bucketList.map(item =>
+      item.id === id ? { ...item, completed: !item.completed } : item
+    ));
+  };
+
+  const deleteBucketItem = (id: string) => {
+    onSaveBucketList(bucketList.filter(item => item.id !== id));
+  };
+
+  const startEditBucket = (item: { id: string; text: string; completed: boolean }) => {
+    setEditingBucketId(item.id);
+    setEditingBucketText(item.text);
+  };
+
+  const saveBucketEdit = () => {
+    if (editingBucketId && editingBucketText.trim()) {
+      onSaveBucketList(bucketList.map(item =>
+        item.id === editingBucketId ? { ...item, text: editingBucketText.trim() } : item
+      ));
+    }
+    setEditingBucketId(null);
+    setEditingBucketText('');
+  };
+
+  // If showing bucket list, render that view instead
+  if (showBucketList) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-[#f5d5d8] z-50 flex flex-col"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 40px)' }}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-black/10 flex-shrink-0">
+          <h2>Life bucket list</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowBucketList(false)}
+            className="h-8 w-8 rounded-full hover:bg-black/5"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto pb-20">
+          <div className="max-w-2xl mx-auto p-6">
+            {bucketList.length === 0 && (
+              <p className="text-black/90 mb-6">
+                Things you want to accomplish in your lifetime
+              </p>
+            )}
+            
+            {/* Bucket List Items */}
+            <div className="space-y-1">
+              {bucketList.map((item) => (
+                <div
+                  key={item.id}
+                  className={`group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors ${
+                    item.completed ? 'opacity-60' : ''
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleBucketItem(item.id)}
+                    className="flex-shrink-0 mt-0.5"
+                  >
+                    {item.completed ? (
+                      <CheckSquare className="h-5 w-5" />
+                    ) : (
+                      <Square className="h-5 w-5" />
+                    )}
+                  </button>
+                  
+                  {editingBucketId === item.id ? (
+                    <input
+                      value={editingBucketText}
+                      onChange={(e) => setEditingBucketText(e.target.value)}
+                      onBlur={saveBucketEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveBucketEdit();
+                        if (e.key === 'Escape') {
+                          setEditingBucketId(null);
+                          setEditingBucketText('');
+                        }
+                      }}
+                      className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-0"
+                      autoFocus
+                    />
+                  ) : (
+                    <div
+                      onClick={() => startEditBucket(item)}
+                      className={`flex-1 cursor-text ${
+                        item.completed ? 'line-through' : ''
+                      }`}
+                    >
+                      {item.text}
+                    </div>
+                  )}
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteBucketItem(item.id)}
+                    className="h-7 w-7 rounded-full hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Add New Item - Fixed to bottom */}
+        <div className="fixed bottom-0 left-0 right-0 bg-[#f5d5d8] border-t border-black/10"
+             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 20px)' }}
+        >
+          <div className="max-w-2xl mx-auto px-6 pt-4">
+            <div className="flex gap-2">
+              <input
+                value={newBucketItem}
+                onChange={(e) => setNewBucketItem(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
+                placeholder="Add something to your bucket list"
+                className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              />
+              <Button
+                onClick={addBucketItem}
+                disabled={!newBucketItem.trim()}
+                className="bg-black text-white hover:bg-black/90 rounded-none h-auto px-4"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
+      style={{ paddingTop: 'max(env(safe-area-inset-top), 40px)' }}
+    >
+      {/* Header */}
+      <div className="flex justify-between items-center px-6 pt-6 pb-2 flex-shrink-0">
+        <h2>Your life in weeks</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8 rounded-full hover:bg-black/5"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full px-2 pt-2 pb-6">
+          {dateOfBirth && stats ? (
+            <>
+              {/* Onboarding Popup */}
+              <AnimatePresence>
+                {showOnboarding && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => handleDismissOnboarding(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.9, opacity: 0 }}
+                      className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="mb-4">How to use Life in Weeks</h3>
+                      <div className="text-black/90 mb-6">
+                        <p>
+                          Each square represents one week of your life. Click any square to view details and add notes. Pink squares mark weeks with saved notes, and you can adjust your expected lifespan in Settings.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <Button
+                          onClick={() => handleDismissOnboarding(true)}
+                          className="w-full bg-black text-white hover:bg-black/90 rounded-none"
+                        >
+                          Don't show again
+                        </Button>
+                        <Button
+                          onClick={() => handleDismissOnboarding(false)}
+                          variant="outline"
+                          className="w-full border-black/20 hover:bg-black/5 rounded-none"
+                        >
+                          Got it
+                        </Button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Weeks Grid */}
+              <div className="mb-6 relative">
+                <div className="grid gap-[2px] mb-6" style={{
+                  gridTemplateColumns: `repeat(52, minmax(0, 1fr))`,
+                }}>
+                  {Array.from({ length: stats.totalWeeks }).map((_, index) => {
+                    const isLived = index < stats.weeksLived;
+                    const isCurrent = index === stats.weeksLived;
+                    const isSelected = selectedWeek === index;
+                    const hasNote = weekNotes[index] && weekNotes[index].trim().length > 0;
+
+                    return (
+                      <motion.button
+                        key={index}
+                        id={`week-${index}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: Math.min(index * 0.001, 2),
+                          duration: 0.2
+                        }}
+                        onClick={(e) => handleWeekClick(index, e)}
+                        onMouseEnter={() => setHoveredWeek(index)}
+                        onMouseLeave={() => setHoveredWeek(null)}
+                        className={`aspect-square relative cursor-pointer hover:ring-2 hover:ring-[#be8bad] transition-all ${
+                          isSelected
+                            ? 'ring-2 ring-[#be8bad] ring-offset-2'
+                            : hasNote
+                            ? 'bg-[#be8bad]'
+                            : isCurrent
+                            ? 'bg-[#D84341]'
+                            : isLived
+                            ? 'bg-black/80'
+                            : 'bg-black/10'
+                        }`}
+                        title={`Week ${index + 1}${isCurrent ? ' (This week)' : ''}${hasNote ? ' - Has note' : ''}`}
+                      >
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Floating Popup for Selected Week */}
+                <AnimatePresence>
+                  {selectedWeek !== null && popupPosition && (() => {
+                    const weekStats = getWeekStats(selectedWeek);
+                    const currentNote = weekNotes[selectedWeek] || '';
+                    return weekStats ? (
+                      <motion.div
+                        drag
+                        dragMomentum={false}
+                        dragElastic={0}
+                        dragConstraints={{
+                          top: 0,
+                          left: 0,
+                          right: window.innerWidth - 340,
+                          bottom: window.innerHeight - 450
+                        }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.15 }}
+                        className="fixed z-[60] w-80 cursor-move"
+                        style={{
+                          top: popupPosition.top,
+                          left: popupPosition.left,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="bg-[#fdf5ed] border-2 border-[#be8bad] shadow-lg p-4">
+                          <div className="flex justify-between items-start mb-3 cursor-move">
+                            <h4 className="select-none">Week {selectedWeek + 1}</h4>
+                            <button
+                              onClick={() => {
+                                setSelectedWeek(null);
+                                setPopupPosition(null);
+                              }}
+                              className="text-black/60 hover:text-black cursor-pointer"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 mb-3 cursor-move select-none">
+                            <div>
+                              <div className="text-black/60">Date</div>
+                              <div>{weekStats.date}</div>
+                            </div>
+                            <div>
+                              <div className="text-black/60">Age</div>
+                              <div>{weekStats.age}</div>
+                            </div>
+                            <div>
+                              <div className="text-black/60">Days lived</div>
+                              <div>{weekStats.daysLived.toLocaleString()}</div>
+                            </div>
+                            <div>
+                              <div className="text-black/60">Percentage</div>
+                              <div>{weekStats.percentage}%</div>
+                            </div>
+                          </div>
+                          
+                          {/* Note Input */}
+                          <div className="border-t border-black/10 pt-3">
+                            <label className="text-black/60 block mb-2 cursor-move select-none">
+                              Note for this week
+                            </label>
+                            <textarea
+                              value={currentNote}
+                              onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
+                              placeholder="Add a memory or important moment..."
+                              className="w-full bg-transparent border border-black/20 focus:border-[#be8bad] outline-none transition-colors px-2 py-2 resize-none cursor-text"
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    ) : null;
+                  })()}
+                </AnimatePresence>
+              </div>
+
+              {/* Find Week Section */}
+              <div className="mb-8 max-w-2xl mx-auto">
+                <h3 className="mb-2">
+                  {hoveredWeek !== null && (() => {
+                    const weekStats = getWeekStats(hoveredWeek);
+                    return weekStats ? weekStats.date : 'Find week';
+                  })() || 'Find week'}
+                </h3>
+                <p className="text-black/90 mb-3">
+                  Enter a date to locate the corresponding week
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={searchDate}
+                    onChange={(e) => setSearchDate(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleDateSearch();
+                      }
+                    }}
+                    className="flex-1 bg-transparent border border-black/20 focus:border-[#be8bad] outline-none transition-colors px-2 py-2"
+                    placeholder="Search by date"
+                  />
+                  <Button
+                    onClick={handleDateSearch}
+                    disabled={!searchDate}
+                    className="bg-black text-white hover:bg-black/90 rounded-none h-auto"
+                  >
+                    Find week
+                  </Button>
+                </div>
+              </div>
+
+              {/* Collapsible More Information */}
+              <div className="max-w-2xl mx-auto mb-8">
+                <button
+                  onClick={() => setShowMoreInfo(!showMoreInfo)}
+                  className="flex items-center gap-2 text-black/60 hover:text-black transition-colors mb-4"
+                >
+                  {showMoreInfo ? (
+                    <>
+                      <ChevronUp className="h-4 w-4" />
+                      <span>Hide more information</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      <span>Show more information</span>
+                    </>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {showMoreInfo && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      {/* Stats Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Time lived
+                          </div>
+                          <div className="mb-1">{stats.years}</div>
+                          <div>
+                            years, {stats.months} months, {stats.days} days
+                          </div>
+                          <div className="mt-2">
+                            {stats.weeksLived.toLocaleString()} weeks
+                          </div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Percentage lived
+                          </div>
+                          <div className="mb-1">
+                            {stats.percentageLived.toFixed(1)}%
+                          </div>
+                          <div>of {expectedLifespan} years</div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Time remaining
+                          </div>
+                          <div className="mb-1">{stats.yearsRemaining}</div>
+                          <div>
+                            years ({stats.monthsRemaining} months)
+                          </div>
+                          <div className="mt-2">
+                            {stats.weeksRemaining.toLocaleString()} weeks
+                          </div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Total meditation
+                          </div>
+                          <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
+                          <div>
+                            minutes
+                          </div>
+                          <div className="mt-2">
+                            {(totalMeditationMinutes / 60).toFixed(1)} hours
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-black/80" />
+                          <span>Weeks lived</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-[#D84341]" />
+                          <span>Current week</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-black/10" />
+                          <span>Weeks remaining</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-[#be8bad]" />
+                          <span>Has note</span>
+                        </div>
+                      </div>
+
+                      <div className="text-black/90">
+                        <p className="text-left">
+                          Each row represents one year of your life. This visualization is inspired by Tim Urban's 
+                          "Your life in weeks" and serves as a reminder to make the most of every week.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Bucket List Button */}
+              <div className="border-t border-black/10 pt-6 pb-6 max-w-2xl mx-auto">
+                <Button
+                  onClick={() => setShowBucketList(true)}
+                  className="w-full bg-[#f5d5d8] hover:bg-[#f5d5d8]/90 text-black border border-black/10 rounded-none h-auto py-3"
+                >
+                  Bucket list
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-black/90">
+              <p className="mb-4">
+                Please set your date of birth in Settings to view your life in weeks
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};

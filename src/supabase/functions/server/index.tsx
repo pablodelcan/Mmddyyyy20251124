@@ -1,0 +1,675 @@
+import { Hono } from "npm:hono";
+import { cors } from "npm:hono/cors";
+import { logger } from "npm:hono/logger";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import * as kv from "./kv_store.tsx";
+
+const app = new Hono();
+
+// Enable logger
+app.use('*', logger(console.log));
+
+// Enable CORS for all routes and methods
+app.use(
+  "/*",
+  cors({
+    origin: "*",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+  }),
+);
+
+// Create Supabase admin client
+const getSupabaseAdmin = () => {
+  return createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+};
+
+// Create Supabase client from user token
+const getSupabaseClient = () => {
+  return createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+  );
+};
+
+// Verify user from access token
+const verifyUser = async (accessToken: string | undefined) => {
+  if (!accessToken) {
+    return { error: 'No access token provided' };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+    console.log('Authorization error while verifying user:', error);
+    return { error: 'Unauthorized' };
+  }
+
+  return { user };
+};
+
+// Health check endpoint
+app.get("/make-server-d6a7a206/health", (c) => {
+  return c.json({ status: "ok" });
+});
+
+// Debug endpoint to check environment variables
+app.get("/make-server-d6a7a206/debug-env", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  const resendKey = Deno.env.get('RESEND_API_KEY');
+  const openaiKey = Deno.env.get('OPENAI_API_KEY');
+  
+  return c.json({
+    resend: {
+      exists: !!resendKey,
+      length: resendKey?.length || 0,
+      prefix: resendKey?.substring(0, 7) || 'N/A',
+      hasWhitespace: resendKey ? /\s/.test(resendKey) : false
+    },
+    openai: {
+      exists: !!openaiKey,
+      length: openaiKey?.length || 0,
+      prefix: openaiKey?.substring(0, 7) || 'N/A'
+    }
+  });
+});
+
+// Get all todos for authenticated user
+app.get("/make-server-d6a7a206/todos", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const todosData = await kv.get(`todos:${user!.id}`);
+    const dateOfBirth = await kv.get(`dateOfBirth:${user!.id}`);
+    const expectedLifespan = await kv.get(`expectedLifespan:${user!.id}`);
+    const meditationDates = await kv.get(`meditationDates:${user!.id}`);
+    const lastMeditationTime = await kv.get(`lastMeditationTime:${user!.id}`);
+    const totalMeditationMinutes = await kv.get(`totalMeditationMinutes:${user!.id}`);
+    const weekNotes = await kv.get(`weekNotes:${user!.id}`);
+    const bucketList = await kv.get(`bucketList:${user!.id}`);
+    
+    return c.json({ 
+      todos: todosData || {},
+      dateOfBirth: dateOfBirth || null,
+      expectedLifespan: expectedLifespan || 80,
+      meditationDates: meditationDates || [],
+      lastMeditationTime: lastMeditationTime || null,
+      totalMeditationMinutes: totalMeditationMinutes || 0,
+      weekNotes: weekNotes || {},
+      bucketList: bucketList || []
+    });
+  } catch (err) {
+    console.log('Error fetching todos:', err);
+    return c.json({ error: 'Failed to fetch todos' }, 500);
+  }
+});
+
+// Save todos for authenticated user
+app.post("/make-server-d6a7a206/todos", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const body = await c.req.json();
+    
+    console.log('Attempting to save data for user:', user!.id);
+    console.log('Data received:', { 
+      hasTodos: !!body.todos,
+      todosKeys: body.todos ? Object.keys(body.todos).length : 0,
+      hasDateOfBirth: body.dateOfBirth !== undefined,
+      hasExpectedLifespan: body.expectedLifespan !== undefined,
+      hasMeditationDates: body.meditationDates !== undefined,
+      hasLastMeditationTime: body.lastMeditationTime !== undefined,
+      hasTotalMeditationMinutes: body.totalMeditationMinutes !== undefined,
+      hasWeekNotes: body.weekNotes !== undefined,
+      hasBucketList: body.bucketList !== undefined
+    });
+    
+    // Save all the data - only save non-null values
+    if (body.todos !== null && body.todos !== undefined) {
+      await kv.set(`todos:${user!.id}`, body.todos);
+    }
+    
+    if (body.dateOfBirth !== null && body.dateOfBirth !== undefined) {
+      await kv.set(`dateOfBirth:${user!.id}`, body.dateOfBirth);
+    }
+    
+    if (body.expectedLifespan !== null && body.expectedLifespan !== undefined) {
+      await kv.set(`expectedLifespan:${user!.id}`, body.expectedLifespan);
+    }
+    
+    if (body.meditationDates !== null && body.meditationDates !== undefined) {
+      await kv.set(`meditationDates:${user!.id}`, body.meditationDates);
+    }
+    
+    if (body.lastMeditationTime !== null && body.lastMeditationTime !== undefined) {
+      await kv.set(`lastMeditationTime:${user!.id}`, body.lastMeditationTime);
+    }
+    
+    if (body.totalMeditationMinutes !== null && body.totalMeditationMinutes !== undefined) {
+      await kv.set(`totalMeditationMinutes:${user!.id}`, body.totalMeditationMinutes);
+    }
+    
+    if (body.weekNotes !== null && body.weekNotes !== undefined) {
+      await kv.set(`weekNotes:${user!.id}`, body.weekNotes);
+    }
+    
+    if (body.bucketList !== null && body.bucketList !== undefined) {
+      await kv.set(`bucketList:${user!.id}`, body.bucketList);
+    }
+    
+    console.log('Data saved successfully for user:', user!.id);
+    return c.json({ success: true });
+  } catch (err) {
+    console.error('Error saving todos - Full error:', err);
+    console.error('Error message:', err instanceof Error ? err.message : String(err));
+    console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+    return c.json({ 
+      error: 'Failed to save todos',
+      details: err instanceof Error ? err.message : String(err)
+    }, 500);
+  }
+});
+
+// Get user preferences
+app.get("/make-server-d6a7a206/preferences", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const preferences = await kv.get(`preferences:${user!.id}`);
+    return c.json({ preferences: preferences || {} });
+  } catch (err) {
+    console.log('Error fetching preferences:', err);
+    return c.json({ error: 'Failed to fetch preferences' }, 500);
+  }
+});
+
+// Save user preferences
+app.post("/make-server-d6a7a206/preferences", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const body = await c.req.json();
+    await kv.set(`preferences:${user!.id}`, body.preferences);
+    return c.json({ success: true });
+  } catch (err) {
+    console.log('Error saving preferences:', err);
+    return c.json({ error: 'Failed to save preferences' }, 500);
+  }
+});
+
+// Generate simple weekly summary without AI
+const generateWeeklySummary = async (weekData: any) => {
+  const openaiKey = Deno.env.get('OPENAI_API_KEY');
+  
+  if (!openaiKey) {
+    // Fallback to simple message if no API key
+    const rate = weekData.completionRate;
+    if (rate >= 80) {
+      return `Amazing work this week! You completed ${weekData.completedTasks} out of ${weekData.totalTasks} tasks with a ${rate}% completion rate. Keep up the great momentum!`;
+    } else if (rate >= 60) {
+      return `Good progress this week! You completed ${weekData.completedTasks} out of ${weekData.totalTasks} tasks. ${weekData.mostProductiveDay} was your most productive day.`;
+    } else {
+      return `You made progress this week with ${weekData.completedTasks} tasks completed. Every step forward counts!`;
+    }
+  }
+
+  try {
+    // Build the prompt for AI
+    let prompt = `You are writing a casual, friendly weekly summary email for a minimalist to-do app called \"mmddyyyy\". Write 1-2 short paragraphs (max 4 sentences total) summarizing the user's week.
+
+Task data from the past week:
+- Completed ${weekData.completedTasks} out of ${weekData.totalTasks} tasks (${weekData.completionRate}% completion rate)
+- Most productive day: ${weekData.mostProductiveDay}
+${weekData.priorityTasksCompleted > 0 ? `- Completed ${weekData.priorityTasksCompleted} priority tasks` : ''}
+
+Recent tasks:
+${weekData.recentTasks}
+
+Keep it casual, encouraging, and brief. Focus on what they accomplished.`;
+
+    // Occasionally (30% chance) include life in weeks perspective
+    if (weekData.lifeInWeeksData && Math.random() < 0.3) {
+      prompt += `\n\nOptionally add a casual reminder about their life perspective:
+- Age: ${weekData.lifeInWeeksData.age}
+- Weeks lived: ${weekData.lifeInWeeksData.weeksLived.toLocaleString()}
+- Life ${weekData.lifeInWeeksData.percentageLived.toFixed(1)}% complete
+
+${weekData.lifeInWeeksData.recentWeekNote ? `Recently they noted: \"${weekData.lifeInWeeksData.recentWeekNote}\"` : ''}
+${weekData.lifeInWeeksData.bucketListItem ? `Bucket list reminder: \"${weekData.lifeInWeeksData.bucketListItem}\"` : ''}
+
+Weave this in naturally if you feel it fits—don't force it.`;
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You write brief, casual, encouraging weekly summaries. Keep it to 1-2 short paragraphs maximum. Be conversational and friendly.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 200
+      })
+    });
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || 'Great work this week! Keep up the momentum.';
+  } catch (err) {
+    console.log('Error generating AI summary:', err);
+    return `You completed ${weekData.completedTasks} tasks this week. Keep moving forward!`;
+  }
+};
+
+// Send daily digest email
+app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
+  const resendKey = Deno.env.get('RESEND_API_KEY');
+  
+  if (!resendKey) {
+    return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
+  }
+
+  try {
+    // Get all users with daily digest enabled
+    const allKeys = await kv.getByPrefix('preferences:');
+    const today = new Date().toISOString().split('T')[0];
+
+    for (const prefItem of allKeys) {
+      const userId = prefItem.key.replace('preferences:', '');
+      const prefs = prefItem.value;
+
+      if (!prefs.email || !prefs.dailyDigestEnabled) continue;
+
+      // Get user's todos
+      const todosData = await kv.get(`todos:${userId}`);
+      const todayTodos = (todosData?.[today] || []).filter((t: any) => !t.completed);
+
+      if (todayTodos.length === 0) continue;
+
+      // Generate email HTML
+      const taskList = todayTodos.map((t: any) => 
+        `<div style=\"padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);\">
+          ${t.priority ? '<span style=\"color: #be8bad;\">*</span> ' : ''}${t.text}
+        </div>`
+      ).join('');
+
+      const html = `
+        <div style=\"font-family: 'Martina Plantijn', Georgia, serif; max-width: 375px; margin: 0 auto; padding: 40px 20px; background: #fdf5ed; color: rgba(0,0,0,0.9);\">
+          <h1 style=\"text-transform: uppercase; letter-spacing: 0.1em; font-size: 14px; color: rgba(0,0,0,0.6); margin-bottom: 20px;\">
+            Good Morning
+          </h1>
+          <h2 style=\"font-size: 20px; margin-bottom: 30px;\">
+            ${today}
+          </h2>
+          <div style=\"margin-bottom: 20px;\">
+            <p style=\"text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; color: rgba(0,0,0,0.6); margin-bottom: 10px;\">
+              Today's Tasks (${todayTodos.length})
+            </p>
+            ${taskList}
+          </div>
+          <p style=\"font-size: 14px; color: rgba(0,0,0,0.6); margin-top: 30px;\">
+            Have a productive day!
+          </p>
+        </div>
+      `;
+
+      // Send email via Resend
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${resendKey}`
+        },
+        body: JSON.stringify({
+          from: 'Todo App <onboarding@resend.dev>',
+          to: prefs.email,
+          subject: `Good morning - ${todayTodos.length} tasks for today`,
+          html
+        })
+      });
+    }
+
+    return c.json({ success: true, message: 'Daily digests sent' });
+  } catch (err) {
+    console.log('Error sending daily digests:', err);
+    return c.json({ error: 'Failed to send daily digests' }, 500);
+  }
+});
+
+// Send weekly report email
+app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
+  const resendKey = Deno.env.get('RESEND_API_KEY');
+  
+  if (!resendKey) {
+    return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
+  }
+
+  try {
+    // Get all users with weekly report enabled
+    const allKeys = await kv.getByPrefix('preferences:');
+
+    for (const prefItem of allKeys) {
+      const userId = prefItem.key.replace('preferences:', '');
+      const prefs = prefItem.value;
+
+      if (!prefs.email || !prefs.weeklyReportEnabled) continue;
+
+      // Get user's todos
+      const todosData = await kv.get(`todos:${userId}`) || {};
+      
+      // Get last week's tasks
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - i - 1); // Start from yesterday
+        return date.toISOString().split('T')[0];
+      });
+
+      // Get this week's tasks (today + next 6 days)
+      const thisWeekDays = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        return date.toISOString().split('T')[0];
+      });
+
+      // Collect completed tasks from last week
+      const completedLastWeek: string[] = [];
+      last7Days.forEach(dateKey => {
+        const dayTodos = todosData[dateKey] || [];
+        dayTodos.forEach((t: any) => {
+          if (t.completed) {
+            completedLastWeek.push(t.text);
+          }
+        });
+      });
+
+      // Collect outstanding tasks from this week
+      const outstandingThisWeek: string[] = [];
+      thisWeekDays.forEach(dateKey => {
+        const dayTodos = todosData[dateKey] || [];
+        dayTodos.forEach((t: any) => {
+          if (!t.completed) {
+            outstandingThisWeek.push(t.text);
+          }
+        });
+      });
+
+      // Skip if no tasks at all
+      if (completedLastWeek.length === 0 && outstandingThisWeek.length === 0) continue;
+
+      // Generate task lists HTML
+      const outstandingList = outstandingThisWeek.length > 0
+        ? outstandingThisWeek.map(task => 
+            `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
+          ).join('')
+        : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No outstanding tasks</div>';
+
+      const completedList = completedLastWeek.length > 0
+        ? completedLastWeek.map(task => 
+            `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
+          ).join('')
+        : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No completed tasks</div>';
+
+      const html = `
+        <div style="font-family: 'Courier', monospace; max-width: 375px; margin: 0 auto; padding: 40px 20px; background: #FBF8E8; color: rgba(0,0,0,0.9);">
+          <h1 style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 14px; font-weight: bold; color: rgba(0,0,0,0.9); margin-bottom: 30px;">
+            Weekly Report
+          </h1>
+          
+          <div style="margin-bottom: 30px;">
+            <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+              Outstanding tasks this week
+            </p>
+            ${outstandingList}
+          </div>
+
+          <div>
+            <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+              Completed tasks last week
+            </p>
+            ${completedList}
+          </div>
+        </div>
+      `;
+
+      // Send email via Resend
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${resendKey}`
+        },
+        body: JSON.stringify({
+          from: 'mmddyyyy <onboarding@resend.dev>',
+          to: prefs.email,
+          subject: `Weekly Report - ${outstandingThisWeek.length} outstanding, ${completedLastWeek.length} completed`,
+          html
+        })
+      });
+    }
+
+    return c.json({ success: true, message: 'Weekly reports sent' });
+  } catch (err) {
+    console.log('Error sending weekly reports:', err);
+    return c.json({ error: 'Failed to send weekly reports' }, 500);
+  }
+});
+
+// Test weekly report endpoint - sends to specific email
+app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  let resendKey = Deno.env.get('RESEND_API_KEY');
+  
+  console.log('RESEND_API_KEY exists:', !!resendKey);
+  console.log('RESEND_API_KEY length (before trim):', resendKey?.length || 0);
+  
+  // Trim whitespace and quotes that might have been added
+  if (resendKey) {
+    resendKey = resendKey.trim().replace(/^["']|["']$/g, '');
+  }
+  
+  console.log('RESEND_API_KEY length (after trim):', resendKey?.length || 0);
+  console.log('RESEND_API_KEY prefix:', resendKey?.substring(0, 7));
+  
+  if (!resendKey) {
+    return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
+  }
+
+  try {
+    const body = await c.req.json();
+    const { email } = body;
+
+    if (!email) {
+      return c.json({ error: 'Email is required' }, 400);
+    }
+
+    // Get user's todos
+    const todosData = await kv.get(`todos:${user!.id}`) || {};
+    
+    // Get last week's tasks
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i - 1); // Start from yesterday
+      return date.toISOString().split('T')[0];
+    });
+
+    // Get this week's tasks (today + next 6 days)
+    const thisWeekDays = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      return date.toISOString().split('T')[0];
+    });
+
+    // Collect completed tasks from last week
+    const completedLastWeek: string[] = [];
+    last7Days.forEach(dateKey => {
+      const dayTodos = todosData[dateKey] || [];
+      dayTodos.forEach((t: any) => {
+        if (t.completed) {
+          completedLastWeek.push(t.text);
+        }
+      });
+    });
+
+    // Collect outstanding tasks from this week
+    const outstandingThisWeek: string[] = [];
+    thisWeekDays.forEach(dateKey => {
+      const dayTodos = todosData[dateKey] || [];
+      dayTodos.forEach((t: any) => {
+        if (!t.completed) {
+          outstandingThisWeek.push(t.text);
+        }
+      });
+    });
+
+    // Generate task lists HTML
+    const outstandingList = outstandingThisWeek.length > 0
+      ? outstandingThisWeek.map(task => 
+          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
+        ).join('')
+      : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No outstanding tasks</div>';
+
+    const completedList = completedLastWeek.length > 0
+      ? completedLastWeek.map(task => 
+          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
+        ).join('')
+      : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No completed tasks</div>';
+
+    const html = `
+      <div style="font-family: 'Courier', monospace; max-width: 375px; margin: 0 auto; padding: 40px 20px; background: #FBF8E8; color: rgba(0,0,0,0.9);">
+        <h1 style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 14px; font-weight: bold; color: rgba(0,0,0,0.9); margin-bottom: 30px;">
+          Weekly Report (Test)
+        </h1>
+        
+        <div style="margin-bottom: 30px;">
+          <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+            Outstanding tasks this week
+          </p>
+          ${outstandingList}
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+            Completed tasks last week
+          </p>
+          ${completedList}
+        </div>
+        
+        <p style="font-size: 12px; color: rgba(0,0,0,0.4); margin-top: 40px; text-align: center; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
+          This is a test email. Enable weekly reports in settings to receive this every Sunday.
+        </p>
+      </div>
+    `;
+
+    // Send email via Resend
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendKey}`
+      },
+      body: JSON.stringify({
+        from: 'mmddyyyy <onboarding@resend.dev>',
+        to: email,
+        subject: `[Test] Weekly Report - ${outstandingThisWeek.length} outstanding, ${completedLastWeek.length} completed`,
+        html
+      })
+    });
+
+    if (!emailResponse.ok) {
+      const errorText = await emailResponse.text();
+      console.log('Resend API error response:', errorText);
+      console.log('Resend API error status:', emailResponse.status);
+      return c.json({ 
+        error: 'Failed to send email via Resend', 
+        details: errorText,
+        status: emailResponse.status 
+      }, 500);
+    }
+
+    const emailResult = await emailResponse.json();
+    console.log('Email sent successfully:', emailResult);
+
+    return c.json({ success: true, message: 'Test email sent successfully' });
+  } catch (err) {
+    console.log('Error sending test weekly report:', err);
+    return c.json({ error: 'Failed to send test weekly report', details: String(err) }, 500);
+  }
+});
+
+// Sign up endpoint
+app.post("/make-server-d6a7a206/signup", async (c) => {
+  const supabase = getSupabaseAdmin();
+  
+  try {
+    const body = await c.req.json();
+    const { email, password, name } = body;
+
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: { name },
+      // Automatically confirm the user's email since an email server hasn't been configured.
+      email_confirm: true
+    });
+
+    if (error) {
+      console.log('Sign up error:', error);
+      return c.json({ error: error.message }, 400);
+    }
+
+    return c.json({ user: data.user });
+  } catch (err) {
+    console.log('Sign up error:', err);
+    return c.json({ error: 'Failed to sign up' }, 500);
+  }
+});
+
+Deno.serve(app.fetch);
