@@ -139,14 +139,11 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
         backgroundColor: 'rgba(0, 0, 0, 0.2)',
         zIndex: 9999,
         position: 'fixed',
-        top: '-50px',
-        left: '-50px',
-        right: '-50px',
-        bottom: '-50px',
-        width: 'calc(100vw + 100px)',
-        height: 'calc(100vh + 100px)',
-        minWidth: 'calc(100vw + 100px)',
-        minHeight: 'calc(100vh + 100px)',
+        inset: 0,
+        width: '100vw',
+        height: '100dvh',
+        minWidth: '100vw',
+        minHeight: '100dvh',
         margin: 0,
         padding: 0,
         display: 'flex',
@@ -174,6 +171,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
           flexDirection: 'column',
           overflow: 'hidden',
           flexShrink: 0,
+          pointerEvents: 'auto',
         }}
       >
         <div

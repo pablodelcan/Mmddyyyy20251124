@@ -1079,7 +1079,6 @@ function AppContent() {
         backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#FBF8E8',
         color: timeOfDay === 'night' ? '#fdf5ed' : '#000000',
         height: '100dvh',
-        overflow: 'hidden',
         width: '100%',
         position: 'relative',
       }}
@@ -1336,7 +1335,8 @@ function AppContent() {
         style={{
           position: 'fixed',
           bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
-          left: '22.5px',
+          left: '50%',
+          transform: 'translateX(-50%)',
           width: '330px',
           height: '33.74px',
           display: 'flex',
