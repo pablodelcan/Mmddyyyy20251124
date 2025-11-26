@@ -19,6 +19,7 @@ import { getSupabaseClient } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 import { useTimeOfDay } from './hooks/useTimeOfDay';
 import { secureStorage } from './utils/secureStorage';
+import { Keyboard } from '@capacitor/keyboard';
 
 interface TodoItem {
   id: string;
@@ -347,6 +348,8 @@ function AppContent() {
   const [timerModalTodoId, setTimerModalTodoId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [showSplash, setShowSplash] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   const supabase = getSupabaseClient();
 
@@ -365,17 +368,44 @@ function AppContent() {
     };
   }, [timeOfDay]);
 
+  // Track keyboard visibility
+  useEffect(() => {
+    let showListener: any;
+    let hideListener: any;
+
+    const setupListeners = async () => {
+      showListener = await Keyboard.addListener('keyboardWillShow', () => {
+        setIsKeyboardVisible(true);
+      });
+
+      hideListener = await Keyboard.addListener('keyboardWillHide', () => {
+        setIsKeyboardVisible(false);
+        setIsAddingTask(false);
+      });
+    };
+
+    setupListeners();
+
+    return () => {
+      if (showListener) showListener.remove();
+      if (hideListener) hideListener.remove();
+    };
+  }, []);
+
   // Prevent content shifting when keyboard appears/disappears
   useEffect(() => {
+    // Disable keyboard scrolling
+    Keyboard.setScroll({ isDisabled: true });
+
     // Lock the initial viewport height
     const initialHeight = window.innerHeight;
     document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
-    
+
     const preventResize = () => {
       // Lock the initial viewport height
       const initialHeight = window.innerHeight;
       document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
-      
+
       // Instead of setting fixed heights and overflow: hidden on root, body, html, 
       // we'll rely on the meta tag and viewport-fit=cover
       // We only ensure scrolling is prevented
@@ -403,7 +433,7 @@ function AppContent() {
     window.addEventListener('resize', preventResize);
     window.addEventListener('scroll', preventScroll, { passive: false });
     document.addEventListener('scroll', preventScroll, { passive: false });
-    
+
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleVisualViewportChange);
       window.visualViewport.addEventListener('scroll', (e) => {
@@ -411,7 +441,7 @@ function AppContent() {
         window.scrollTo(0, 0);
       });
     }
-    
+
     preventResize(); // Initial call
 
     return () => {
@@ -992,6 +1022,12 @@ function AppContent() {
     }
 
     setEditingId(null);
+
+    // Force scroll to top to reset any displacement
+    window.scrollTo(0, 0);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -1112,7 +1148,7 @@ function AppContent() {
       <div
         style={{
           position: 'fixed',
-          top: '57.5px',
+          top: '77.5px',
           left: '31.67px',
           display: 'flex',
           alignItems: 'center',
@@ -1122,126 +1158,126 @@ function AppContent() {
           willChange: 'transform',
         }}
       >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goToPreviousDay}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToPreviousDay}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            width: 'auto',
+            height: 'auto',
+            minWidth: 'auto',
+          }}
+        >
+          <ChevronLeft
             style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
+              width: '16px',
+              height: '16px',
+              stroke: '#000000',
+              strokeWidth: '1.25px',
+              color: '#000000',
             }}
-          >
-            <ChevronLeft
-              style={{
-                width: '16px',
-                height: '16px',
-                stroke: '#000000',
-                strokeWidth: '1.25px',
-                color: '#000000',
-              }}
-            />
-          </Button>
+          />
+        </Button>
 
-          {/* Date text - Figma: 154px x 22px */}
-          <div
-            style={{
-              width: '154px',
-              height: '22px',
-              display: 'flex',
-              alignItems: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            <h1 style={{
-              fontSize: '15px',
-              fontWeight: 700,
-              lineHeight: '22px',
-              margin: 0,
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              alignItems: 'center',
-            }}>
-              {currentDate.toLocaleDateString('en-US', { weekday: 'short' })}.{' '}
-              {isToday && (
-                <span
-                  style={{
-                    width: '9.37px',
-                    height: '9.37px',
-                    borderRadius: '17981000px',
-                    backgroundColor: '#D84341',
-                    marginLeft: '10px',
-                    marginRight: '6.25px',
-                    display: 'inline-block',
-                    flexShrink: 0,
-                  }}
-                />
-              )}
-              {(currentDate.getMonth() + 1).toString().padStart(2, '0')}/{currentDate.getDate().toString().padStart(2, '0')}/{currentDate.getFullYear()}
-            </h1>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goToNextDay}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
-            }}
-          >
-            <ChevronRight
-              style={{
-                width: '16px',
-                height: '16px',
-                stroke: '#000000',
-                strokeWidth: '1.25px',
-                color: '#000000',
-              }}
-            />
-          </Button>
-          {!isToday && (
-            <Button
-              variant="ghost"
-              onClick={goToToday}
-              style={{
-                width: '54.37px',
-                height: '22.5px',
-                borderRadius: '17981000px',
-                padding: '7.5px',
-                background: 'transparent',
-                border: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '7.5px',
-              }}
-            >
+        {/* Date text - Figma: 154px x 22px */}
+        <div
+          style={{
+            width: '154px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <h1 style={{
+            fontSize: '15px',
+            fontWeight: 700,
+            lineHeight: '22px',
+            margin: 0,
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            {currentDate.toLocaleDateString('en-US', { weekday: 'short' })}.{' '}
+            {isToday && (
               <span
                 style={{
-                  width: '40px',
-                  height: '19px',
-                  fontFamily: 'Courier New',
-                  fontWeight: 400,
-                  fontSize: '13.13px',
-                  lineHeight: '18.75px',
-                  letterSpacing: '0px',
-                  textAlign: 'center',
-                  color: '#000000',
+                  width: '9.37px',
+                  height: '9.37px',
+                  borderRadius: '17981000px',
+                  backgroundColor: '#D84341',
+                  marginLeft: '10px',
+                  marginRight: '6.25px',
+                  display: 'inline-block',
+                  flexShrink: 0,
                 }}
+              />
+            )}
+            {(currentDate.getMonth() + 1).toString().padStart(2, '0')}/{currentDate.getDate().toString().padStart(2, '0')}/{currentDate.getFullYear()}
+          </h1>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goToNextDay}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            width: 'auto',
+            height: 'auto',
+            minWidth: 'auto',
+          }}
+        >
+          <ChevronRight
+            style={{
+              width: '16px',
+              height: '16px',
+              stroke: '#000000',
+              strokeWidth: '1.25px',
+              color: '#000000',
+            }}
+          />
+        </Button>
+        {!isToday && (
+          <Button
+            variant="ghost"
+            onClick={goToToday}
+            style={{
+              width: '54.37px',
+              height: '22.5px',
+              borderRadius: '17981000px',
+              padding: '7.5px',
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '7.5px',
+            }}
+          >
+            <span
+              style={{
+                width: '40px',
+                height: '19px',
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#000000',
+              }}
             >
               Today
-              </span>
-            </Button>
-          )}
-        </div>
+            </span>
+          </Button>
+        )}
+      </div>
 
       {/* Main Content Container - Responsive for all iPhones */}
       <div
@@ -1287,7 +1323,7 @@ function AppContent() {
       <div
         style={{
           position: 'fixed',
-          top: '136.5px',
+          top: '156.5px',
           left: '31.67px',
           width: '330px',
           height: '597.79px',
@@ -1322,122 +1358,127 @@ function AppContent() {
         ))}
       </div>
 
-      {/* Todo Input */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '330px',
-          height: '33.74px',
-          display: 'flex',
-          gap: '7.49px',
-          alignItems: 'center',
-          paddingRight: 0,
-          zIndex: 10,
-        }}
-      >
+      {/* Todo Input - Hide when editing */}
+      {!editingId && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '330px',
+            height: '33.74px',
+            display: 'flex',
+            gap: '7.49px',
+            alignItems: 'center',
+            paddingRight: 0,
+            zIndex: 10,
+          }}
+        >
           <Input
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addTodo()}
-          onFocus={(e) => {
-            // Prevent viewport resize on iOS
-            // Don't scroll or move anything
-          }}
+            onFocus={(e) => {
+              setIsAddingTask(true);
+            }}
+            onBlur={() => {
+              setIsAddingTask(false);
+            }}
             placeholder="Add task"
-          style={{
-            width: '292.51px',
-            height: '33.74px',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
-            paddingTop: '3.75px',
-            paddingBottom: '3.75px',
-            paddingLeft: 0,
-            paddingRight: 0,
-            fontFamily: 'Courier New',
-            fontWeight: 700,
-            fontSize: '15px',
-            lineHeight: '100%',
-            letterSpacing: '0px',
-            color: '#000000',
-          }}
-          className="rounded-none add-task-input"
+            style={{
+              width: '292.51px',
+              height: '33.74px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+              paddingTop: '3.75px',
+              paddingBottom: '3.75px',
+              paddingLeft: 0,
+              paddingRight: 0,
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              lineHeight: '100%',
+              letterSpacing: '0px',
+              color: '#000000',
+            }}
+            className="rounded-none add-task-input"
           />
           <Button
             onClick={addTodo}
             variant="ghost"
             size="icon"
+            style={{
+              width: '29.99px',
+              height: '29.99px',
+              borderRadius: '17981000px',
+              paddingRight: '0.01px',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Plus style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+          </Button>
+        </div>
+      )}
+
+      {/* Bottom Controls - Hide when keyboard is visible (editing or adding task) */}
+      {!isKeyboardVisible && (
+        <div
           style={{
-            width: '29.99px',
-            height: '29.99px',
-            borderRadius: '17981000px',
-            paddingRight: '0.01px',
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
+            position: 'fixed',
+            bottom: 'calc(-15px + env(safe-area-inset-bottom))',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '330px',
+            maxWidth: 'calc(100% - 40px)',
+            height: '30px',
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            justifyContent: 'center',
+            paddingRight: 0,
+            zIndex: 1000,
+            backgroundColor: 'transparent',
+            pointerEvents: 'auto',
           }}
         >
-          <Plus style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-          </Button>
-      </div>
-
-      {/* Bottom Controls */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 'calc(-15px + env(safe-area-inset-bottom))',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '330px',
-          maxWidth: 'calc(100% - 40px)',
-          height: '30px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingRight: 0,
-          zIndex: 1000,
-          backgroundColor: 'transparent',
-          pointerEvents: 'auto',
-        }}
-      >
           {!accessToken && (
             <Button
               variant="ghost"
               onClick={() => setShowAuth(true)}
-            style={{
-              width: '78.69px',
-              height: '30px',
-              background: '#FDF5ED',
-              borderRadius: '17981000px',
-              borderWidth: '0.54px',
-              borderTop: '0.54px solid rgba(0, 0, 0, 0.8)',
-              borderLeft: 'none',
-              borderRight: 'none',
-              borderBottom: 'none',
-              marginTop: '-18px',
-              marginLeft: '-10px',
-              paddingTop: '7.5px',
-              paddingRight: '11.25px',
-              paddingBottom: '7.5px',
-              paddingLeft: '11.25px',
-              gap: '7.5px',
-              fontFamily: 'Courier New',
-              fontWeight: 400,
-              fontSize: '13.13px',
-              lineHeight: '18.75px',
-              letterSpacing: '0px',
-              textAlign: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#000000E5',
-            }}
+              style={{
+                width: '78.69px',
+                height: '30px',
+                background: '#FDF5ED',
+                borderRadius: '17981000px',
+                borderWidth: '0.54px',
+                borderTop: '0.54px solid rgba(0, 0, 0, 0.8)',
+                borderLeft: 'none',
+                borderRight: 'none',
+                borderBottom: 'none',
+                marginTop: '-18px',
+                marginLeft: '-10px',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
+                gap: '7.5px',
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#000000E5',
+              }}
             >
               Sign In
             </Button>
@@ -1453,74 +1494,75 @@ function AppContent() {
             </Button>
           )}
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <Button
-          variant="ghost"
-          onClick={() => setShowMeditation(true)}
-            style={{
-              width: '29.99px',
-              height: '29.99px',
-              background: '#FFFFFF',
-              borderRadius: '17981000px',
-              paddingLeft: '0.01px',
-              padding: 0,
-              border: 'none',
-              marginTop: '-18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-        </Button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Button
+              variant="ghost"
+              onClick={() => setShowMeditation(true)}
+              style={{
+                width: '29.99px',
+                height: '29.99px',
+                background: '#FFFFFF',
+                borderRadius: '17981000px',
+                paddingLeft: '0.01px',
+                padding: 0,
+                border: 'none',
+                marginTop: '-18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+            </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowCalendar(!showCalendar)}
-            style={{
-              width: '29.99px',
-              height: '29.99px',
-              borderRadius: '17981000px',
-              paddingRight: '0.01px',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              marginTop: '-22px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Calendar style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-        </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowCalendar(!showCalendar)}
+              style={{
+                width: '29.99px',
+                height: '29.99px',
+                borderRadius: '17981000px',
+                paddingRight: '0.01px',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                marginTop: '-22px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Calendar style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+            </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowLifetimeView(true)}
-            style={{
-              width: '29.99px',
-              height: '29.99px',
-              borderRadius: '17981000px',
-              paddingRight: '0.01px',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              marginTop: '-22px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Grid3X3 style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-        </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLifetimeView(true)}
+              style={{
+                width: '29.99px',
+                height: '29.99px',
+                borderRadius: '17981000px',
+                paddingRight: '0.01px',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                marginTop: '-22px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Grid3X3 style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modals */}
       <AnimatePresence>
         {showAuth && !accessToken && (
-          <AuthModal 
+          <AuthModal
             onSuccess={handleAuthSuccess}
             onClose={() => setShowAuth(false)}
           />
