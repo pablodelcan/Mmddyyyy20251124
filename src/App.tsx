@@ -20,6 +20,7 @@ import { projectId } from './utils/supabase/info';
 import { useTimeOfDay } from './hooks/useTimeOfDay';
 import { secureStorage } from './utils/secureStorage';
 import { Keyboard } from '@capacitor/keyboard';
+import { getLocalDateString } from './utils/dateUtils';
 
 interface TodoItem {
   id: string;
@@ -375,7 +376,7 @@ function AppContent() {
 
   const supabase = getSupabaseClient();
 
-  const dateKey = currentDate.toISOString().split('T')[0];
+  const dateKey = getLocalDateString(currentDate);
 
   // Set body background color to match app
   useEffect(() => {
@@ -832,20 +833,17 @@ function AppContent() {
 
   // Move incomplete tasks from past days to today
   const moveIncompleteTasksToToday = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0]; // Real today, not currentDate
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    const todayDate = new Date();
+    const today = getLocalDateString(todayDate);
 
     let hasChanges = false;
     const newTodos = { ...todos };
 
     // Scan all past dates
     Object.keys(newTodos).forEach(dateKey => {
-      const taskDate = new Date(dateKey);
-      taskDate.setHours(0, 0, 0, 0);
 
-      // Only process past dates (before today)
-      if (taskDate < todayStart) {
+      // Only process past dates (before today, using string comparison)
+      if (dateKey < today) {
         const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => !t.completed);
 
         if (incompleteTasks.length > 0) {
@@ -1116,7 +1114,7 @@ function AppContent() {
     toast.success(`Added ${tasks.length} tasks`);
   };
 
-  const isToday = dateKey === new Date().toISOString().split('T')[0];
+  const isToday = dateKey === getLocalDateString(new Date());
   const hasMeditatedToday = meditationDates.includes(dateKey);
 
   // Keep tasks in their original order - no sorting by completion status

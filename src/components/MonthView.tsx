@@ -1,5 +1,6 @@
 import { TodoItem, TodosByDate } from '../App';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { getLocalDateString } from '../utils/dateUtils';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -34,7 +35,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
   }
 
   const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayKey = getLocalDateString(today);
 
   return (
     <div style={{
@@ -149,18 +150,20 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
             return <div key={`empty-${i}`} style={{ width: '32px', height: '32px', aspectRatio: '1' }} />;
           }
 
-          const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          const dateKey = getLocalDateString(date);
           const dayTodos = todos[dateKey] || [];
           const completed = dayTodos.filter((t: TodoItem) => t.completed).length;
           const total = dayTodos.length;
-          const isSelected = dateKey === `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+          const isSelected = dateKey === getLocalDateString(currentDate);
           const isToday = dateKey === todayKey;
           const hasMeditation = meditationDates.includes(dateKey);
 
           return (
             <button
               key={dateKey}
-              onClick={() => onSelectDate(date)}
+              onClick={() => {
+                onSelectDate(date);
+              }}
               style={{
                 aspectRatio: '1',
                 padding: '4px',
