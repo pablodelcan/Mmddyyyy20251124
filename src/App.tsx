@@ -1318,7 +1318,10 @@ function AppContent() {
                   setShowCalendar(false);
                 }}
                 meditationDates={meditationDates}
-                onMonthChange={setCurrentDate}
+                onMonthChange={(direction) => {
+                  const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
+                  setCurrentDate(newDate);
+                }}
                 onClose={() => setShowCalendar(false)}
               />
             </motion.div>
