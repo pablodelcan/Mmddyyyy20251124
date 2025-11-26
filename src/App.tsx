@@ -1624,19 +1624,38 @@ function AppContent() {
 
       {
         showSettings && accessToken && (
-          <SettingsModal
-            onClose={() => setShowSettings(false)}
-            accessToken={accessToken}
-            onSignOut={handleSignOut}
-            dateOfBirth={dateOfBirth}
-            onSaveDateOfBirth={handleSaveDateOfBirth}
-            expectedLifespan={expectedLifespan}
-            onSaveLifespan={saveLifespan}
-            meditationDuration={meditationDuration}
-            onSaveMeditationDuration={setMeditationDuration}
-            totalMeditationMinutes={totalMeditationMinutes}
-            onAddManualMeditation={setTotalMeditationMinutes}
-          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: '#FDF5ED',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 'max(env(safe-area-inset-top), 40px)',
+              overflow: 'hidden',
+            }}
+          >
+            <SettingsModal
+              onClose={() => setShowSettings(false)}
+              accessToken={accessToken}
+              onSignOut={handleSignOut}
+              dateOfBirth={dateOfBirth}
+              onSaveDateOfBirth={handleSaveDateOfBirth}
+              expectedLifespan={expectedLifespan}
+              onSaveLifespan={saveLifespan}
+              meditationDuration={meditationDuration}
+              onSaveMeditationDuration={setMeditationDuration}
+              totalMeditationMinutes={totalMeditationMinutes}
+              onAddManualMeditation={setTotalMeditationMinutes}
+            />
+          </motion.div>
         )
       }
       {

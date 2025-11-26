@@ -190,16 +190,44 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-black/10">
-        <h2>Settings</h2>
-        <Button
-          variant="ghost"
-          size="icon"
+      <div style={{
+        width: '100%',
+        height: '59.98444366455078px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingLeft: '22.5px',
+        paddingRight: '22.5px',
+        flexShrink: 0,
+        boxSizing: 'border-box',
+      }}>
+        <h2 style={{
+          fontFamily: 'Courier New',
+          fontWeight: 700,
+          fontSize: '15px',
+          lineHeight: '22.5px',
+          letterSpacing: '0px',
+          color: '#000000',
+        }}>
+          Settings
+        </h2>
+        <button
           onClick={onClose}
-          className="h-8 w-8 rounded-full hover:bg-black/5"
+          style={{
+            width: '29.99222183227539px',
+            height: '29.99222183227539px',
+            borderRadius: '17981000px',
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
         >
-          <X className="h-4 w-4" />
-        </Button>
+          <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+        </button>
       </div>
 
       {/* Scrollable Content */}
