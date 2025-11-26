@@ -142,11 +142,11 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '4px',
-        justifyItems: 'center',
+        placeItems: 'center',
       }}>
         {days.map((date, i) => {
           if (!date) {
-            return <div key={`empty-${i}`} style={{ aspectRatio: '1' }} />;
+            return <div key={`empty-${i}`} style={{ width: '32px', height: '32px', aspectRatio: '1' }} />;
           }
 
           const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
