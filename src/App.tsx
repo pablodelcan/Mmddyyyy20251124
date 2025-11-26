@@ -98,6 +98,7 @@ function DraggableTodo({
   timeRemaining
 }: DraggableTodoProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null); // New ref for the drag handle
 
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
@@ -123,21 +124,20 @@ function DraggableTodo({
     },
   });
 
-  drag(drop(ref));
+  // Apply drop to the whole item, but drag only to the handle
+  drop(ref); // The entire div remains the drop target
 
   return (
     <div
       ref={ref}
-      onTouchStart={onTouchStart}
       style={{
         width: '330px',
         minHeight: '29.98px',
         position: 'relative',
         display: 'flex',
         alignItems: 'flex-start',
-        cursor: 'pointer',
         opacity: isDragging ? 0.5 : 1,
-        marginBottom: '10px',
+        marginBottom: '10px', // Reverted to 10px spacing
         paddingTop: '3.74px',
         paddingBottom: '3.74px',
       }}
@@ -158,7 +158,10 @@ function DraggableTodo({
           zIndex: 10,
           flexShrink: 0,
         }}
-        onClick={onToggle}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent drag on click
+          onToggle();
+        }}
       >
         {todo.completed && (
           <X className="h-2.5 w-2.5" style={{ color: '#FFFFFF', stroke: '#FFFFFF' }} strokeWidth={3} />
@@ -192,7 +195,7 @@ function DraggableTodo({
           }}
         />
       ) : (
-        <div
+        <div // This div now wraps the drag handle
           style={{
             flex: 1,
             minWidth: 0,
@@ -203,7 +206,13 @@ function DraggableTodo({
           }}
         >
           {timeRemaining ? (
-            <div className="relative h-6 flex items-center">
+            <motion.div
+              ref={dragHandleRef} // Apply drag handle here
+              {...drag(dragHandleRef)} // Make this div draggable
+              onTouchStart={onTouchStart} // Keep onTouchStart here for touch drag
+              className="relative h-6 flex items-center"
+              style={{ cursor: 'grab' }} // Indicate draggable area
+            >
               <motion.div
                 className="absolute whitespace-nowrap"
                 animate={{
@@ -222,9 +231,12 @@ function DraggableTodo({
                   {todo.text} • {timeRemaining}
                 </span>
               </motion.div>
-            </div>
+            </motion.div>
           ) : (
             <span
+              ref={dragHandleRef} // Apply drag handle here
+              {...drag(dragHandleRef)} // Make this span draggable
+              onTouchStart={onTouchStart} // Keep onTouchStart here for touch drag
               onClick={onStartEdit}
               className="cursor-text transition-all"
               style={{
@@ -246,6 +258,7 @@ function DraggableTodo({
                     : meditationGlowActive
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
+                cursor: 'grab', // Indicate draggable area
               }}
             >
               {todo.text}
@@ -269,7 +282,10 @@ function DraggableTodo({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onTimerClick}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onTimerClick();
+          }}
           style={{
             background: 'transparent',
             border: 'none',
@@ -285,7 +301,10 @@ function DraggableTodo({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onPriorityToggle}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onPriorityToggle();
+          }}
           style={{
             background: 'transparent',
             border: 'none',
@@ -300,7 +319,10 @@ function DraggableTodo({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onDelete}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onDelete();
+          }}
           style={{
             background: 'transparent',
             border: 'none',

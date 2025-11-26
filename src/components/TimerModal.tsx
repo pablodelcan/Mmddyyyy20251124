@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { X } from 'lucide-react';
@@ -24,92 +25,205 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
 
   const quickOptions = [5, 10, 15, 30, 60];
 
-  return (
-    <>
-      {/* Backdrop */}
+  const modalContent = (
+    <div
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        zIndex: 99999,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100dvh',
+        margin: 0,
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/20 z-40"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-[320px] bg-white p-6 shadow-lg"
-        style={{ fontFamily: 'Terminal, monospace' }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '363.34px',
+          backgroundColor: '#FDF5ED',
+          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+          borderWidth: '0.54px',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          flexShrink: 0,
+          pointerEvents: 'auto',
+          fontFamily: 'Courier New, Courier, monospace', // Apply font here
+          color: '#000000',
+        }}
       >
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="mb-1">Set Timer</h2>
-            <p className="text-black/60 text-[12px] break-words pr-4">{taskText}</p>
+        <div
+          style={{
+            width: '302.28px',
+            height: '22.49px',
+            position: 'absolute',
+            top: '20px',
+            left: '30.53px',
+            opacity: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'Courier New, Courier, monospace',
+              fontWeight: 700,
+              fontSize: '15px',
+              lineHeight: '22.5px',
+              letterSpacing: '0.75px',
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              color: '#000000',
+              margin: 0,
+              padding: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Set Timer
           </div>
           <Button
-            variant="ghost"
-            size="icon"
             onClick={onClose}
-            className="h-6 w-6 rounded-full hover:bg-black/5 flex-shrink-0"
+            style={{
+              position: 'absolute',
+              right: 0,
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              width: 'auto',
+              height: 'auto',
+              minWidth: 'auto',
+            }}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" style={{ color: '#000000' }} />
           </Button>
         </div>
 
-        <div className="space-y-4">
-          {/* Quick options */}
-          <div className="grid grid-cols-5 gap-2">
+        <div
+          style={{
+            marginTop: '70px',
+            paddingLeft: '30.53px',
+            paddingRight: '30.53px',
+            paddingBottom: '30.53px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+            flex: 1,
+            overflowY: 'auto',
+          }}
+        >
+          <p style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.6)', margin: 0, padding: 0, wordWrap: 'break-word' }}>{taskText}</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
             {quickOptions.map((mins) => (
               <Button
                 key={mins}
-                variant="outline"
                 onClick={() => {
                   onSetTimer(mins);
                   onClose();
                 }}
-                className="h-10 px-2 border-black/20 hover:bg-black/5"
+                style={{
+                  backgroundColor: '#FDF5ED',
+                  border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '17981000px',
+                  color: '#000000',
+                  fontFamily: 'Courier New, Courier, monospace',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  height: '40px',
+                  padding: '0 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 {mins}m
               </Button>
             ))}
           </div>
 
-          {/* Custom input */}
-          <div className="space-y-2">
-            <p className="text-[12px] text-black/60">Custom (minutes)</p>
-            <div className="flex gap-2">
+          <div>
+            <label style={{ fontFamily: 'Courier New, Courier, monospace', fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.6)', display: 'block', marginBottom: '8px' }}>Custom (minutes)</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <input
                 type="number"
                 value={minutes}
                 onChange={(e) => setMinutes(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSet()}
                 placeholder="Enter minutes"
-                className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none px-0 py-1"
-                style={{ fontFamily: 'Terminal, monospace', fontSize: '14px' }}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                  outline: 'none',
+                  padding: '8px 0',
+                  fontFamily: 'Courier New, Courier, monospace',
+                  fontSize: '15px',
+                  color: '#000000',
+                }}
                 autoFocus
               />
               <Button
                 onClick={handleSet}
-                variant="outline"
-                className="px-4 border-black/20 hover:bg-black/5"
+                style={{
+                  backgroundColor: '#000000',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px 15px',
+                  fontFamily: 'Courier New, Courier, monospace',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 Set
               </Button>
             </div>
           </div>
 
-          {/* Clear timer option */}
           {hasActiveTimer && onClearTimer && (
-            <div className="pt-2 border-t border-black/10">
+            <div style={{ paddingTop: '15px', borderTop: '0.54px solid rgba(0, 0, 0, 0.1)' }}>
               <Button
                 onClick={() => {
                   onClearTimer();
                   onClose();
                 }}
-                variant="outline"
-                className="w-full border-black/20 hover:bg-black/5 text-[#D84341]"
+                style={{
+                  width: '100%',
+                  backgroundColor: '#FDF5ED',
+                  border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '17981000px',
+                  color: '#D84341',
+                  fontFamily: 'Courier New, Courier, monospace',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  height: '40px',
+                  padding: '0 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 Clear Timer
               </Button>
@@ -117,6 +231,8 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
           )}
         </div>
       </motion.div>
-    </>
+    </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
