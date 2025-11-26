@@ -384,12 +384,20 @@ function AppContent() {
     document.body.style.backgroundColor = bgColor;
     document.documentElement.style.backgroundColor = bgColor;
 
+    // Control body overflow for full-screen modals
+    if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
     return () => {
       // Cleanup on unmount
       document.body.style.backgroundColor = '';
       document.documentElement.style.backgroundColor = '';
+      document.body.style.overflow = '';
     };
-  }, [timeOfDay]);
+  }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId]);
 
   // Track keyboard visibility
   useEffect(() => {
@@ -1631,23 +1639,42 @@ function AppContent() {
 
       {
         showLifetimeView && (
-          <LifetimeView
-            onClose={() => setShowLifetimeView(false)}
-            dateOfBirth={dateOfBirth}
-            onSaveDateOfBirth={saveDateOfBirth}
-            expectedLifespan={expectedLifespan}
-            onSaveLifespan={saveLifespan}
-            weekNotes={weekNotes}
-            onSaveWeekNote={(weekIndex, note) => {
-              setWeekNotes(prev => ({
-                ...prev,
-                [weekIndex]: note
-              }));
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: '#FDF5ED', // Revert to desired background color
+              zIndex: 99999, // Keep high z-index
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 'max(env(safe-area-inset-top), 40px)', // Reintroduce padding
+              overflow: 'hidden',
             }}
-            bucketList={bucketList}
-            onSaveBucketList={setBucketList}
-            totalMeditationMinutes={totalMeditationMinutes}
-          />
+          >
+            <LifetimeView
+              onClose={() => setShowLifetimeView(false)}
+              dateOfBirth={dateOfBirth}
+              onSaveDateOfBirth={saveDateOfBirth}
+              expectedLifespan={expectedLifespan}
+              onSaveLifespan={saveLifespan}
+              weekNotes={weekNotes}
+              onSaveWeekNote={(weekIndex, note) => {
+                setWeekNotes(prev => ({
+                  ...prev,
+                  [weekIndex]: note
+                }));
+              }}
+              bucketList={bucketList}
+              onSaveBucketList={setBucketList}
+              totalMeditationMinutes={totalMeditationMinutes}
+            />
+          </motion.div>
         )
       }
 

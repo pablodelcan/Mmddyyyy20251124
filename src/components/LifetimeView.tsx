@@ -359,20 +359,48 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
-      style={{ paddingTop: 'max(env(safe-area-inset-top), 40px)' }}
+      className="flex flex-col w-full h-full"
     >
       {/* Header */}
-      <div className="flex justify-between items-center px-6 pt-6 pb-2 flex-shrink-0">
-        <h2>Your life in weeks</h2>
-        <Button
-          variant="ghost"
-          size="icon"
+      <div style={{
+        width: '100%', // Changed to 100% width for full responsiveness
+        height: '59.98444366455078px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingLeft: '22.5px',
+        paddingRight: '22.5px',
+        boxSizing: 'border-box', // Added to include padding in width calculation
+        flexShrink: 0,
+      }}>
+        <h2 style={{
+          // Removed fixed width: '163px' to allow flexible sizing
+          height: '23px',
+          fontFamily: 'Courier New',
+          fontWeight: 700,
+          fontSize: '15px',
+          lineHeight: '22.5px',
+          letterSpacing: '0px',
+          color: '#000000',
+        }}>
+          Your life in weeks
+        </h2>
+        <button
           onClick={onClose}
-          className="h-8 w-8 rounded-full hover:bg-black/5"
+          style={{
+            width: '29.99222183227539px',
+            height: '29.99222183227539px',
+            borderRadius: '17981000px',
+            background: 'transparent', // Revert to transparent background
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
         >
-          <X className="h-4 w-4" />
-        </Button>
+          <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+        </button>
       </div>
 
       {/* Scrollable Content */}
@@ -700,11 +728,24 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 </Button>
               </div>
             </>
-          ) : (
-            <div className="text-center py-12 text-black/90">
-              <p className="mb-4">
-                Please set your date of birth in Settings to view your life in weeks
-              </p>
+            ) : (
+            <div className="flex flex-1 flex-col p-4" style={{ marginTop: '25px', paddingLeft: '22.5px', paddingRight: '22.5px' }}>
+              <div className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6 rounded-lg"
+                style={{ textAlign: 'left' }}
+              >
+                <p className="mb-4"
+                  style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                  }}
+                >
+                  Please set your date of birth in Settings to view your life in weeks
+                </p>
+              </div>
             </div>
           )}
         </div>
