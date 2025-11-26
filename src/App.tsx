@@ -1298,10 +1298,16 @@ function AppContent() {
         <AnimatePresence>
           {showCalendar && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              style={{
+                position: 'absolute',
+                top: '45px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }}
             >
               <MonthView
                 currentDate={currentDate}
@@ -1319,19 +1325,22 @@ function AppContent() {
         </AnimatePresence>
       </div>
 
-      {/* Todos List - Outside main container to prevent shifting */}
+      {/* Todos List - Dynamic positioning based on calendar visibility */}
       <div
         style={{
           position: 'fixed',
-          top: '156.5px',
+          top: showCalendar ? '453.73px' : '156.5px', // 45px (calendar top) + 378.73px (calendar height) + 30px (gap)
           left: '31.67px',
           width: '330px',
-          height: '597.79px',
+          height: showCalendar
+            ? 'calc(100vh - 453.73px - 130px)' // Dynamic height when calendar is open
+            : 'calc(100vh - 156.5px - 130px)', // Dynamic height when calendar is closed  
           overflowY: 'auto',
           overflowX: 'hidden',
           zIndex: 50,
           transform: 'translateZ(0)',
           willChange: 'transform',
+          transition: 'top 0.3s ease-in-out, height 0.3s ease-in-out',
         }}
       >
         {sortedTodos.map((todo, index) => (
@@ -1588,14 +1597,11 @@ function AppContent() {
       }
       {
         showMeditation && (
-          <>
-            <CalmingBackground />
-            <MeditationTimer
-              onComplete={handleMeditationComplete}
-              onClose={() => setShowMeditation(false)}
-              durationMinutes={meditationDuration}
-            />
-          </>
+          <MeditationTimer
+            onComplete={handleMeditationComplete}
+            onClose={() => setShowMeditation(false)}
+            durationMinutes={meditationDuration}
+          />
         )
       }
 

@@ -1,6 +1,5 @@
 import { TodoItem, TodosByDate } from '../App';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Button } from './ui/button';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -14,83 +13,141 @@ interface MonthViewProps {
 export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, onMonthChange, onClose }: MonthViewProps) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  
+
   // Get first day of month and total days
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
-  
+
   // Create array of all days including padding
-  const days = [];
-  
+  const days: (Date | null)[] = [];
+
   // Add empty cells for days before month starts
   for (let i = 0; i < startingDayOfWeek; i++) {
     days.push(null);
   }
-  
+
   // Add all days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     days.push(new Date(year, month, day));
   }
-  
+
   const today = new Date();
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   return (
-    <div className="p-6">
-      {/* Month Header with Navigation */}
-      <div className="flex items-center justify-between mb-4 relative">
-        <Button
-          variant="ghost"
-          size="icon"
+    <div style={{
+      width: '329.9981689453125px',
+      height: '378.729248046875px',
+      paddingTop: '22.5px',
+      paddingRight: '22.5px',
+      paddingLeft: '22.5px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      backgroundColor: '#FBF8E8',
+    }}>
+      {/* Container 1: Month Header with Navigation */}
+      <div style={{ width: '285.00146484375px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+        <button
           onClick={() => onMonthChange(-1)}
-          className="h-8 w-8 hover:bg-black/5 rounded-full"
+          style={{
+            width: '32px',
+            height: '32px',
+            backgroundColor: 'transparent',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            borderRadius: '50%',
+            appearance: 'none',
+          }}
         >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        
-        <div className="text-center uppercase tracking-wider text-black/60 font-mono-label">
+          <ChevronLeft style={{ height: '16px', width: '16px', color: 'black' }} />
+        </button>
+
+        <div style={{ textAlign: 'center', letterSpacing: '.05em', color: 'rgba(0,0,0,0.6)', fontFamily: 'Courier New, Courier, monospace' }}>
           {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
-        
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
+
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
             onClick={() => onMonthChange(1)}
-            className="h-8 w-8 hover:bg-black/5 rounded-full"
+            style={{
+              width: '32px',
+              height: '32px',
+              backgroundColor: 'transparent',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              borderRadius: '50%',
+              appearance: 'none',
+            }}
           >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
+            <ChevronRight style={{ height: '16px', width: '16px', color: 'black' }} />
+          </button>
+
+          <button
             onClick={onClose}
-            className="h-8 w-8 hover:bg-black/5 rounded-full"
+            style={{
+              width: '32px',
+              height: '32px',
+              backgroundColor: 'transparent',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              borderRadius: '50%',
+              appearance: 'none',
+            }}
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X style={{ height: '16px', width: '16px', color: 'black' }} />
+          </button>
         </div>
       </div>
-      
-      {/* Weekday Headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+
+      {/* Container 2: Weekday Headers - 15px gap from container 1 */}
+      <div style={{
+        marginTop: '15px',
+        width: '285.00146484375px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(7, 1fr)',
+        gap: '4px',
+        justifyItems: 'center',
+      }}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-          <div key={i} className="text-center uppercase tracking-wider text-black/40 font-mono-label p-2">
+          <div key={i} style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.05em', color: 'rgba(0,0,0,0.4)', fontFamily: 'Courier New, Courier, monospace', padding: '8px' }}>
             {day}
           </div>
         ))}
       </div>
-      
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1">
+
+      {/* Container 3: Calendar Grid - 15px gap from container 2, specific dimensions */}
+      <div style={{
+        marginTop: '15px',
+        width: '285.00146484375px',
+        height: '243.7726287841797px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(7, 1fr)',
+        gap: '4px',
+        justifyItems: 'center',
+      }}>
         {days.map((date, i) => {
           if (!date) {
-            return <div key={`empty-${i}`} className="aspect-square" />;
+            return <div key={`empty-${i}`} style={{ aspectRatio: '1' }} />;
           }
-          
+
           const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
           const dayTodos = todos[dateKey] || [];
           const completed = dayTodos.filter((t: TodoItem) => t.completed).length;
@@ -98,29 +155,37 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
           const isSelected = dateKey === `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
           const isToday = dateKey === todayKey;
           const hasMeditation = meditationDates.includes(dateKey);
-          
+
           return (
             <button
               key={dateKey}
               onClick={() => onSelectDate(date)}
-              className={`aspect-square p-1 hover:bg-black/5 transition-colors relative ${
-                isSelected ? 'bg-black/10' : ''
-              }`}
+              style={{
+                aspectRatio: '1',
+                padding: '4px',
+                position: 'relative',
+                borderRadius: '4px',
+                backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className={`${isToday ? 'text-[#be8bad]' : 'text-black/80'}`}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <div style={{ color: isSelected ? '#BE8BAD' : (isToday ? '#be8bad' : 'rgba(0, 0, 0, 0.8)') }}>
                   {date.getDate()}
                 </div>
                 {total > 0 && (
-                  <div className="mt-0.5 w-4 h-0.5 bg-black/10">
-                    <div 
-                      className={`h-full ${hasMeditation ? 'bg-[#a7f3d0]' : 'bg-black/40'}`}
-                      style={{ width: `${(completed / total) * 100}%` }}
+                  <div style={{ marginTop: '2px', width: '16px', height: '2px', backgroundColor: 'rgba(0, 0, 0, 0.1)' }}>
+                    <div
+                      style={{ height: '100%', backgroundColor: hasMeditation ? '#a7f3d0' : 'rgba(0, 0, 0, 0.4)', width: `${(completed / total) * 100}%` }}
                     />
                   </div>
                 )}
                 {hasMeditation && total === 0 && (
-                  <div className="mt-0.5 w-1 h-1 rounded-full bg-[#a7f3d0]" />
+                  <div style={{ marginTop: '2px', width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#a7f3d0' }} />
                 )}
               </div>
             </button>
