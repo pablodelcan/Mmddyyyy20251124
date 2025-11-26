@@ -1529,9 +1529,21 @@ function AppContent() {
               variant="ghost"
               size="icon"
               onClick={() => setShowSettings(true)}
-              style={{ background: 'transparent' }}
+              style={{
+                width: '29.99px',
+                height: '29.99px',
+                borderRadius: '17981000px',
+                paddingRight: '0.01px',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                marginTop: '-22px', // Maintain alignment
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <Settings className="h-4 w-4" />
+              <Settings style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
             </Button>
           )}
 
