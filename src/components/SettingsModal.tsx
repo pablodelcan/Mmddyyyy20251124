@@ -28,7 +28,7 @@ interface Preferences {
 export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation }: SettingsModalProps) {
   const [preferences, setPreferences] = useState<Preferences>({
     email: '',
-    weeklyReportEnabled: false,
+    weeklyReportEnabled: true, // Set to true by default
     weeklyReportDay: 0 // Default to Sunday
   });
   const [testing, setTesting] = useState(false);
@@ -74,7 +74,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       const localData = localStorage.getItem('todos');
       console.log('=== Data Check ===');
       console.log('LocalStorage todos:', localData ? JSON.parse(localData) : 'Empty');
-      
+
       // Check server
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/todos`,
@@ -88,10 +88,10 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       if (response.ok) {
         const serverData = await response.json();
         console.log('Server todos:', serverData.todos);
-        
+
         const localCount = localData ? Object.keys(JSON.parse(localData)).length : 0;
         const serverCount = serverData.todos ? Object.keys(serverData.todos).length : 0;
-        
+
         toast.success(`Found ${serverCount} days on server, ${localCount} days in local storage`);
       }
     } catch (err) {
@@ -234,58 +234,128 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-[375px] mx-auto space-y-6">
           {/* Email Address */}
-          <div>
-            <label className="block mb-2 flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Email address
+          <div style={{ paddingLeft: '22.5px', paddingRight: '22.5px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px', marginBottom: '2px' }}>
+              <Mail style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Email address
+              </span>
             </label>
             <input
               type="email"
               value={preferences.email}
               onChange={(e) => setPreferences({ ...preferences, email: e.target.value })}
               placeholder="your@email.com"
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%', // Changed to 100% to fill parent with padding
+                height: '38.01359176635742px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                paddingTop: '7.5px',
+                paddingBottom: '7.5px',
+                paddingLeft: '0',
+                paddingRight: '0',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '100%',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}
+              className="placeholder:text-black/50 outline-none transition-colors"
             />
           </div>
 
           {/* Weekly Report */}
-          <div className="border-t border-black/10 pt-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Weekly report</span>
+          <div
+            style={{
+              width: '100%',
+              height: '83.00192260742188px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '4px',
+              paddingBottom: '4px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+                  <TrendingUp style={{
+                    width: '14.996110916137695px',
+                    height: '14.996110916137695px',
+                    color: '#000000',
+                  }} />
+                  <span style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                  }}>
+                    Weekly report
+                  </span>
                 </div>
               </div>
               <button
-                onClick={() => setPreferences({ 
-                  ...preferences, 
-                  weeklyReportEnabled: !preferences.weeklyReportEnabled 
+                onClick={() => setPreferences({
+                  ...preferences,
+                  weeklyReportEnabled: !preferences.weeklyReportEnabled
                 })}
-                className={`h-6 w-11 rounded-full transition-colors ${
-                  preferences.weeklyReportEnabled ? 'bg-black' : 'bg-black/20'
-                }`}
+                style={{
+                  width: '41.24558639526367px',
+                  height: '22.49835205078125px',
+                  borderRadius: '17981000px',
+                  transition: 'background-color 0.2s',
+                  backgroundColor: preferences.weeklyReportEnabled ? '#000000' : 'rgba(0,0,0,0.2)',
+                  flexShrink: 0,
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative', // Added for positioning inner circle
+                }}
               >
-                <div 
-                  className={`h-5 w-5 rounded-full bg-white transition-transform ${
-                    preferences.weeklyReportEnabled ? 'translate-x-5' : 'translate-x-0.5'
-                  }`}
+                <div
+                  className={`h-5 w-5 rounded-full bg-white transition-transform duration-200 ease-in-out`}
+                  style={{
+                    transform: preferences.weeklyReportEnabled ? 'translateX(calc(100% - 1.88px))': 'translateX(1.88px)', // Adjusted translateX
+                    position: 'absolute',
+                    left: '0',
+                  }}
                 />
               </button>
             </div>
 
             {preferences.weeklyReportEnabled && (
-              <div className="ml-6 flex gap-1.5 justify-between">
+              <div style={{ display: 'flex', gap: '1.5px', justifyContent: 'space-between', marginLeft: '0px', marginRight: '0px' }}>
                 {['Su', 'M', 'T', 'W', 'Th', 'F', 'Sa'].map((day, index) => (
                   <button
                     key={index}
-                    onClick={() => setPreferences({ 
-                      ...preferences, 
-                      weeklyReportDay: index 
+                    onClick={() => setPreferences({
+                      ...preferences,
+                      weeklyReportDay: index
                     })}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                      preferences.weeklyReportDay === index 
-                        ? 'bg-black text-white' 
+                      preferences.weeklyReportDay === index
+                        ? 'bg-black text-white'
                         : 'bg-black/10 hover:bg-black/20'
                     }`}
                   >
