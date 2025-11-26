@@ -6,9 +6,10 @@ import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 interface AuthModalProps {
   onSuccess: (accessToken: string, userId: string) => void;
+  onClose?: () => void;
 }
 
-export function AuthModal({ onSuccess }: AuthModalProps) {
+export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -132,20 +133,118 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+    <div 
+      className="fixed flex items-center justify-center"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        zIndex: 9999,
+        position: 'fixed',
+        top: '-50px',
+        left: '-50px',
+        right: '-50px',
+        bottom: '-50px',
+        width: 'calc(100vw + 100px)',
+        height: 'calc(100vh + 100px)',
+        minWidth: 'calc(100vw + 100px)',
+        minHeight: 'calc(100vh + 100px)',
+        margin: 0,
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+    >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-[375px] m-4 p-8 bg-[#fdf5ed] border border-black/10"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '363.34px',
+          height: mode === 'signup' ? '485.75px' : '385.75px',
+          backgroundColor: '#FDF5ED',
+          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+          borderWidth: '0.54px',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
       >
-        <h2 className="uppercase tracking-wider mb-6 text-center">
-          {mode === 'signup' ? 'Create Account' : mode === 'signin' ? 'Sign In' : 'Reset Password'}
-        </h2>
+        <div
+          style={{
+            width: '302.28px',
+            height: '22.49px',
+            position: 'absolute',
+            top: '20px',
+            left: '30.53px',
+            opacity: 1,
+          }}
+        >
+          <div
+            style={{
+              width: '68px',
+              height: '23px',
+              position: 'absolute',
+              top: '-0.32px',
+              left: '117.01px',
+              opacity: 1,
+              backgroundColor: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div 
+              style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0.75px',
+                textAlign: 'center',
+                textTransform: 'uppercase',
+                color: '#000000',
+                margin: 0,
+                padding: 0,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {mode === 'signup' ? 'CREATE ACCOUNT' : mode === 'signin' ? 'SIGN IN' : 'RESET PASSWORD'}
+            </div>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form 
+          onSubmit={handleSubmit} 
+          style={{
+            marginTop: '70px',
+            paddingLeft: '30.53px',
+            paddingRight: '30.53px',
+            paddingBottom: '30.53px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            flex: 1,
+            overflowY: 'auto',
+          }}
+        >
           {mode === 'signup' && (
             <div>
-              <label className="uppercase tracking-wider text-black/60 block mb-2 font-mono-label">
+              <label style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                textTransform: 'uppercase',
+                color: 'rgba(0, 0, 0, 0.6)',
+                display: 'block',
+                marginBottom: '8px',
+              }}>
                 Name
               </label>
               <input
@@ -153,13 +252,31 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                  outline: 'none',
+                  padding: '8px 0',
+                  fontFamily: 'Courier New',
+                  fontSize: '15px',
+                  color: '#000000',
+                }}
               />
             </div>
           )}
 
           <div>
-            <label className="uppercase tracking-wider text-black/60 block mb-2 font-mono-label">
+            <label style={{
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              textTransform: 'uppercase',
+              color: 'rgba(0, 0, 0, 0.6)',
+              display: 'block',
+              marginBottom: '8px',
+            }}>
               Email
             </label>
             <input
@@ -167,12 +284,30 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                outline: 'none',
+                padding: '8px 0',
+                fontFamily: 'Courier New',
+                fontSize: '15px',
+                color: '#000000',
+              }}
             />
           </div>
 
           <div>
-            <label className="uppercase tracking-wider text-black/60 block mb-2 font-mono-label">
+            <label style={{
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              textTransform: 'uppercase',
+              color: 'rgba(0, 0, 0, 0.6)',
+              display: 'block',
+              marginBottom: '8px',
+            }}>
               {mode === 'forgot' ? 'New Password' : 'Password'}
             </label>
             <input
@@ -181,38 +316,93 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                outline: 'none',
+                padding: '8px 0',
+                fontFamily: 'Courier New',
+                fontSize: '15px',
+                color: '#000000',
+              }}
             />
           </div>
 
           {error && (
-            <div className="text-center" style={{ color: '#D84341' }}>
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#D84341',
+              fontFamily: 'Courier New',
+              fontSize: '13px',
+            }}>
               {error}
             </div>
           )}
 
           {success && (
-            <div className="text-green-600 text-center">
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#22c55e',
+              fontFamily: 'Courier New',
+              fontSize: '13px',
+            }}>
               {success}
             </div>
           )}
 
-          <Button
+          <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black hover:bg-black/90 text-white rounded-none"
+            style={{
+              width: '100%',
+              backgroundColor: '#000000',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '12px',
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+            }}
           >
             {loading ? 'Loading...' : mode === 'signup' ? 'Sign Up' : mode === 'signin' ? 'Sign In' : 'Reset Password'}
-          </Button>
+          </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div style={{
+          paddingLeft: '30.53px',
+          paddingRight: '30.53px',
+          paddingBottom: 0,
+          marginTop: '22.18px',
+          textAlign: 'center',
+        }}>
           <button
             onClick={() => {
               setMode(mode === 'signup' ? 'signin' : 'signup');
               setError('');
             }}
-            className="text-black/60 hover:text-black transition-colors"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(0, 0, 0, 0.6)',
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontStyle: 'normal',
+              fontSize: '15px',
+              lineHeight: '22.5px',
+              letterSpacing: '0px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              padding: '4px',
+            }}
           >
             {mode === 'signup' 
               ? 'Already have an account? Sign in' 
@@ -220,13 +410,32 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
           </button>
         </div>
 
-        <div className="mt-2 text-center">
+        <div style={{
+          paddingLeft: '30.53px',
+          paddingRight: '30.53px',
+          paddingBottom: '20px',
+          marginTop: '6.5px',
+          textAlign: 'center',
+        }}>
           <button
             onClick={() => {
               setMode('forgot');
               setError('');
             }}
-            className="text-black/60 hover:text-black transition-colors"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(0, 0, 0, 0.6)',
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontStyle: 'normal',
+              fontSize: '15px',
+              lineHeight: '22.5px',
+              letterSpacing: '0px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              padding: '4px',
+            }}
           >
             Forgot Password?
           </button>
