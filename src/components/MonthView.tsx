@@ -47,6 +47,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
       flexDirection: 'column',
       alignItems: 'center',
       backgroundColor: '#FBF8E8',
+      margin: '0 auto',
     }}>
       {/* Container 1: Month Header with Navigation */}
       <div style={{ width: '285.00146484375px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
