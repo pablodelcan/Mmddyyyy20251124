@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { getSupabaseClient } from '../utils/supabase/client';
@@ -132,46 +133,49 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
     }
   };
 
-  return (
-    <div 
-      className="fixed flex items-center justify-center"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        zIndex: 9999,
-        position: 'fixed',
-        inset: 0,
-        width: '100vw',
-        height: '100vh',
-        margin: 0,
-        padding: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && onClose) {
-          onClose();
-        }
-      }}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        onClick={(e) => e.stopPropagation()}
+  const modalContent = (
+    <>
+      <div 
         style={{
-          width: '363.34px',
-          height: mode === 'signup' ? '485.75px' : '385.75px',
-          backgroundColor: '#FDF5ED',
-          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-          borderWidth: '0.54px',
-          position: 'relative',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          zIndex: 99999,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100dvh',
+          margin: 0,
+          padding: 0,
           display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          flexShrink: 0,
-          pointerEvents: 'auto',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && onClose) {
+            onClose();
+          }
         }}
       >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: '363.34px',
+            height: mode === 'signup' ? '485.75px' : '385.75px',
+            backgroundColor: '#FDF5ED',
+            borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+            borderWidth: '0.54px',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            flexShrink: 0,
+            pointerEvents: 'auto',
+          }}
+        >
         <div
           style={{
             width: '302.28px',
@@ -437,6 +441,9 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
           </button>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </>
   );
+
+  return createPortal(modalContent, document.body);
 }

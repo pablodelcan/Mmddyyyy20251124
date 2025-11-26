@@ -372,21 +372,13 @@ function AppContent() {
     document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
     
     const preventResize = () => {
-      // Always maintain the initial viewport height - prevent any changes
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.height = `${initialHeight}px`;
-        root.style.maxHeight = `${initialHeight}px`;
-        root.style.minHeight = `${initialHeight}px`;
-      }
-      document.body.style.height = `${initialHeight}px`;
-      document.body.style.maxHeight = `${initialHeight}px`;
-      document.body.style.minHeight = `${initialHeight}px`;
-      document.documentElement.style.height = `${initialHeight}px`;
-      document.documentElement.style.maxHeight = `${initialHeight}px`;
-      document.documentElement.style.minHeight = `${initialHeight}px`;
+      // Lock the initial viewport height
+      const initialHeight = window.innerHeight;
+      document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
       
-      // Prevent any scrolling
+      // Instead of setting fixed heights and overflow: hidden on root, body, html, 
+      // we'll rely on the meta tag and viewport-fit=cover
+      // We only ensure scrolling is prevented
       window.scrollTo(0, 0);
       document.body.scrollTop = 0;
       document.documentElement.scrollTop = 0;
