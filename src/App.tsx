@@ -100,6 +100,8 @@ function DraggableTodo({
 }: DraggableTodoProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null); // New ref for the drag handle
+  const textMeasureRef = useRef<HTMLSpanElement>(null); // Ref to measure text width
+  const [scrollDistance, setScrollDistance] = useState(0);
 
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
@@ -127,6 +129,27 @@ function DraggableTodo({
 
   // Apply drop to the whole item, but drag only to the handle
   drop(ref); // The entire div remains the drop target
+
+  // Measure text width for scrolling animation
+  useEffect(() => {
+    if (timeRemaining && textMeasureRef.current) {
+      // Use requestAnimationFrame to ensure DOM is fully rendered
+      requestAnimationFrame(() => {
+        if (textMeasureRef.current) {
+          const textWidth = textMeasureRef.current.scrollWidth;
+          const containerWidth = 240; // Approximate available width (330px - 90px padding)
+          if (textWidth > containerWidth) {
+            // Scroll through the entire text width plus some padding
+            setScrollDistance(-(textWidth - containerWidth + 50));
+          } else {
+            setScrollDistance(0);
+          }
+        }
+      });
+    } else {
+      setScrollDistance(0);
+    }
+  }, [timeRemaining, todo.text]);
 
   return (
     <div
@@ -234,6 +257,22 @@ function DraggableTodo({
                 overflow: 'hidden',
               }}
             >
+              {/* Hidden span to measure text width */}
+              <span 
+                ref={textMeasureRef}
+                style={{
+                  position: 'absolute',
+                  visibility: 'hidden',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.49px',
+                  pointerEvents: 'none',
+                }}
+              >
+                {todo.text} • {timeRemaining}
+              </span>
               <motion.div
                 style={{
                   position: 'absolute',
@@ -242,11 +281,11 @@ function DraggableTodo({
                   alignItems: 'center',
                 }}
                 animate={{
-                  x: [0, -100],
+                  x: scrollDistance !== 0 ? [0, scrollDistance] : 0,
                 }}
                 transition={{
-                  duration: 10,
-                  repeat: Infinity,
+                  duration: scrollDistance !== 0 ? Math.max(5, Math.abs(scrollDistance) / 20) : 0,
+                  repeat: scrollDistance !== 0 ? Infinity : 0,
                   ease: "linear",
                 }}
               >
