@@ -738,11 +738,12 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   display: 'flex',
                   justifyContent: 'flex-start',
                   alignItems: 'center',
-                  // Removed marginBottom
+                  width: '100%',
                 }}
               >
                 <button
                   onClick={() => setShowMoreInfo(!showMoreInfo)}
+                  className="flex items-center gap-2 text-black/60 hover:text-black transition-colors"
                   style={{
                     opacity: 1,
                     fontFamily: 'Courier New',
@@ -754,12 +755,11 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     color: 'rgba(0, 0, 0, 0.6)', // 60% opacity for text and arrow
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: 'flex-start',
                     gap: '7.49px', // Added gap
                     border: 'none',
                     background: 'transparent',
                     cursor: 'pointer',
-                    margin: '0',
                     padding: '0', // Ensure no default padding
                   }}
                 >
@@ -776,6 +776,97 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   )}
                 </button>
               </div>
+
+              <AnimatePresence>
+                  {showMoreInfo && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      {/* Stats Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Time lived
+                          </div>
+                          <div className="mb-1">{stats.years}</div>
+                          <div>
+                            years, {stats.months} months, {stats.days} days
+                          </div>
+                          <div className="mt-2">
+                            {stats.weeksLived.toLocaleString()} weeks
+                          </div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Percentage lived
+                          </div>
+                          <div className="mb-1">
+                            {stats.percentageLived.toFixed(1)}%
+                          </div>
+                          <div>of {expectedLifespan} years</div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Time remaining
+                          </div>
+                          <div className="mb-1">{stats.yearsRemaining}</div>
+                          <div>
+                            years ({stats.monthsRemaining} months)
+                          </div>
+                          <div className="mt-2">
+                            {stats.weeksRemaining.toLocaleString()} weeks
+                          </div>
+                        </div>
+
+                        <div className="border border-black/10 p-6">
+                          <div className="mb-2">
+                            Total meditation
+                          </div>
+                          <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
+                          <div>
+                            minutes
+                          </div>
+                          <div className="mt-2">
+                            {(totalMeditationMinutes / 60).toFixed(1)} hours
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-black/80" />
+                          <span>Weeks lived</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-[#D84341]" />
+                          <span>Current week</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-black/80" />
+                          <span>Weeks remaining</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-[#be8bad]" />
+                          <span>Has note</span>
+                        </div>
+                      </div>
+
+                      <div className="text-black/90">
+                        <p className="text-left">
+                          Each row represents one year of your life. This visualization is inspired by Tim Urban's 
+                          "Your life in weeks" and serves as a reminder to make the most of every week.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+              </AnimatePresence>
 
               {/* Bucket List Button */}
               <div
