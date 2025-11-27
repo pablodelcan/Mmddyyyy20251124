@@ -732,19 +732,47 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               </div>
 
               {/* Collapsible More Information */}
-              <div className="max-w-2xl mx-auto mb-8">
+              <div
+                style={{
+                  marginTop: '30px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: '8px', // Keep a small margin-bottom if needed or adjust as per final layout
+                }}
+              >
                 <button
                   onClick={() => setShowMoreInfo(!showMoreInfo)}
-                  className="flex items-center gap-2 text-black/60 hover:text-black transition-colors mb-4"
+                  className="flex items-center gap-2 text-black/60 hover:text-black transition-colors"
+                  style={{
+                    width: '211.5113067626953px',
+                    height: '22.489980697631836px',
+                    opacity: 1,
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    textAlign: 'center',
+                    color: 'rgba(0, 0, 0, 0.6)', // 60% opacity for text and arrow
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '7.49px', // Added gap
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    margin: '0',
+                  }}
                 >
                   {showMoreInfo ? (
                     <>
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: 'rgba(0, 0, 0, 0.6)' }} />
                       <span>Hide more information</span>
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: 'rgba(0, 0, 0, 0.6)' }} />
                       <span>Show more information</span>
                     </>
                   )}
@@ -843,10 +871,41 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               </div>
 
               {/* Bucket List Button */}
-              <div className="border-t border-black/10 pt-6 pb-6 max-w-2xl mx-auto">
+              <div
+                style={{
+                  width: '362.2678527832031px',
+                  height: '87.84991455078125px',
+                  opacity: 1,
+                  borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+                  marginTop: '30px',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto',
+                }}
+              >
                 <Button
                   onClick={() => setShowBucketList(true)}
-                  className="w-full bg-[#f5d5d8] hover:bg-[#f5d5d8]/90 text-black border border-black/10 rounded-none h-auto py-3"
+                  style={{
+                    width: '362.2678527832031px',
+                    height: '42.31733322143555px',
+                    opacity: 1,
+                    border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                    background: '#F5D5D8',
+                    color: '#000000',
+                    borderRadius: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                  }}
                 >
                   Bucket list
                 </Button>
