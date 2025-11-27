@@ -738,15 +738,13 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginBottom: '8px', // Keep a small margin-bottom if needed or adjust as per final layout
+                  // Removed marginBottom as it was conflicting.
                 }}
               >
                 <button
                   onClick={() => setShowMoreInfo(!showMoreInfo)}
-                  className="flex items-center gap-2 text-black/60 hover:text-black transition-colors"
+                  // Removed className to avoid conflicts, applying styles directly.
                   style={{
-                    width: '211.5113067626953px',
-                    height: '22.489980697631836px',
                     opacity: 1,
                     fontFamily: 'Courier New',
                     fontWeight: 700,
@@ -763,6 +761,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     background: 'transparent',
                     cursor: 'pointer',
                     margin: '0',
+                    padding: '0', // Ensure no default padding
+                    // Removed explicit width and height, letting content define it.
                   }}
                 >
                   {showMoreInfo ? (
@@ -873,8 +873,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               {/* Bucket List Button */}
               <div
                 style={{
-                  width: '362.2678527832031px',
-                  height: '87.84991455078125px',
                   opacity: 1,
                   borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
                   marginTop: '30px',
@@ -883,13 +881,12 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto',
+                  padding: '0',
                 }}
               >
                 <Button
                   onClick={() => setShowBucketList(true)}
                   style={{
-                    width: '362.2678527832031px',
-                    height: '42.31733322143555px',
                     opacity: 1,
                     border: '0.54px solid rgba(0, 0, 0, 0.1)',
                     background: '#F5D5D8',
@@ -905,11 +902,25 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     letterSpacing: '0px',
                     textAlign: 'center',
                     cursor: 'pointer',
+                    paddingTop: '7.5px',
+                    paddingRight: '15px',
+                    paddingBottom: '7.5px',
+                    paddingLeft: '15px',
                   }}
                 >
                   Bucket list
                 </Button>
               </div>
+              {/* Invisible Spacer */}
+              <div
+                style={{
+                  height: '50px', // Adjustable height to push content up
+                  background: '#FDF5ED',
+                  opacity: 0,
+                  marginTop: '20px', // Space from the button above
+                  width: '100%',
+                }}
+              ></div>
             </>
             ) : (
             <div className="flex flex-1 flex-col p-4" style={{ marginTop: '25px', paddingLeft: '22.5px', paddingRight: '22.5px' }}>
