@@ -259,8 +259,8 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               onChange={(e) => setPreferences({ ...preferences, email: e.target.value })}
               placeholder="your@email.com"
               style={{
-                width: '100%', // Changed to 100% to fill parent with padding
-                height: '38.01359176635742px',
+                width: '100%',
+                height: '38.02px',
                 background: 'transparent',
                 border: 'none',
                 borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
@@ -281,21 +281,19 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
 
           {/* Weekly Report */}
           <div
+            className="border-t border-black/10 pt-4"
             style={{
-              width: '100%',
-              height: '83.00192260742188px',
-              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-              paddingTop: '4px',
-              paddingBottom: '4px',
               paddingLeft: '22.5px',
               paddingRight: '22.5px',
+              height: '83.00192260742188px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
+              marginTop: '15px', // Updated top margin to 15px
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}> {/* Changed to alignItems: 'center' and justifyContent: 'space-between' */}
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
                   <TrendingUp style={{
@@ -326,19 +324,18 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                   borderRadius: '17981000px',
                   transition: 'background-color 0.2s',
                   backgroundColor: preferences.weeklyReportEnabled ? '#000000' : 'rgba(0,0,0,0.2)',
-                  flexShrink: 0,
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
-                  position: 'relative', // Added for positioning inner circle
+                  position: 'relative',
+                  padding: '1.88px',
+                  boxSizing: 'border-box',
                 }}
               >
                 <div
                   className={`h-5 w-5 rounded-full bg-white transition-transform duration-200 ease-in-out`}
                   style={{
-                    transform: preferences.weeklyReportEnabled ? 'translateX(calc(100% - 1.88px))': 'translateX(1.88px)', // Adjusted translateX
-                    position: 'absolute',
-                    left: '0',
+                    transform: preferences.weeklyReportEnabled ? 'translateX(19.36px)' : 'translateX(0px)',
                   }}
                 />
               </button>
@@ -353,13 +350,34 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                       ...preferences,
                       weeklyReportDay: index
                     })}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                      preferences.weeklyReportDay === index
-                        ? 'bg-black text-white'
-                        : 'bg-black/10 hover:bg-black/20'
-                    }`}
+                    style={{
+                      width: '29.99222183227539px',
+                      height: '29.99222183227539px',
+                      borderRadius: '17981000px',
+                      padding: 0, // Removed paddingRight: '0.01px' and set to 0 for perfect centering
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'background-color 0.2s, color 0.2s',
+                      backgroundColor: preferences.weeklyReportDay === index ? '#000000' : 'rgba(0,0,0,0.1)',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
                   >
-                    <span className="text-[11px]">{day}</span>
+                    <span style={{
+                      fontFamily: 'Courier New',
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      lineHeight: '16.5px',
+                      letterSpacing: '0px',
+                      textAlign: 'center',
+                      color: preferences.weeklyReportDay === index ? '#FFFFFF' : '#000000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      width: '100%',
+                    }}>{day}</span>
                   </button>
                 ))}
               </div>
@@ -367,42 +385,177 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           </div>
 
           {/* Test Email */}
-          <div className="border-t border-black/10 pt-4">
-            <p className="mb-3">
+          <div
+            style={{
+              width: '100%',
+              height: '83.01029968261719px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px', // Ensure consistent padding
+              paddingRight: '22.5px', // Ensure consistent padding
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '11.25px', // Added gap as per Figma
+            }}
+          >
+            <p
+              style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+                margin: 0, // Remove default paragraph margin
+              }}
+            >
               Send test weekly report
             </p>
             <Button
               onClick={testWeeklyEmail}
               disabled={testing || !preferences.email}
-              className="w-full bg-black hover:bg-black/90 text-white rounded-none flex items-center justify-center gap-2"
+              style={{
+                width: '100%',
+                height: '33.743343353271484px',
+                background: '#000000',
+                color: '#FFFFFF',
+                borderRadius: '0', // Ensure sharp corners if not already
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7.5px', // Default gap for icon and text
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
-              <Send className="h-3 w-3" />
-              {testing ? 'Sending...' : 'Send test'}
+              <Send style={{ color: '#FFFFFF', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#FFFFFF',
+              }}>
+                {testing ? 'Sending...' : 'Send test'}
+              </span>
             </Button>
           </div>
 
           {/* Data Recovery */}
-          <div className="border-t border-black/10 pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Database className="h-4 w-4" />
-              <span>Data recovery</span>
+          <div
+            style={{
+              width: '100%',
+              height: '83.01029968261719px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '11.24px',
+              marginTop: '22.5px', // 22.5px below the previous section
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <Database style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Data recovery
+              </span>
             </div>
             <Button
               onClick={checkDataStatus}
-              className="w-full bg-black/10 hover:bg-black/20 text-black rounded-none flex items-center justify-center gap-2"
+              style={{
+                width: '100%',
+                height: '33.743343353271484px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                borderRadius: '0',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7.5px',
+                cursor: 'pointer',
+              }}
             >
-              <Database className="h-3 w-3" />
-              Check data status
+              <Database style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#000000',
+              }}>
+                Check data status
+              </span>
             </Button>
           </div>
 
           {/* Date of Birth */}
-          <div className="border-t border-black/10 pt-4">
-            <label className="block mb-2 flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Date of birth
+          <div
+            style={{
+              width: '100%',
+              height: '139.75437927246094px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '7.49px',
+              marginTop: '22.5px',
+            }}
+          >
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <Calendar style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Date of birth
+              </span>
             </label>
-            <p className="text-black/60 mb-3">
+            <p
+              style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: 'rgba(0,0,0,0.6)',
+                margin: 0,
+                marginTop: '7.17px', // 7.17px below the date of birth text
+              }}
+            >
               Required for "Life in Weeks" visualization
             </p>
             <input
@@ -410,17 +563,76 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               value={dateOfBirth || ''}
               onChange={(e) => onSaveDateOfBirth(e.target.value)}
               max={new Date().toISOString().split('T')[0]}
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                height: '38.01359176635742px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                paddingTop: '7.5px',
+                paddingBottom: '7.5px',
+                paddingLeft: '0',
+                paddingRight: '0',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '100%',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}
+              className="outline-none transition-colors"
             />
           </div>
 
           {/* Expected Lifespan */}
-          <div className="border-t border-black/10 pt-4">
-            <label className="block mb-2 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Expected lifespan
+          <div
+            style={{
+              width: '100%',
+              height: '139.75437927246094px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '7.49px',
+              marginTop: '22.5px',
+            }}
+          >
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <TrendingUp style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Expected lifespan
+              </span>
             </label>
-            <p className="text-black/60 mb-3">
+            <p
+              style={{
+                width: '100%',
+                height: '45px',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: 'rgba(0,0,0,0.6)',
+                margin: 0,
+                marginTop: '7.17px',
+              }}
+            >
               Used to calculate "Life in Weeks" grid (default: 80 years)
             </p>
             <input
@@ -429,7 +641,25 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               onChange={(e) => setCustomLifespan(e.target.value)}
               min="1"
               max="120"
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                height: '38.01359176635742px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                paddingTop: '7.5px',
+                paddingBottom: '7.5px',
+                paddingLeft: '0',
+                paddingRight: '0',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '100%',
+                letterSpacing: '0px',
+                color: '#000000',
+                marginTop: '7.49px',
+              }}
+              className="outline-none transition-colors"
             />
           </div>
 
