@@ -21,7 +21,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
   const [searchDate, setSearchDate] = useState('');
   const [showOnboarding, setShowOnboarding] = useState(false); // Changed to false
-  const [popupPosition, setPopupPosition] = useState<{ top: number; left: number } | null>(null);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showBucketList, setShowBucketList] = useState(false);
   const [newBucketItem, setNewBucketItem] = useState('');
@@ -141,7 +140,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
     const weekIndex = dateToWeekIndex(searchDate);
     if (weekIndex !== null) {
       setSelectedWeek(weekIndex);
-      setPopupPosition(null); // Clear popup position when using search
       // Scroll to the week
       const weekElement = document.getElementById(`week-${weekIndex}`);
       if (weekElement) {
@@ -154,48 +152,11 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const handleWeekClick = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setSelectedWeek(index);
-
-    // Calculate popup position
-    const rect = e.currentTarget.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const scrollX = window.scrollX;
-
-    // Position popup to the right of the square, or left if too close to right edge
-    const popupWidth = 340; // Updated width with padding
-    const popupHeight = 450; // Updated height estimate
-    const padding = 20; // Padding from screen edges
-
-    let left = rect.right + scrollX + 10;
-    let top = rect.top + scrollY;
-
-    // Ensure popup doesn't go off the right edge
-    if (left + popupWidth > window.innerWidth + scrollX - padding) {
-      left = rect.left + scrollX - popupWidth - 10;
+    // Scroll to the week to show the popup below
+    const weekElement = document.getElementById(`week-${index}`);
+    if (weekElement) {
+      weekElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-    // Ensure popup doesn't go off the left edge
-    if (left < scrollX + padding) {
-      left = scrollX + padding;
-    }
-
-    // Ensure popup doesn't go off the bottom edge
-    if (top + popupHeight > window.innerHeight + scrollY - padding) {
-      top = window.innerHeight + scrollY - popupHeight - padding;
-    }
-
-    // Ensure popup doesn't go off the top edge
-    if (top < scrollY + padding) {
-      top = scrollY + padding;
-    }
-
-    // Final bounds check
-    const maxLeft = window.innerWidth + scrollX - popupWidth - padding;
-    const maxTop = window.innerHeight + scrollY - popupHeight - padding;
-
-    left = Math.max(scrollX + padding, Math.min(left, maxLeft));
-    top = Math.max(scrollY + padding, Math.min(top, maxTop));
-
-    setPopupPosition({ top, left });
   };
 
   // Bucket list handlers
@@ -787,79 +748,193 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   })}
                 </div>
 
-                {/* Floating Popup for Selected Week */}
+                {/* Week Details Popup - Static below grid */}
                 <AnimatePresence>
-                  {selectedWeek !== null && popupPosition && (() => {
+                  {selectedWeek !== null && (() => {
                     const weekStats = getWeekStats(selectedWeek);
                     const currentNote = weekNotes[selectedWeek] || '';
                     return weekStats ? (
                       <motion.div
-                        drag
-                        dragMomentum={false}
-                        dragElastic={0}
-                        dragConstraints={{
-                          top: 0,
-                          left: 0,
-                          right: window.innerWidth - 340,
-                          bottom: window.innerHeight - 450
-                        }}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.15 }}
-                        className="fixed z-[60] w-80 cursor-move"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
                         style={{
-                          top: popupPosition.top,
-                          left: popupPosition.left,
+                          marginTop: '24px',
+                          width: '100%',
+                          background: '#FDF5ED',
+                          border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                          padding: '22.5px',
+                          boxSizing: 'border-box',
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="bg-[#fdf5ed] border-2 border-[#be8bad] shadow-lg p-4">
-                          <div className="flex justify-between items-start mb-3 cursor-move">
-                            <h4 className="select-none">Week {selectedWeek + 1}</h4>
-                            <button
-                              onClick={() => {
-                                setSelectedWeek(null);
-                                setPopupPosition(null);
-                              }}
-                              className="text-black/60 hover:text-black cursor-pointer"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          marginBottom: '22.5px',
+                        }}>
+                          <h4 style={{
+                            fontFamily: 'Courier New',
+                            fontWeight: 700,
+                            fontSize: '15px',
+                            lineHeight: '22.5px',
+                            color: '#000000',
+                            margin: 0,
+                          }}>
+                            Week {selectedWeek + 1}
+                          </h4>
+                          <button
+                            onClick={() => {
+                              setSelectedWeek(null);
+                            }}
+                            style={{
+                              width: '29.99222183227539px',
+                              height: '29.99222183227539px',
+                              borderRadius: '17981000px',
+                              background: 'transparent',
+                              border: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                          >
+                            <X style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+                          </button>
+                        </div>
 
-                          <div className="grid grid-cols-2 gap-3 mb-3 cursor-move select-none">
-                            <div>
-                              <div className="text-black/60">Date</div>
-                              <div>{weekStats.date}</div>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '22.5px',
+                          marginBottom: '22.5px',
+                        }}>
+                          <div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: 'rgba(0, 0, 0, 0.6)',
+                              marginBottom: '7.5px',
+                            }}>
+                              Date
                             </div>
-                            <div>
-                              <div className="text-black/60">Age</div>
-                              <div>{weekStats.age}</div>
-                            </div>
-                            <div>
-                              <div className="text-black/60">Days lived</div>
-                              <div>{weekStats.daysLived.toLocaleString()}</div>
-                            </div>
-                            <div>
-                              <div className="text-black/60">Percentage</div>
-                              <div>{weekStats.percentage}%</div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: '#000000',
+                            }}>
+                              {weekStats.date}
                             </div>
                           </div>
+                          <div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: 'rgba(0, 0, 0, 0.6)',
+                              marginBottom: '7.5px',
+                            }}>
+                              Age
+                            </div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: '#000000',
+                            }}>
+                              {weekStats.age}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: 'rgba(0, 0, 0, 0.6)',
+                              marginBottom: '7.5px',
+                            }}>
+                              Days lived
+                            </div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: '#000000',
+                            }}>
+                              {weekStats.daysLived.toLocaleString()}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: 'rgba(0, 0, 0, 0.6)',
+                              marginBottom: '7.5px',
+                            }}>
+                              Percentage
+                            </div>
+                            <div style={{
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: '#000000',
+                            }}>
+                              {weekStats.percentage}%
+                            </div>
+                          </div>
+                        </div>
 
-                          {/* Note Input */}
-                          <div className="border-t border-black/10 pt-3">
-                            <label className="text-black/60 block mb-2 cursor-move select-none">
-                              Note for this week
-                            </label>
-                            <textarea
-                              value={currentNote}
-                              onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
-                              placeholder="Add a memory or important moment..."
-                              className="w-full bg-transparent border border-black/20 focus:border-[#be8bad] outline-none transition-colors px-2 py-2 resize-none cursor-text"
-                              rows={3}
-                            />
-                          </div>
+                        {/* Note Input */}
+                        <div style={{
+                          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+                          paddingTop: '22.5px',
+                        }}>
+                          <label style={{
+                            fontFamily: 'Courier New',
+                            fontWeight: 700,
+                            fontSize: '15px',
+                            lineHeight: '22.5px',
+                            color: 'rgba(0, 0, 0, 0.6)',
+                            display: 'block',
+                            marginBottom: '7.5px',
+                          }}>
+                            Note for this week
+                          </label>
+                          <textarea
+                            value={currentNote}
+                            onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
+                            placeholder="Add a memory or important moment..."
+                            style={{
+                              width: '100%',
+                              background: 'transparent',
+                              border: '0.54px solid rgba(0, 0, 0, 0.2)',
+                              fontFamily: 'Courier New',
+                              fontWeight: 700,
+                              fontSize: '15px',
+                              lineHeight: '22.5px',
+                              color: '#000000',
+                              padding: '7.5px',
+                              outline: 'none',
+                              resize: 'none',
+                              boxSizing: 'border-box',
+                              minHeight: '80px',
+                            }}
+                            rows={3}
+                          />
                         </div>
                       </motion.div>
                     ) : null;
