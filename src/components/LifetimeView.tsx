@@ -307,7 +307,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           style={{
             flex: 1,
             minHeight: 0,
-            overflowY: 'auto',
+            overflowY: 'scroll',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
             width: '393.3318176269531px',
@@ -315,9 +315,29 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             boxSizing: 'border-box',
             margin: '0 auto',
             padding: '0',
+            position: 'relative',
+          }}
+          onScroll={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchMove={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
+          onWheel={(e) => {
+            e.stopPropagation();
           }}
         >
-          <div /* Removed max-w-2xl mx-auto p-6 */>
+          <div
+            style={{
+              paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px)',
+            }}
+          >
             {bucketList.length === 0 && (
               <p
                 style={{
@@ -458,26 +478,35 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           </div>
         </div>
 
-        {/* Add New Item - Fixed to bottom */}
+        {/* Add New Item - Fixed to bottom with background */}
         <div
           style={{
             position: 'fixed',
-            bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '393.3318176269531px',
-            height: '33.743343353271484px',
-            display: 'flex',
-            gap: '7.5px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingLeft: '22.5px',
-            paddingRight: '22.5px',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: '100%',
+            paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
+            paddingTop: '20px',
             zIndex: 50,
             background: '#FDF5ED',
             boxSizing: 'border-box',
           }}
         >
+          <div
+            style={{
+              width: '393.3318176269531px',
+              height: '33.743343353271484px',
+              display: 'flex',
+              gap: '7.5px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              margin: '0 auto',
+              boxSizing: 'border-box',
+            }}
+          >
           <div
             style={{
               width: '348.3351135253906px',
@@ -532,6 +561,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           >
             <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
           </button>
+          </div>
           </div>
         </div>
       </motion.div>
