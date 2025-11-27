@@ -249,6 +249,9 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           paddingTop: 'max(env(safe-area-inset-top), 40px)',
           width: '100%',
           height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
         {/* Header */}
@@ -304,38 +307,43 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
         {/* Scrollable Content */}
         <div
+          className="overflow-y-scroll"
           style={{
             flex: 1,
             minHeight: 0,
             overflowY: 'scroll',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
-            width: '393.3318176269531px',
-            opacity: 1,
-            boxSizing: 'border-box',
-            margin: '0 auto',
             padding: '0',
             position: 'relative',
           }}
           onScroll={(e) => {
+            // Stop scroll event from bubbling to document level
             e.stopPropagation();
           }}
           onTouchStart={(e) => {
+            // Allow touch scrolling within this element
             e.stopPropagation();
           }}
           onTouchMove={(e) => {
+            // Allow touch scrolling within this element
             e.stopPropagation();
           }}
           onTouchEnd={(e) => {
+            // Allow touch scrolling within this element
             e.stopPropagation();
           }}
           onWheel={(e) => {
+            // Allow wheel scrolling within this element
             e.stopPropagation();
           }}
         >
           <div
             style={{
+              width: '393.3318176269531px',
+              margin: '0 auto',
               paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px)',
+              boxSizing: 'border-box',
             }}
           >
             {bucketList.length === 0 && (
