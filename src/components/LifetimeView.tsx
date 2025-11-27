@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { X, ChevronDown, ChevronUp, Plus, Minus, Square, CheckSquare, List } from 'lucide-react';
@@ -26,6 +26,32 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const [newBucketItem, setNewBucketItem] = useState('');
   const [editingBucketId, setEditingBucketId] = useState<string | null>(null);
   const [editingBucketText, setEditingBucketText] = useState('');
+  const [containerWidth, setContainerWidth] = useState<number>(375); // Default mobile width
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Track container width for responsive grid
+  useEffect(() => {
+    const updateWidth = () => {
+      if (contentRef.current) {
+        // Get the width of the scrollable content area (accounting for padding)
+        const width = contentRef.current.offsetWidth;
+        setContainerWidth(width);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // Calculate responsive grid dimensions
+  // Available width = container width - 48px (24px padding on each side)
+  // Grid needs 52 columns, so each square = (availableWidth - 51 gaps) / 52
+  const availableWidth = containerWidth - 48; // 24px padding on each side
+  const gapSize = 1;
+  const totalGaps = 51; // 52 columns means 51 gaps
+  const squareSize = Math.max(4, (availableWidth - totalGaps * gapSize) / 52); // Minimum 4px
+  const gridWidth = squareSize * 52 + totalGaps * gapSize;
 
   // Check if user has seen the onboarding
   /*
@@ -597,6 +623,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
       {/* Scrollable Content */}
       <div
+        ref={contentRef}
         style={{
           flex: 1,
           minHeight: 0,
@@ -679,14 +706,15 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 position: 'relative',
                 margin: '0', // Ensure no margin
                 padding: '0', // Ensure no padding
+                width: '100%',
               }}>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: `repeat(52, 5.007076740264893px)`,
-                  gridAutoRows: '5.007076740264893px',
-                  width: '311.36839049377444px',
-                  maxWidth: '311.36839049377444px',
-                  gap: '1px',
+                  gridTemplateColumns: `repeat(52, ${squareSize}px)`,
+                  gridAutoRows: `${squareSize}px`,
+                  width: `${gridWidth}px`,
+                  maxWidth: '100%',
+                  gap: `${gapSize}px`,
                   margin: '0',
                   padding: '0',
                   boxSizing: 'border-box',
@@ -725,12 +753,12 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         onMouseEnter={() => setHoveredWeek(index)}
                         onMouseLeave={() => setHoveredWeek(null)}
                         style={{
-                          width: '5.007076740264893px',
-                          height: '5.007076740264893px',
-                          minWidth: '5.007076740264893px',
-                          minHeight: '5.007076740264893px',
-                          maxWidth: '5.007076740264893px',
-                          maxHeight: '5.007076740264893px',
+                          width: `${squareSize}px`,
+                          height: `${squareSize}px`,
+                          minWidth: `${squareSize}px`,
+                          minHeight: `${squareSize}px`,
+                          maxWidth: `${squareSize}px`,
+                          maxHeight: `${squareSize}px`,
                           opacity: 1,
                           backgroundColor: backgroundColor,
                           border: 'none',
