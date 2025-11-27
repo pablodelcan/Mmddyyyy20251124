@@ -719,13 +719,16 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 margin: '0', // Ensure no margin
                 padding: '0', // Ensure no padding
               }}>
-                <div className="grid" style={{
+                <div style={{
+                  display: 'grid',
                   gridTemplateColumns: `repeat(52, 5.007076740264893px)`,
-                  gap: '0px', // Ensure no gap
-                  rowGap: '0px', // Ensure no row gap
-                  columnGap: '0px', // Ensure no column gap
-                  margin: '0', // Ensure no margin
-                  padding: '0', // Ensure no padding
+                  gridAutoRows: '5.007076740264893px',
+                  width: '311.36839049377444px',
+                  maxWidth: '311.36839049377444px',
+                  gap: '1px',
+                  margin: '0',
+                  padding: '0',
+                  boxSizing: 'border-box',
                 }}>
                   {Array.from({ length: stats.totalWeeks }).map((_, index) => {
                     const isLived = index < stats.weeksLived;
@@ -763,12 +766,19 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         style={{
                           width: '5.007076740264893px',
                           height: '5.007076740264893px',
+                          minWidth: '5.007076740264893px',
+                          minHeight: '5.007076740264893px',
+                          maxWidth: '5.007076740264893px',
+                          maxHeight: '5.007076740264893px',
                           opacity: 1,
                           backgroundColor: backgroundColor,
-                          border: 'none', // Removed temporary blue border
+                          border: 'none',
                           padding: '0',
                           margin: '0',
                           flexShrink: 0,
+                          lineHeight: '0',
+                          display: 'block',
+                          boxSizing: 'border-box',
                         }}
                         title={`Week ${index + 1}${isCurrent ? ' (This week)' : ''}${hasNote ? ' - Has note' : ''}`}
                       >
