@@ -1094,52 +1094,191 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     style={{ overflow: 'hidden' }}
                   >
                     {/* Stats Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
-                      <div className="border border-black/10 p-6">
-                        <div className="mb-2">
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '22.5px',
+                      marginTop: '22.5px',
+                      marginBottom: '22.5px',
+                    }}>
+                      {/* Time lived card */}
+                      <div style={{
+                        background: '#FDF5ED',
+                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        padding: '22.5px',
+                        boxSizing: 'border-box',
+                      }}>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           Time lived
                         </div>
-                        <div className="mb-1">{stats.years}</div>
-                        <div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '36px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
+                          {stats.years}
+                        </div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           years, {stats.months} months, {stats.days} days
                         </div>
-                        <div className="mt-2">
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
                           {stats.weeksLived.toLocaleString()} weeks
                         </div>
                       </div>
 
-                      <div className="border border-black/10 p-6">
-                        <div className="mb-2">
+                      {/* Percentage lived card */}
+                      <div style={{
+                        background: '#FDF5ED',
+                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        padding: '22.5px',
+                        boxSizing: 'border-box',
+                      }}>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           Percentage lived
                         </div>
-                        <div className="mb-1">
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '36px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           {stats.percentageLived.toFixed(1)}%
                         </div>
-                        <div>of {expectedLifespan} years</div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
+                          of {expectedLifespan} years
+                        </div>
                       </div>
 
-                      <div className="border border-black/10 p-6">
-                        <div className="mb-2">
+                      {/* Time remaining card */}
+                      <div style={{
+                        background: '#FDF5ED',
+                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        padding: '22.5px',
+                        boxSizing: 'border-box',
+                      }}>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           Time remaining
                         </div>
-                        <div className="mb-1">{stats.yearsRemaining}</div>
-                        <div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '36px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
+                          {stats.yearsRemaining}
+                        </div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           years ({stats.monthsRemaining} months)
                         </div>
-                        <div className="mt-2">
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
                           {stats.weeksRemaining.toLocaleString()} weeks
                         </div>
                       </div>
 
-                      <div className="border border-black/10 p-6">
-                        <div className="mb-2">
+                      {/* Total meditation card */}
+                      <div style={{
+                        background: '#FDF5ED',
+                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        padding: '22.5px',
+                        boxSizing: 'border-box',
+                      }}>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           Total meditation
                         </div>
-                        <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
-                        <div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '30px',
+                          lineHeight: '36px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
+                          {totalMeditationMinutes.toLocaleString()}
+                        </div>
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                          marginBottom: '7.5px',
+                        }}>
                           minutes
                         </div>
-                        <div className="mt-2">
+                        <div style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
                           {(totalMeditationMinutes / 60).toFixed(1)} hours
                         </div>
                       </div>
