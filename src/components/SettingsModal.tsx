@@ -232,7 +232,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-[375px] mx-auto space-y-6">
+        <div className="max-w-[375px] mx-auto">
           {/* Email Address */}
           <div style={{ paddingLeft: '22.5px', paddingRight: '22.5px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px', marginBottom: '2px' }}>
@@ -290,7 +290,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              marginTop: '15px', // Updated top margin to 15px
+              marginTop: '22.5px', // Updated top margin to 22.5px
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}> {/* Changed to alignItems: 'center' and justifyContent: 'space-between' */}
@@ -391,13 +391,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '83.01029968261719px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px', // Ensure consistent padding
-              paddingRight: '22.5px', // Ensure consistent padding
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '11.25px', // Added gap as per Figma
+              gap: '11.25px',
+              marginTop: '22.5px',
             }}
           >
             <p
@@ -664,7 +665,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           </div>
 
           {/* Meditation Duration */}
-          <div className="border-t border-black/10 pt-4">
+          <div
+            className="border-t border-black/10 pt-4"
+            style={{
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              marginTop: '22.5px',
+            }}
+          >
             <label className="block mb-2 flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Meditation duration
@@ -683,7 +691,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           </div>
 
           {/* Add Manual Meditation */}
-          <div className="border-t border-black/10 pt-4">
+          <div
+            className="border-t border-black/10 pt-4"
+            style={{
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              marginTop: '22.5px',
+            }}
+          >
             <label className="block mb-2 flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Add manual meditation
