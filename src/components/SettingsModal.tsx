@@ -206,8 +206,8 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingLeft: '22.5px',
-        paddingRight: '22.5px',
+            paddingLeft: '22.5px',
+            paddingRight: '22.5px',
         flexShrink: 0,
         boxSizing: 'border-box',
       }}>
@@ -274,7 +274,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       >
         <div className="max-w-[375px] mx-auto">
           {/* Email Address */}
-          <div style={{ paddingLeft: '22.5px', paddingRight: '22.5px' }}>
+          <div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px', marginBottom: '2px' }}>
               <Mail style={{
                 width: '14.996110916137695px',
@@ -323,8 +323,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           <div
             className="border-t border-black/10 pt-4"
             style={{
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               height: '83.00192260742188px',
               boxSizing: 'border-box',
               display: 'flex',
@@ -431,8 +429,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '83.01029968261719px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -493,8 +489,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '83.01029968261719px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -557,8 +551,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '139.75437927246094px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -632,8 +624,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '139.75437927246094px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -711,8 +701,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '139.75437927246094px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -790,8 +778,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               height: '139.75437927246094px',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -866,8 +852,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           <div
             className="border-t border-black/10 pt-4"
             style={{
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               marginTop: '22.5px',
             }}
           >
@@ -908,8 +892,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               width: '100%',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -953,8 +935,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               width: '100%',
               borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
               paddingTop: '15.53px',
-              paddingLeft: '22.5px',
-              paddingRight: '22.5px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
