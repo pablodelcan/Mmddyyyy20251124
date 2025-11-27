@@ -871,24 +871,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               marginTop: '22.5px',
             }}
           >
-            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
-              <Mail style={{
-                width: '14.996110916137695px',
-                height: '14.996110916137695px',
-                color: '#000000',
-                marginTop: '3.74px',
-              }} />
-              <span style={{
-                fontFamily: 'Courier New',
-                fontWeight: 700,
-                fontSize: '15px',
-                lineHeight: '22.5px',
-                letterSpacing: '0px',
-                color: '#000000',
-              }}>
-                Contact Us
-              </span>
-            </label>
             <Button
               onClick={() => window.location.href = 'mailto:hello@delcan.co'}
               style={{
