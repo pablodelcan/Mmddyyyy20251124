@@ -174,9 +174,41 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="w-[375px] m-4 p-8 bg-[#fdf5ed] border border-black/10">
-          <div className="text-center text-black/60">Loading...</div>
+      <div
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          zIndex: 50,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100dvh',
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{
+          width: '375px',
+          padding: '32px',
+          background: '#FDF5ED',
+          border: '0.54px solid rgba(0, 0, 0, 0.1)',
+          boxSizing: 'border-box',
+        }}>
+          <div style={{
+            fontFamily: 'Courier New',
+            fontWeight: 700,
+            fontSize: '15px',
+            lineHeight: '22.5px',
+            color: 'rgba(0, 0, 0, 0.6)',
+            textAlign: 'center',
+          }}>
+            Loading...
+          </div>
         </div>
       </div>
     );
@@ -249,6 +281,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
           padding: '24px',
+          paddingBottom: 'calc(24px + 50px + 20px + env(safe-area-inset-bottom))',
           position: 'relative',
         }}
         onScroll={(e) => {
@@ -1095,6 +1128,17 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               </Button>
             )}
           </div>
+          {/* Invisible Spacer */}
+          <div
+            style={{
+              height: '50px', // Adjustable height to push content up
+              background: '#FDF5ED',
+              opacity: 0,
+              marginTop: '20px', // Space from the button above
+              width: '100%',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
+          ></div>
         </div>
       </div>
     </motion.div>
