@@ -211,11 +211,36 @@ function DraggableTodo({
               ref={dragHandleRef} // Apply drag handle here
               {...drag(dragHandleRef)} // Make this div draggable
               onTouchStart={onTouchStart} // Keep onTouchStart here for touch drag
-              className="relative h-6 flex items-center"
-              style={{ cursor: 'grab' }} // Indicate draggable area
+              style={{
+                position: 'relative',
+                height: '22.49px',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'grab',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.49px',
+                color: '#000000',
+                textDecoration: todo.completed ? 'line-through' : 'none',
+                opacity: todo.completed ? 0.5 : 1,
+                background: todo.completed
+                  ? 'rgba(0,0,0,0.05)'
+                  : todo.priority
+                    ? 'rgba(243, 235, 126, 0.4)'
+                    : meditationGlowActive
+                      ? 'rgba(190, 139, 173, 0.05)'
+                      : 'transparent',
+                overflow: 'hidden',
+              }}
             >
               <motion.div
-                className="absolute whitespace-nowrap"
+                style={{
+                  position: 'absolute',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
                 animate={{
                   x: [0, -100],
                 }}
@@ -225,10 +250,24 @@ function DraggableTodo({
                   ease: "linear",
                 }}
               >
-                <span className="cursor-text break-words inline mr-8" style={{ color: '#000000' }}>
+                <span style={{
+                  color: '#000000',
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.49px',
+                  marginRight: '32px',
+                }}>
                   {todo.text} • {timeRemaining}
                 </span>
-                <span className="cursor-text break-words inline mr-8" style={{ color: '#000000' }}>
+                <span style={{
+                  color: '#000000',
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.49px',
+                  marginRight: '32px',
+                }}>
                   {todo.text} • {timeRemaining}
                 </span>
               </motion.div>

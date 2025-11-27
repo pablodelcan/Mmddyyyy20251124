@@ -57,7 +57,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
         style={{
           width: '363.34px',
           backgroundColor: '#FDF5ED',
-          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+          borderTop: '0.54px solid rgba(0, 0, 0, 0.5)',
           borderWidth: '0.54px',
           position: 'relative',
           display: 'flex',
@@ -141,7 +141,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
                 }}
                 style={{
                   backgroundColor: '#FDF5ED',
-                  border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                  border: '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
                   color: '#000000',
                   fontFamily: 'Courier New, Courier, monospace',
@@ -172,7 +172,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
                   flex: 1,
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.5)',
                   outline: 'none',
                   padding: '8px 0',
                   fontFamily: 'Courier New, Courier, monospace',
@@ -203,7 +203,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
           </div>
 
           {hasActiveTimer && onClearTimer && (
-            <div style={{ paddingTop: '15px', borderTop: '0.54px solid rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ paddingTop: '15px', borderTop: '0.54px solid rgba(0, 0, 0, 0.5)' }}>
               <Button
                 onClick={() => {
                   onClearTimer();
@@ -212,7 +212,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
                 style={{
                   width: '100%',
                   backgroundColor: '#FDF5ED',
-                  border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                  border: '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
                   color: '#D84341',
                   fontFamily: 'Courier New, Courier, monospace',
