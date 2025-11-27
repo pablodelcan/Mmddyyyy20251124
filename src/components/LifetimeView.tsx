@@ -306,7 +306,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         <div
           style={{
             flex: 1,
-            overflowY: 'scroll',
+            minHeight: 0,
+            overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
             width: '393.3318176269531px',
@@ -434,10 +435,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   )}
 
                   <Button
-                    // variant="ghost"
-                    // size="icon"
                     onClick={() => deleteBucketItem(item.id)}
-                    // className="h-7 w-7 rounded-full hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{
                       width: '29.99222183227539px',
                       height: '29.99222183227539px',
@@ -448,8 +446,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      opacity: 0, // Initially invisible
-                      transition: 'opacity 0.2s',
+                      opacity: 1, // Always visible for mobile
+                      flexShrink: 0,
                     }}
                   >
                     <Minus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
