@@ -736,14 +736,13 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 style={{
                   marginTop: '30px',
                   display: 'flex',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
-                  // Removed marginBottom as it was conflicting.
+                  // Removed marginBottom
                 }}
               >
                 <button
                   onClick={() => setShowMoreInfo(!showMoreInfo)}
-                  // Removed className to avoid conflicts, applying styles directly.
                   style={{
                     opacity: 1,
                     fontFamily: 'Courier New',
@@ -762,7 +761,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     cursor: 'pointer',
                     margin: '0',
                     padding: '0', // Ensure no default padding
-                    // Removed explicit width and height, letting content define it.
                   }}
                 >
                   {showMoreInfo ? (
@@ -777,97 +775,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     </>
                   )}
                 </button>
-
-                <AnimatePresence>
-                  {showMoreInfo && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      {/* Stats Summary */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Time lived
-                          </div>
-                          <div className="mb-1">{stats.years}</div>
-                          <div>
-                            years, {stats.months} months, {stats.days} days
-                          </div>
-                          <div className="mt-2">
-                            {stats.weeksLived.toLocaleString()} weeks
-                          </div>
-                        </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Percentage lived
-                          </div>
-                          <div className="mb-1">
-                            {stats.percentageLived.toFixed(1)}%
-                          </div>
-                          <div>of {expectedLifespan} years</div>
-                        </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Time remaining
-                          </div>
-                          <div className="mb-1">{stats.yearsRemaining}</div>
-                          <div>
-                            years ({stats.monthsRemaining} months)
-                          </div>
-                          <div className="mt-2">
-                            {stats.weeksRemaining.toLocaleString()} weeks
-                          </div>
-                        </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Total meditation
-                          </div>
-                          <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
-                          <div>
-                            minutes
-                          </div>
-                          <div className="mt-2">
-                            {(totalMeditationMinutes / 60).toFixed(1)} hours
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Legend */}
-                      <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-black/80" />
-                          <span>Weeks lived</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-[#D84341]" />
-                          <span>Current week</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-black/80" />
-                          <span>Weeks remaining</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-[#be8bad]" />
-                          <span>Has note</span>
-                        </div>
-                      </div>
-
-                      <div className="text-black/90">
-                        <p className="text-left">
-                          Each row represents one year of your life. This visualization is inspired by Tim Urban's 
-                          "Your life in weeks" and serves as a reminder to make the most of every week.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
               {/* Bucket List Button */}
@@ -875,18 +782,19 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 style={{
                   opacity: 1,
                   borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-                  marginTop: '30px',
+                  marginTop: '40px', // Increased to 40px to push it down further
                   boxSizing: 'border-box',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto',
+                  // Removed width and margin: '0 auto'
                   padding: '0',
                 }}
               >
                 <Button
                   onClick={() => setShowBucketList(true)}
                   style={{
+                    width: '100%', // Full width
                     opacity: 1,
                     border: '0.54px solid rgba(0, 0, 0, 0.1)',
                     background: '#F5D5D8',
