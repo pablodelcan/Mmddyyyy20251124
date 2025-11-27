@@ -242,48 +242,141 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-[#f5d5d8] z-50 flex flex-col"
-        style={{ paddingTop: 'max(env(safe-area-inset-top), 40px)' }}
+        className="fixed inset-0 z-50 flex flex-col"
+        style={{
+          background: '#FDF5ED',
+          paddingTop: 'max(env(safe-area-inset-top), 40px)',
+          width: '100%',
+          height: '100dvh',
+        }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-black/10 flex-shrink-0">
-          <h2>Life bucket list</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowBucketList(false)}
-            className="h-8 w-8 rounded-full hover:bg-black/5"
+        <div
+          style={{
+            width: '393.3318176269531px',
+            height: '75.5248031616211px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            opacity: 1,
+            borderBottom: '0.54px solid rgba(0, 0, 0, 0.1)',
+            boxSizing: 'border-box',
+            flexShrink: 0,
+            margin: '0 auto',
+            paddingLeft: '22.5px',
+            paddingRight: '22.5px',
+          }}
+        >
+          <h2
+            style={{
+              width: '145px',
+              height: '23px',
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              lineHeight: '22.5px',
+              letterSpacing: '0px',
+              color: '#000000',
+              margin: '0',
+            }}
           >
-            <X className="h-4 w-4" />
+            Life bucket list
+          </h2>
+          <Button
+            onClick={() => setShowBucketList(false)}
+            style={{
+              width: '29.99222183227539px',
+              height: '29.99222183227539px',
+              borderRadius: '17981000px',
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
           </Button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto pb-20">
-          <div className="max-w-2xl mx-auto p-6">
+        <div 
+          style={{
+            flex: 1,
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            width: '393.3318176269531px',
+            opacity: 1,
+            boxSizing: 'border-box',
+            margin: '0 auto',
+            padding: '0',
+          }}
+        >
+          <div /* Removed max-w-2xl mx-auto p-6 */>
             {bucketList.length === 0 && (
-              <p className="text-black/90 mb-6">
+              <p
+                style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.5px',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                  opacity: 0.9,
+                  margin: '0',
+                  padding: '22.5px',
+                }}
+              >
                 Things you want to accomplish in your lifetime
               </p>
             )}
             
             {/* Bucket List Items */}
-            <div className="space-y-1">
+            <div /* Removed space-y-1 */>
               {bucketList.map((item) => (
                 <div
                   key={item.id}
-                  className={`group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors ${
-                    item.completed ? 'opacity-60' : ''
-                  }`}
+                  style={{
+                    width: '348.3351135253906px',
+                    height: '48.73945236206055px',
+                    opacity: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '7.5px',
+                    background: 'transparent',
+                    paddingLeft: '22.5px',
+                    paddingRight: '22.5px',
+                    paddingTop: '11.25px',
+                    paddingBottom: '11.25px',
+                    margin: '0 auto',
+                    boxSizing: 'border-box',
+                    // Removed group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors
+                  }}
                 >
                   <button
                     onClick={() => toggleBucketItem(item.id)}
-                    className="flex-shrink-0 mt-0.5"
+                    style={{
+                      width: '18.74723243713379px',
+                      height: '18.74723243713379px',
+                      opacity: 1,
+                      border: '0.54px solid #000000',
+                      background: 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      padding: '0',
+                      flexShrink: 0,
+                      // Removed flex-shrink-0 mt-0.5
+                    }}
                   >
                     {item.completed ? (
-                      <CheckSquare className="h-5 w-5" />
+                      <CheckSquare style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
                     ) : (
-                      <Square className="h-5 w-5" />
+                      <Square style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
                     )}
                   </button>
                   
@@ -299,27 +392,66 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           setEditingBucketText('');
                         }
                       }}
-                      className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-0"
+                      style={{
+                        flex: 1,
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                        outline: 'none',
+                        fontFamily: 'Courier New',
+                        fontWeight: 700,
+                        fontSize: '15px',
+                        lineHeight: '22.5px',
+                        letterSpacing: '0px',
+                        color: '#000000',
+                        padding: '0',
+                      }}
+                      // className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-0"
                       autoFocus
                     />
                   ) : (
                     <div
                       onClick={() => startEditBucket(item)}
-                      className={`flex-1 cursor-text ${
-                        item.completed ? 'line-through' : ''
-                      }`}
+                      style={{
+                        flex: 1,
+                        cursor: 'text',
+                        fontFamily: 'Courier New',
+                        fontWeight: 700,
+                        fontSize: '15px',
+                        lineHeight: '22.5px',
+                        letterSpacing: '0px',
+                        color: '#000000',
+                        textDecoration: item.completed ? 'line-through' : 'none',
+                        opacity: item.completed ? 0.6 : 1,
+                      }}
+                      // className={`flex-1 cursor-text ${
+                      //   item.completed ? 'line-through' : ''
+                      // }`}
                     >
                       {item.text}
                     </div>
                   )}
                   
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    // variant="ghost"
+                    // size="icon"
                     onClick={() => deleteBucketItem(item.id)}
-                    className="h-7 w-7 rounded-full hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    // className="h-7 w-7 rounded-full hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{
+                      width: '29.99222183227539px',
+                      height: '29.99222183227539px',
+                      borderRadius: '17981000px',
+                      background: 'transparent',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      opacity: 0, // Initially invisible
+                      transition: 'opacity 0.2s',
+                    }}
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
                   </Button>
                 </div>
               ))}
@@ -328,27 +460,66 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         </div>
         
         {/* Add New Item - Fixed to bottom */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#f5d5d8] border-t border-black/10"
-             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 20px)' }}
+        <div
+          className="fixed z-50"
+          style={{
+            bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '330px',
+            height: '33.743343353271484px',
+            display: 'flex',
+            gap: '7.49px',
+            alignItems: 'center',
+            paddingRight: '0px',
+            zIndex: 10,
+            background: '#FDF5ED',
+            boxSizing: 'border-box',
+          }}
         >
-          <div className="max-w-2xl mx-auto px-6 pt-4">
-            <div className="flex gap-2">
-              <input
-                value={newBucketItem}
-                onChange={(e) => setNewBucketItem(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
-                placeholder="Add something to your bucket list"
-                className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
-              />
-              <Button
-                onClick={addBucketItem}
-                disabled={!newBucketItem.trim()}
-                className="bg-black text-white hover:bg-black/90 rounded-none h-auto px-4"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <input
+            value={newBucketItem}
+            onChange={(e) => setNewBucketItem(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
+            placeholder="Add Bucket"
+            style={{
+              width: '292.5120849609375px',
+              height: '33.743343353271484px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '0.054px solid rgba(0, 0, 0, 0.2)',
+              paddingTop: '3.75px',
+              paddingBottom: '3.75px',
+              paddingLeft: '0px',
+              paddingRight: '0px',
+              fontFamily: 'Courier New',
+              fontWeight: 700,
+              fontSize: '15px',
+              lineHeight: '100%',
+              letterSpacing: '0px',
+              color: '#000000',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          <Button
+            onClick={addBucketItem}
+            disabled={!newBucketItem.trim()}
+            style={{
+              width: '33.743343353271484px',
+              height: '33.743343353271484px',
+              background: 'transparent',
+              borderRadius: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: '0',
+              border: 'none',
+            }}
+          >
+            <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+          </Button>
         </div>
       </motion.div>
     );
