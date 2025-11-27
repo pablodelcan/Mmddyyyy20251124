@@ -429,15 +429,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         onTouchEnd={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
-        <div
-          className="w-full max-w-[375px] mx-auto"
-          style={{
-            paddingLeft: '22.5px',
-            paddingRight: '22.5px',
-            paddingTop: '24px',
-            paddingBottom: '24px',
-          }}
-        >
+        <div className="max-w-[375px] mx-auto">
           {dateOfBirth && stats ? (
             <>
               {/* Onboarding Popup */}
