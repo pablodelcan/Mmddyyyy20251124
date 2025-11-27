@@ -413,7 +413,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       </div>
 
       {/* Scrollable Content */}
-      <div
+      <div 
         style={{
           flex: 1,
           minHeight: 0,
@@ -423,13 +423,28 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           padding: '24px',
           position: 'relative',
         }}
-        onScroll={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
+        onScroll={(e) => {
+          // Stop scroll event from bubbling to document level
+          e.stopPropagation();
+        }}
+        onTouchStart={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onWheel={(e) => {
+          // Allow wheel scrolling within this element
+          e.stopPropagation();
+        }}
       >
-        <div className="max-w-[375px] mx-auto">
+        <div>
           {dateOfBirth && stats ? (
             <>
               {/* Onboarding Popup */}
@@ -476,15 +491,39 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               </AnimatePresence>
 
               {/* Weeks Grid */}
-              <div className="mb-6 relative">
-                <div className="grid gap-[2px] mb-6" style={{
-                  gridTemplateColumns: `repeat(52, minmax(0, 1fr))`, /* Reverted to original */
+              <div className="relative" style={{
+                opacity: 1,
+                position: 'relative',
+                margin: '0', // Ensure no margin
+                padding: '0', // Ensure no padding
+              }}>
+                <div className="grid" style={{
+                  gridTemplateColumns: `repeat(52, 5.007076740264893px)`,
+                  gap: '0px', // Ensure no gap
+                  rowGap: '0px', // Ensure no row gap
+                  columnGap: '0px', // Ensure no column gap
+                  margin: '0', // Ensure no margin
+                  padding: '0', // Ensure no padding
                 }}>
                   {Array.from({ length: stats.totalWeeks }).map((_, index) => {
                     const isLived = index < stats.weeksLived;
                     const isCurrent = index === stats.weeksLived;
                     const isSelected = selectedWeek === index;
                     const hasNote = weekNotes[index] && weekNotes[index].trim().length > 0;
+
+                    let backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Empty boxes - #000000 10% opacity
+                    if (isLived) {
+                      backgroundColor = 'rgba(0, 0, 0, 0.8)'; // Already filled - #000000 80% opacity
+                    }
+                    if (hasNote) {
+                      backgroundColor = '#be8bad'; // Has note (keep pink)
+                    }
+                    if (isCurrent) {
+                      backgroundColor = '#D84341'; // Current week (also red)
+                    }
+                    if (isSelected) {
+                      backgroundColor = '#D84341'; // Selected boxes (also red)
+                    }
 
                     return (
                       <motion.button
@@ -499,17 +538,16 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         onClick={(e) => handleWeekClick(index, e)}
                         onMouseEnter={() => setHoveredWeek(index)}
                         onMouseLeave={() => setHoveredWeek(null)}
-                        className={`aspect-square relative cursor-pointer hover:ring-2 hover:ring-[#be8bad] transition-all ${
-                          isSelected
-                            ? 'ring-2 ring-[#be8bad] ring-offset-2'
-                            : hasNote
-                            ? 'bg-[#be8bad]'
-                            : isCurrent
-                            ? 'bg-[#D84341]'
-                            : isLived
-                            ? 'bg-black/80'
-                            : 'bg-black/10' /* Reverted to original */
-                        }`} /* Reverted className */
+                        style={{
+                          width: '5.007076740264893px',
+                          height: '5.007076740264893px',
+                          opacity: 1,
+                          backgroundColor: backgroundColor,
+                          border: 'none', // Removed temporary blue border
+                          padding: '0',
+                          margin: '0',
+                          flexShrink: 0,
+                        }}
                         title={`Week ${index + 1}${isCurrent ? ' (This week)' : ''}${hasNote ? ' - Has note' : ''}`}
                       >
                       </motion.button>
@@ -598,17 +636,42 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               </div>
 
               {/* Find Week Section */}
-              <div className="mb-8 max-w-2xl mx-auto">
-                <h3 className="mb-2">
-                  {hoveredWeek !== null && (() => {
-                    const weekStats = getWeekStats(hoveredWeek);
-                    return weekStats ? weekStats.date : 'Find week';
-                  })() || 'Find week'}
+              <div
+                style={{
+                  width: '100%',
+                  opacity: 1,
+                  marginTop: '22.5px', // 22.5px below the grid container
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <h3 style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.5px',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                  margin: '0', // Remove default margin
+                }}>
+                  Find week
                 </h3>
-                <p className="text-black/90 mb-3">
+                <p
+                  style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    color: 'rgba(0, 0, 0, 0.9)',
+                    margin: '0', // Remove default margin
+                    marginTop: '7.17px', // 7.17px below the Find week text
+                  }}
+                >
                   Enter a date to locate the corresponding week
                 </p>
-                <div className="flex gap-2">
+                <div style={{ display: 'flex', gap: '7.49px', alignItems: 'center', marginTop: 'auto' }}>
                   <input
                     type="date"
                     value={searchDate}
@@ -618,13 +681,50 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         handleDateSearch();
                       }
                     }}
-                    className="flex-1 bg-transparent border border-black/20 focus:border-[#be8bad] outline-none transition-colors px-2 py-2"
-                    placeholder="Search by date"
+                    style={{
+                      flex: '1',
+                      height: '38.54946517944336px',
+                      border: '0.54px solid rgba(0, 0, 0, 0.2)',
+                      background: 'transparent',
+                      padding: '0',
+                      fontFamily: 'Courier New',
+                      fontWeight: 700,
+                      fontSize: '15px',
+                      lineHeight: '100%',
+                      letterSpacing: '0px',
+                      color: '#000000',
+                      boxSizing: 'border-box',
+                      textAlign: 'center',
+                      outline: 'none',
+                    }}
+                    className="outline-none transition-colors"
                   />
                   <Button
                     onClick={handleDateSearch}
                     disabled={!searchDate}
-                    className="bg-black text-white hover:bg-black/90 rounded-none h-auto"
+                    style={{
+                      height: '38.54946517944336px',
+                      opacity: 0.5,
+                      gap: '7.5px',
+                      paddingTop: '7.5px',
+                      paddingRight: '15px',
+                      paddingBottom: '7.5px',
+                      paddingLeft: '15px',
+                      background: '#000000',
+                      color: '#FFFFFF',
+                      borderRadius: '0',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontFamily: 'Courier New',
+                      fontWeight: 400,
+                      fontSize: '13.13px',
+                      lineHeight: '18.75px',
+                      letterSpacing: '0px',
+                      textAlign: 'center',
+                    }}
                   >
                     Find week
                   </Button>
