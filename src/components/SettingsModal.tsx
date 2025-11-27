@@ -188,6 +188,16 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
+      style={{
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       {/* Header */}
       <div style={{
@@ -231,7 +241,37 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div 
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'scroll',
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          padding: '24px',
+          position: 'relative',
+        }}
+        onScroll={(e) => {
+          // Stop scroll event from bubbling to document level
+          e.stopPropagation();
+        }}
+        onTouchStart={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+          // Allow touch scrolling within this element
+          e.stopPropagation();
+        }}
+        onWheel={(e) => {
+          // Allow wheel scrolling within this element
+          e.stopPropagation();
+        }}
+      >
         <div className="max-w-[375px] mx-auto">
           {/* Email Address */}
           <div style={{ paddingLeft: '22.5px', paddingRight: '22.5px' }}>
@@ -833,93 +873,59 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Footer Buttons */}
-      <div
-        style={{
-          width: '100%',
-          height: '79.27592468261719px',
-          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-          paddingTop: '23.03px',
-          paddingRight: '22.5px',
-          paddingLeft: '22.5px',
-          marginTop: '22px',
-          boxSizing: 'border-box',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <div style={{ maxWidth: '375px', width: '100%', display: 'flex', gap: '11.24px', justifyContent: 'center' }}>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            style={{
-              width: '108.61226654052734px',
-              height: '33.743343353271484px',
-              gap: '7.5px',
-              paddingTop: '7.5px',
-              paddingRight: '15px',
-              paddingBottom: '7.5px',
-              paddingLeft: '15px',
-              border: '0.54px solid rgba(0, 0, 0, 0.2)',
-              background: '#FDF5ED',
-              borderRadius: '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            <span style={{
-              fontFamily: 'Courier New',
-              fontWeight: 400,
-              fontSize: '13.13px',
-              lineHeight: '18.75px',
-              letterSpacing: '0px',
-              textAlign: 'center',
-              color: '#000000',
-            }}>
-              Cancel
-            </span>
-          </Button>
-          <Button
-            onClick={savePreferences}
-            disabled={saving || !preferences.email}
-            style={{
-              width: '108.61225891113281px',
-              height: '33.743343353271484px',
-              gap: '7.5px',
-              paddingTop: '7.5px',
-              paddingRight: '15px',
-              paddingBottom: '7.5px',
-              paddingLeft: '15px',
-              background: '#000000',
-              borderRadius: '0',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            <span style={{
-              fontFamily: 'Courier New',
-              fontWeight: 400,
-              fontSize: '13.13px',
-              lineHeight: '18.75px',
-              letterSpacing: '0px',
-              textAlign: 'center',
-              color: '#FFFFFF',
-            }}>
-              {saving ? 'Saving...' : 'Save'}
-            </span>
-          </Button>
-          {onSignOut && (
+        {/* Footer Buttons */}
+        <div
+          style={{
+            width: '100%',
+            height: '79.27592468261719px',
+            borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+            paddingTop: '23.03px',
+            paddingRight: '22.5px',
+            paddingLeft: '22.5px',
+            marginTop: '22px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <div style={{ maxWidth: '375px', width: '100%', display: 'flex', gap: '11.24px', justifyContent: 'center' }}>
             <Button
-              onClick={onSignOut}
+              variant="outline"
+              onClick={onClose}
+              style={{
+                width: '108.61226654052734px',
+                height: '33.743343353271484px',
+                gap: '7.5px',
+                paddingTop: '7.5px',
+                paddingRight: '15px',
+                paddingBottom: '7.5px',
+                paddingLeft: '15px',
+                border: '0.54px solid rgba(0, 0, 0, 0.2)',
+                background: '#FDF5ED',
+                borderRadius: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#000000',
+              }}>
+                Cancel
+              </span>
+            </Button>
+            <Button
+              onClick={savePreferences}
+              disabled={saving || !preferences.email}
               style={{
                 width: '108.61225891113281px',
                 height: '33.743343353271484px',
@@ -947,10 +953,44 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                 textAlign: 'center',
                 color: '#FFFFFF',
               }}>
-                Sign out
+                {saving ? 'Saving...' : 'Save'}
               </span>
             </Button>
-          )}
+            {onSignOut && (
+              <Button
+                onClick={onSignOut}
+                style={{
+                  width: '108.61225891113281px',
+                  height: '33.743343353271484px',
+                  gap: '7.5px',
+                  paddingTop: '7.5px',
+                  paddingRight: '15px',
+                  paddingBottom: '7.5px',
+                  paddingLeft: '15px',
+                  background: '#000000',
+                  borderRadius: '0',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 400,
+                  fontSize: '13.13px',
+                  lineHeight: '18.75px',
+                  letterSpacing: '0px',
+                  textAlign: 'center',
+                  color: '#FFFFFF',
+                }}>
+                  Sign out
+                </span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

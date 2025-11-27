@@ -456,6 +456,15 @@ function AppContent() {
     };
 
     const preventScroll = (e: Event) => {
+      // Don't prevent scrolling inside modals (SettingsModal, LifetimeView, etc.)
+      const target = e.target as HTMLElement;
+      if (target && (
+        target.closest('[class*="overflow-y-auto"]') ||
+        target.closest('[class*="overflow-y-scroll"]') ||
+        target.closest('.fixed.inset-0')
+      )) {
+        return; // Allow scrolling in modals
+      }
       e.preventDefault();
       window.scrollTo(0, 0);
     };
@@ -1633,7 +1642,7 @@ function AppContent() {
               top: 0,
               left: 0,
               width: '100vw',
-              height: '100vh',
+              height: '100dvh',
               backgroundColor: '#FDF5ED',
               zIndex: 99999,
               display: 'flex',

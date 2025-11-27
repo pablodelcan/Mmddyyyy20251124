@@ -10,7 +10,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'always',
     backgroundColor: '#FBF8E8',
-    scrollEnabled: false
+    scrollEnabled: true
   },
   plugins: {
     SplashScreen: {
