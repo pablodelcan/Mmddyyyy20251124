@@ -342,7 +342,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             style={{
               width: '393.3318176269531px',
               margin: '0 auto',
-              paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px)',
+              paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px + 40px)',
               boxSizing: 'border-box',
             }}
           >
