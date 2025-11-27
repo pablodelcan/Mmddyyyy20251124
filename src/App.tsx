@@ -1241,40 +1241,81 @@ function AppContent() {
               setShowSplash(false);
               secureStorage.setItem('hasSeenSplash', true);
             }}
-            className="fixed inset-0 flex items-center justify-center z-50 cursor-pointer"
             style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
               backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#FBF8E8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              cursor: 'pointer',
+              margin: 0,
+              padding: 0,
             }}
           >
-            <div className="flex items-center gap-1">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7.49px',
+                margin: 0,
+                padding: 0,
+              }}
+            >
               <span
-                className="inline-block w-2.5 h-2.5 rounded-full relative"
                 style={{
+                  display: 'inline-block',
+                  width: '5.007076740264893px',
+                  height: '5.007076740264893px',
+                  borderRadius: '50%',
                   backgroundColor: '#D84341',
-                  top: 'calc(-0.15em + 2px)',
-                  marginRight: 'calc(0.15rem + 4px)'
+                  flexShrink: 0,
+                  margin: 0,
+                  padding: 0,
                 }}
               />
-              <h1>mm/dd/yyyy</h1>
+              <span
+                style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.5px',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                }}
+              >
+                mm/dd/yyyy
+              </span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header - Date navigation container - Outside main container to prevent shifting */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '77.5px',
-          left: '31.67px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '7.5px',
-          zIndex: 100,
-          transform: 'translateZ(0)',
-          willChange: 'transform',
-        }}
-      >
+      {/* Main Content - Hidden when splash is showing */}
+      {!showSplash && (
+        <>
+          {/* Header - Date navigation container - Outside main container to prevent shifting */}
+          <div
+            style={{
+              position: 'fixed',
+              top: '77.5px',
+              left: '31.67px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7.5px',
+              zIndex: 100,
+              transform: 'translateZ(0)',
+              willChange: 'transform',
+            }}
+          >
         <Button
           variant="ghost"
           size="icon"
@@ -1812,6 +1853,8 @@ function AppContent() {
           />
         )
       }
+        </>
+      )}
     </div >
   );
 }
