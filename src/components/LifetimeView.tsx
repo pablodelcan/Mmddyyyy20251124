@@ -20,7 +20,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
   const [searchDate, setSearchDate] = useState('');
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false); // Changed to false
   const [popupPosition, setPopupPosition] = useState<{ top: number; left: number } | null>(null);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showBucketList, setShowBucketList] = useState(false);
@@ -29,13 +29,14 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const [editingBucketText, setEditingBucketText] = useState('');
 
   // Check if user has seen the onboarding
+  /*
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('lifetimeViewOnboarding');
     if (!hasSeenOnboarding && dateOfBirth) {
       setShowOnboarding(true);
     }
   }, [dateOfBirth]);
-
+  */
   const handleDismissOnboarding = (dontShowAgain: boolean) => {
     if (dontShowAgain) {
       localStorage.setItem('lifetimeViewOnboarding', 'seen');
@@ -56,7 +57,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
     // Calculate weeks lived
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
     const weeksLived = Math.floor((today.getTime() - birth.getTime()) / msPerWeek);
-    
+
     // Calculate age in years, months, days
     let years = today.getFullYear() - birth.getFullYear();
     let months = today.getMonth() - birth.getMonth();
@@ -98,18 +99,18 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
     const birth = new Date(dateOfBirth);
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    
+
     // Calculate the date for this week
     const weekDate = new Date(birth.getTime() + (weekIndex * msPerWeek));
-    
+
     // Calculate age at this week
     const daysLived = weekIndex * 7;
     const yearsAtWeek = Math.floor(daysLived / 365.25);
     const monthsAtWeek = Math.floor((daysLived % 365.25) / 30.44);
-    
+
     // Calculate percentage
     const percentageAtWeek = Math.min(100, (weekIndex / stats.totalWeeks) * 100);
-    
+
     return {
       date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       age: `${yearsAtWeek} years, ${monthsAtWeek} months`,
@@ -121,17 +122,17 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   // Convert a date to week index
   const dateToWeekIndex = (targetDate: string) => {
     if (!dateOfBirth) return null;
-    
+
     const birth = new Date(dateOfBirth);
     const target = new Date(targetDate);
-    
+
     if (isNaN(target.getTime())) return null;
-    
+
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
     const weekIndex = Math.floor((target.getTime() - birth.getTime()) / msPerWeek);
-    
+
     if (weekIndex < 0 || (stats && weekIndex >= stats.totalWeeks)) return null;
-    
+
     return weekIndex;
   };
 
@@ -153,47 +154,47 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   const handleWeekClick = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setSelectedWeek(index);
-    
+
     // Calculate popup position
     const rect = e.currentTarget.getBoundingClientRect();
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
-    
+
     // Position popup to the right of the square, or left if too close to right edge
     const popupWidth = 340; // Updated width with padding
     const popupHeight = 450; // Updated height estimate
     const padding = 20; // Padding from screen edges
-    
+
     let left = rect.right + scrollX + 10;
     let top = rect.top + scrollY;
-    
+
     // Ensure popup doesn't go off the right edge
     if (left + popupWidth > window.innerWidth + scrollX - padding) {
       left = rect.left + scrollX - popupWidth - 10;
     }
-    
+
     // Ensure popup doesn't go off the left edge
     if (left < scrollX + padding) {
       left = scrollX + padding;
     }
-    
+
     // Ensure popup doesn't go off the bottom edge
     if (top + popupHeight > window.innerHeight + scrollY - padding) {
       top = window.innerHeight + scrollY - popupHeight - padding;
     }
-    
+
     // Ensure popup doesn't go off the top edge
     if (top < scrollY + padding) {
       top = scrollY + padding;
     }
-    
+
     // Final bounds check
     const maxLeft = window.innerWidth + scrollX - popupWidth - padding;
     const maxTop = window.innerHeight + scrollY - popupHeight - padding;
-    
+
     left = Math.max(scrollX + padding, Math.min(left, maxLeft));
     top = Math.max(scrollY + padding, Math.min(top, maxTop));
-    
+
     setPopupPosition({ top, left });
   };
 
@@ -302,7 +303,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         </div>
 
         {/* Scrollable Content */}
-        <div 
+        <div
           style={{
             flex: 1,
             overflowY: 'scroll',
@@ -333,7 +334,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 Things you want to accomplish in your lifetime
               </p>
             )}
-            
+
             {/* Bucket List Items */}
             <div /* Removed space-y-1 */>
               {bucketList.map((item) => (
@@ -379,7 +380,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       <Square style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
                     )}
                   </button>
-                  
+
                   {editingBucketId === item.id ? (
                     <input
                       value={editingBucketText}
@@ -424,14 +425,14 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         textDecoration: item.completed ? 'line-through' : 'none',
                         opacity: item.completed ? 0.6 : 1,
                       }}
-                      // className={`flex-1 cursor-text ${
-                      //   item.completed ? 'line-through' : ''
-                      // }`}
+                    // className={`flex-1 cursor-text ${
+                    //   item.completed ? 'line-through' : ''
+                    // }`}
                     >
                       {item.text}
                     </div>
                   )}
-                  
+
                   <Button
                     // variant="ghost"
                     // size="icon"
@@ -458,36 +459,48 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             </div>
           </div>
         </div>
-        
+
         {/* Add New Item - Fixed to bottom */}
         <div
-          className="fixed z-50"
           style={{
+            position: 'fixed',
             bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '330px',
+            width: '393.3318176269531px',
             height: '33.743343353271484px',
             display: 'flex',
-            gap: '7.49px',
+            gap: '7.5px',
             alignItems: 'center',
-            paddingRight: '0px',
-            zIndex: 10,
+            justifyContent: 'center',
+            paddingLeft: '22.5px',
+            paddingRight: '22.5px',
+            zIndex: 50,
             background: '#FDF5ED',
             boxSizing: 'border-box',
           }}
         >
+          <div
+            style={{
+              width: '348.3351135253906px',
+              height: '33.743343353271484px',
+              display: 'flex',
+              gap: '7.5px',
+              alignItems: 'center',
+              boxSizing: 'border-box',
+            }}
+          >
           <input
             value={newBucketItem}
             onChange={(e) => setNewBucketItem(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
             placeholder="Add Bucket"
             style={{
-              width: '292.5120849609375px',
+              flex: 1,
               height: '33.743343353271484px',
               background: 'transparent',
               border: 'none',
-              borderBottom: '0.054px solid rgba(0, 0, 0, 0.2)',
+              borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
               paddingTop: '3.75px',
               paddingBottom: '3.75px',
               paddingLeft: '0px',
@@ -516,10 +529,12 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               cursor: 'pointer',
               padding: '0',
               border: 'none',
+              flexShrink: 0,
             }}
           >
             <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
           </button>
+          </div>
         </div>
       </motion.div>
     );
@@ -584,7 +599,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       </div>
 
       {/* Scrollable Content */}
-      <div 
+      <div
         style={{
           flex: 1,
           minHeight: 0,
@@ -766,7 +781,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               <X className="h-3 w-3" />
                             </button>
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-3 mb-3 cursor-move select-none">
                             <div>
                               <div className="text-black/60">Date</div>
@@ -785,7 +800,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               <div>{weekStats.percentage}%</div>
                             </div>
                           </div>
-                          
+
                           {/* Note Input */}
                           <div className="border-t border-black/10 pt-3">
                             <label className="text-black/60 block mb-2 cursor-move select-none">
@@ -949,94 +964,94 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               </div>
 
               <AnimatePresence>
-                  {showMoreInfo && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      style={{ overflow: 'hidden' }}
-                    >
-                      {/* Stats Summary */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Time lived
-                          </div>
-                          <div className="mb-1">{stats.years}</div>
-                          <div>
-                            years, {stats.months} months, {stats.days} days
-                          </div>
-                          <div className="mt-2">
-                            {stats.weeksLived.toLocaleString()} weeks
-                          </div>
+                {showMoreInfo && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    {/* Stats Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-black/90">
+                      <div className="border border-black/10 p-6">
+                        <div className="mb-2">
+                          Time lived
                         </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Percentage lived
-                          </div>
-                          <div className="mb-1">
-                            {stats.percentageLived.toFixed(1)}%
-                          </div>
-                          <div>of {expectedLifespan} years</div>
+                        <div className="mb-1">{stats.years}</div>
+                        <div>
+                          years, {stats.months} months, {stats.days} days
                         </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Time remaining
-                          </div>
-                          <div className="mb-1">{stats.yearsRemaining}</div>
-                          <div>
-                            years ({stats.monthsRemaining} months)
-                          </div>
-                          <div className="mt-2">
-                            {stats.weeksRemaining.toLocaleString()} weeks
-                          </div>
-                        </div>
-
-                        <div className="border border-black/10 p-6">
-                          <div className="mb-2">
-                            Total meditation
-                          </div>
-                          <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
-                          <div>
-                            minutes
-                          </div>
-                          <div className="mt-2">
-                            {(totalMeditationMinutes / 60).toFixed(1)} hours
-                          </div>
+                        <div className="mt-2">
+                          {stats.weeksLived.toLocaleString()} weeks
                         </div>
                       </div>
 
-                      {/* Legend */}
-                      <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-black/80" />
-                          <span>Weeks lived</span>
+                      <div className="border border-black/10 p-6">
+                        <div className="mb-2">
+                          Percentage lived
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-[#D84341]" />
-                          <span>Current week</span>
+                        <div className="mb-1">
+                          {stats.percentageLived.toFixed(1)}%
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-black/80" />
-                          <span>Weeks remaining</span>
+                        <div>of {expectedLifespan} years</div>
+                      </div>
+
+                      <div className="border border-black/10 p-6">
+                        <div className="mb-2">
+                          Time remaining
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-[#be8bad]" />
-                          <span>Has note</span>
+                        <div className="mb-1">{stats.yearsRemaining}</div>
+                        <div>
+                          years ({stats.monthsRemaining} months)
+                        </div>
+                        <div className="mt-2">
+                          {stats.weeksRemaining.toLocaleString()} weeks
                         </div>
                       </div>
 
-                      <div className="text-black/90">
-                        <p className="text-left">
-                          Each row represents one year of your life. This visualization is inspired by Tim Urban's 
-                          "Your life in weeks" and serves as a reminder to make the most of every week.
-                        </p>
+                      <div className="border border-black/10 p-6">
+                        <div className="mb-2">
+                          Total meditation
+                        </div>
+                        <div className="mb-1">{totalMeditationMinutes.toLocaleString()}</div>
+                        <div>
+                          minutes
+                        </div>
+                        <div className="mt-2">
+                          {(totalMeditationMinutes / 60).toFixed(1)} hours
+                        </div>
                       </div>
-                    </motion.div>
-                  )}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-black/80" />
+                        <span>Weeks lived</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#D84341]" />
+                        <span>Current week</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-black/80" />
+                        <span>Weeks remaining</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#be8bad]" />
+                        <span>Has note</span>
+                      </div>
+                    </div>
+
+                    <div className="text-black/90">
+                      <p className="text-left">
+                        Each row represents one year of your life. This visualization is inspired by Tim Urban's
+                        "Your life in weeks" and serves as a reminder to make the most of every week.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
               </AnimatePresence>
 
               {/* Bucket List Button */}
@@ -1092,7 +1107,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 }}
               ></div>
             </>
-            ) : (
+          ) : (
             <div className="flex flex-1 flex-col p-4" style={{ marginTop: '25px', paddingLeft: '22.5px', paddingRight: '22.5px' }}>
               <div className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6 rounded-lg"
                 style={{ textAlign: 'left' }}
