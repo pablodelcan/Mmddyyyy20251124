@@ -763,7 +763,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           marginTop: '24px',
                           width: '100%',
                           background: '#FDF5ED',
-                          border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                          border: '0.54px solid rgba(0, 0, 0, 0.5)',
                           padding: '22.5px',
                           boxSizing: 'border-box',
                         }}
@@ -1104,7 +1104,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       {/* Time lived card */}
                       <div style={{
                         background: '#FDF5ED',
-                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1121,8 +1121,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           fontFamily: 'Courier New',
                           fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '36px',
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
                           color: '#000000',
                           marginBottom: '7.5px',
                         }}>
@@ -1152,7 +1152,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       {/* Percentage lived card */}
                       <div style={{
                         background: '#FDF5ED',
-                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1169,8 +1169,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           fontFamily: 'Courier New',
                           fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '36px',
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
                           color: '#000000',
                           marginBottom: '7.5px',
                         }}>
@@ -1190,7 +1190,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       {/* Time remaining card */}
                       <div style={{
                         background: '#FDF5ED',
-                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1207,8 +1207,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           fontFamily: 'Courier New',
                           fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '36px',
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
                           color: '#000000',
                           marginBottom: '7.5px',
                         }}>
@@ -1238,7 +1238,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       {/* Total meditation card */}
                       <div style={{
                         background: '#FDF5ED',
-                        border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1255,8 +1255,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           fontFamily: 'Courier New',
                           fontWeight: 700,
-                          fontSize: '30px',
-                          lineHeight: '36px',
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
                           color: '#000000',
                           marginBottom: '7.5px',
                         }}>
@@ -1285,22 +1285,97 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     </div>
 
                     {/* Legend */}
-                    <div className="flex flex-wrap gap-6 justify-center mb-8 text-black/90">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-black/80" />
-                        <span>Weeks lived</span>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '22.5px',
+                      justifyContent: 'flex-start',
+                      marginTop: '22.5px',
+                      marginBottom: '22.5px',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7.5px',
+                      }}>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
+                          Weeks lived
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-[#D84341]" />
-                        <span>Current week</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7.5px',
+                      }}>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          backgroundColor: '#D84341',
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
+                          Current week
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-black/80" />
-                        <span>Weeks remaining</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7.5px',
+                      }}>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
+                          Weeks remaining
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-[#be8bad]" />
-                        <span>Has note</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7.5px',
+                      }}>
+                        <div style={{
+                          width: '18px',
+                          height: '18px',
+                          backgroundColor: '#be8bad',
+                          flexShrink: 0,
+                        }} />
+                        <span style={{
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          color: '#000000',
+                        }}>
+                          Has note
+                        </span>
                       </div>
                     </div>
 
