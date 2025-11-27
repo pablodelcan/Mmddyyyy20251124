@@ -415,14 +415,14 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" /* Reverted className */
                     onClick={() => handleDismissOnboarding(false)}
                   >
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.9, opacity: 0 }}
-                      className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6"
+                      className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6" /* Reverted className */
                       onClick={(e) => e.stopPropagation()}
                     >
                       <h3 className="mb-4">How to use Life in Weeks</h3>
@@ -454,7 +454,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               {/* Weeks Grid */}
               <div className="mb-6 relative">
                 <div className="grid gap-[2px] mb-6" style={{
-                  gridTemplateColumns: `repeat(52, minmax(0, 1fr))`,
+                  gridTemplateColumns: `repeat(52, minmax(0, 1fr))`, /* Reverted to original */
                 }}>
                   {Array.from({ length: stats.totalWeeks }).map((_, index) => {
                     const isLived = index < stats.weeksLived;
@@ -484,8 +484,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                             ? 'bg-[#D84341]'
                             : isLived
                             ? 'bg-black/80'
-                            : 'bg-black/10'
-                        }`}
+                            : 'bg-black/10' /* Reverted to original */
+                        }`} /* Reverted className */
                         title={`Week ${index + 1}${isCurrent ? ' (This week)' : ''}${hasNote ? ' - Has note' : ''}`}
                       >
                       </motion.button>
@@ -698,7 +698,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           <span>Current week</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-black/10" />
+                          <div className="w-4 h-4 bg-black/80" />
                           <span>Weeks remaining</span>
                         </div>
                         <div className="flex items-center gap-2">
