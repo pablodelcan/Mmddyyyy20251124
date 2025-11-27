@@ -142,7 +142,9 @@ function DraggableTodo({
             // Scroll through the entire text width plus some padding
             setScrollDistance(-(textWidth - containerWidth + 50));
           } else {
-            setScrollDistance(0);
+            // For short text, scroll by the text width plus spacing to create a continuous loop
+            // This makes it scroll continuously like long text
+            setScrollDistance(-(textWidth + 32)); // 32px is the marginRight between duplicated spans
           }
         }
       });
