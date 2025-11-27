@@ -359,22 +359,31 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex flex-col w-full h-full"
+      className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
+      style={{
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       {/* Header */}
       <div style={{
-        width: '100%', // Changed to 100% width for full responsiveness
+        width: '100%',
         height: '59.98444366455078px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingLeft: '22.5px',
         paddingRight: '22.5px',
-        boxSizing: 'border-box', // Added to include padding in width calculation
-        flexShrink: 0,
+        boxSizing: 'border-box',
+        flexShrink: 0, /* Ensure header does not shrink */
       }}>
         <h2 style={{
-          // Removed fixed width: '163px' to allow flexible sizing
           height: '23px',
           fontFamily: 'Courier New',
           fontWeight: 700,
@@ -391,7 +400,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             width: '29.99222183227539px',
             height: '29.99222183227539px',
             borderRadius: '17981000px',
-            background: 'transparent', // Revert to transparent background
+            background: 'transparent',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
@@ -404,8 +413,31 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="w-full px-2 pt-2 pb-6">
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'scroll',
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          padding: '24px',
+          position: 'relative',
+        }}
+        onScroll={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+      >
+        <div
+          className="w-full max-w-[375px] mx-auto"
+          style={{
+            paddingLeft: '22.5px',
+            paddingRight: '22.5px',
+            paddingTop: '24px',
+            paddingBottom: '24px',
+          }}
+        >
           {dateOfBirth && stats ? (
             <>
               {/* Onboarding Popup */}

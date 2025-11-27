@@ -1694,7 +1694,6 @@ function AppContent() {
               display: 'flex',
               flexDirection: 'column',
               paddingTop: 'max(env(safe-area-inset-top), 40px)', // Reintroduce padding
-              overflow: 'hidden',
             }}
           >
             <LifetimeView
