@@ -502,7 +502,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               boxSizing: 'border-box',
             }}
           />
-          <Button
+          <button
             onClick={addBucketItem}
             disabled={!newBucketItem.trim()}
             style={{
@@ -519,7 +519,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             }}
           >
             <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
-          </Button>
+          </button>
         </div>
       </motion.div>
     );
