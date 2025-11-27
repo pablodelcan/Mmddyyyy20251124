@@ -624,30 +624,51 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             >
               Required for "Life in Weeks" visualization
             </p>
-            <input
-              type="date"
-              value={dateOfBirth || ''}
-              onChange={(e) => onSaveDateOfBirth(e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
-              style={{
-                width: '100%',
-                height: '38.01359176635742px',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '0.54px solid rgba(0,0,0,0.2)',
-                paddingTop: '7.5px',
-                paddingBottom: '7.5px',
-                paddingLeft: '0',
-                paddingRight: '0',
-                fontFamily: 'Courier New',
-                fontWeight: 700,
-                fontSize: '15px',
-                lineHeight: '100%',
-                letterSpacing: '0px',
-                color: '#000000',
-              }}
-              className="outline-none transition-colors"
-            />
+            <div style={{ position: 'relative', width: '100%' }}>
+              <input
+                type="date"
+                value={dateOfBirth || ''}
+                onChange={(e) => onSaveDateOfBirth(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                style={{
+                  width: '100%',
+                  height: '38.01359176635742px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                  paddingTop: '7.5px',
+                  paddingBottom: '7.5px',
+                  paddingLeft: '0',
+                  paddingRight: '0',
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.5px',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                }}
+                className="outline-none transition-colors date-of-birth-input"
+              />
+              {!dateOfBirth && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    pointerEvents: 'none',
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                  }}
+                >
+                  mm/dd/yyyy
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Expected Lifespan */}

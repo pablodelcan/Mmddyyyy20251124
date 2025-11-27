@@ -232,3 +232,14 @@
 html {
   font-size: var(--font-size);
 }
+
+/* Date of Birth Input Placeholder Styling */
+.date-of-birth-input::placeholder {
+  color: #000000;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 22.5px;
+  letter-spacing: 0px;
+  opacity: 1;
+}
