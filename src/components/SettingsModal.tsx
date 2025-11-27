@@ -715,32 +715,240 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
             />
           </div>
+
+          {/* Contact Us */}
+          <div
+            className="border-t border-black/10 pt-4"
+            style={{
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              marginTop: '22.5px',
+            }}
+          >
+            <label className="block mb-2 flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Contact Us
+            </label>
+            <Button
+              onClick={() => window.location.href = 'mailto:hello@delcan.co'}
+              className="w-full bg-black hover:bg-black/90 text-white rounded-none flex items-center justify-center gap-2"
+            >
+              <Send className="h-3 w-3" />
+              Contact Us
+            </Button>
+          </div>
+
+          {/* Privacy Policy */}
+          <div
+            style={{
+              width: '100%',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '11.24px',
+              marginTop: '11.25px',
+            }}
+          >
+            <Button
+              onClick={() => window.open('https://www.delcan.co/mmddyyyy', '_system')}
+              style={{
+                width: '100%',
+                height: '33.743343353271484px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                borderRadius: '0',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#000000',
+              }}>
+                Privacy Policy
+              </span>
+            </Button>
+          </div>
+
+          {/* Delete Account */}
+          <div
+            style={{
+              width: '100%',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
+              paddingLeft: '22.5px',
+              paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '11.24px',
+              marginTop: '11.25px',
+            }}
+          >
+            <Button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete your account? You cannot recover it.')) {
+                  onSignOut?.(); // Assuming onSignOut handles the actual sign-out process
+                }
+              }}
+              style={{
+                width: '100%',
+                height: '33.743343353271484px',
+                background: '#F5D5D8',
+                color: '#000000',
+                borderRadius: '0',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7.5px',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#000000',
+              }}>
+                Delete Account
+              </span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Footer Buttons */}
-      <div className="border-t border-black/10 p-6">
-        <div className="max-w-[375px] mx-auto flex gap-3">
+      <div
+        style={{
+          width: '100%',
+          height: '79.27592468261719px',
+          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+          paddingTop: '23.03px',
+          paddingRight: '22.5px',
+          paddingLeft: '22.5px',
+          marginTop: '22px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ maxWidth: '375px', width: '100%', display: 'flex', gap: '11.24px', justifyContent: 'center' }}>
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1 rounded-none border-black/20 hover:bg-black/5"
+            style={{
+              width: '108.61226654052734px',
+              height: '33.743343353271484px',
+              gap: '7.5px',
+              paddingTop: '7.5px',
+              paddingRight: '15px',
+              paddingBottom: '7.5px',
+              paddingLeft: '15px',
+              border: '0.54px solid rgba(0, 0, 0, 0.2)',
+              background: '#FDF5ED',
+              borderRadius: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
           >
-            Cancel
+            <span style={{
+              fontFamily: 'Courier New',
+              fontWeight: 400,
+              fontSize: '13.13px',
+              lineHeight: '18.75px',
+              letterSpacing: '0px',
+              textAlign: 'center',
+              color: '#000000',
+            }}>
+              Cancel
+            </span>
           </Button>
           <Button
             onClick={savePreferences}
             disabled={saving || !preferences.email}
-            className="flex-1 bg-black hover:bg-black/90 text-white rounded-none"
+            style={{
+              width: '108.61225891113281px',
+              height: '33.743343353271484px',
+              gap: '7.5px',
+              paddingTop: '7.5px',
+              paddingRight: '15px',
+              paddingBottom: '7.5px',
+              paddingLeft: '15px',
+              background: '#000000',
+              borderRadius: '0',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
           >
-            {saving ? 'Saving...' : 'Save'}
+            <span style={{
+              fontFamily: 'Courier New',
+              fontWeight: 400,
+              fontSize: '13.13px',
+              lineHeight: '18.75px',
+              letterSpacing: '0px',
+              textAlign: 'center',
+              color: '#FFFFFF',
+            }}>
+              {saving ? 'Saving...' : 'Save'}
+            </span>
           </Button>
           {onSignOut && (
             <Button
               onClick={onSignOut}
-              className="flex-1 bg-black hover:bg-black/90 text-white rounded-none"
+              style={{
+                width: '108.61225891113281px',
+                height: '33.743343353271484px',
+                gap: '7.5px',
+                paddingTop: '7.5px',
+                paddingRight: '15px',
+                paddingBottom: '7.5px',
+                paddingLeft: '15px',
+                background: '#000000',
+                borderRadius: '0',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
             >
-              Sign out
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#FFFFFF',
+              }}>
+                Sign out
+              </span>
             </Button>
           )}
         </div>
