@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { X, Mail, Calendar, TrendingUp, Send, Database } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { projectId } from '../utils/supabase/info';
 
 interface SettingsModalProps {
@@ -695,7 +695,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                 fontFamily: 'Courier New',
                 fontWeight: 700,
                 fontSize: '15px',
-                lineHeight: '100%',
+                lineHeight: '22.5px',
                 letterSpacing: '0px',
                 color: '#000000',
                 marginTop: '7.49px',
@@ -706,18 +706,53 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
 
           {/* Meditation Duration */}
           <div
-            className="border-t border-black/10 pt-4"
             style={{
+              width: '100%',
+              height: '139.75437927246094px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
               paddingLeft: '22.5px',
               paddingRight: '22.5px',
-              marginTop: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '7.49px',
+              marginTop: '30px',
             }}
           >
-            <label className="block mb-2 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Meditation duration
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <TrendingUp style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Meditation duration
+              </span>
             </label>
-            <p className="text-black/60 mb-3">
+            <p
+              style={{
+                width: '100%',
+                height: '45px',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: 'rgba(0,0,0,0.6)',
+                margin: 0,
+                marginTop: '7.17px',
+              }}
+            >
               Set the default duration for your meditation sessions (in minutes)
             </p>
             <input
@@ -726,24 +761,77 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               onChange={(e) => onSaveMeditationDuration(parseInt(e.target.value, 10))}
               min="1"
               max="120"
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                height: '38.01359176635742px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                paddingTop: '7.5px',
+                paddingBottom: '7.5px',
+                paddingLeft: '0',
+                paddingRight: '0',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+                marginTop: '7.49px',
+              }}
+              className="outline-none transition-colors text-left"
             />
           </div>
 
           {/* Add Manual Meditation */}
           <div
-            className="border-t border-black/10 pt-4"
             style={{
+              width: '100%',
+              height: '139.75437927246094px',
+              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+              paddingTop: '15.53px',
               paddingLeft: '22.5px',
               paddingRight: '22.5px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '7.49px',
               marginTop: '22.5px',
             }}
           >
-            <label className="block mb-2 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Add manual meditation
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <TrendingUp style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Add manual meditation
+              </span>
             </label>
-            <p className="text-black/60 mb-3">
+            <p
+              style={{
+                width: '100%',
+                height: '45px',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: 'rgba(0,0,0,0.6)',
+                margin: 0,
+                marginTop: '7.17px',
+              }}
+            >
               Add a manual meditation session (in minutes)
             </p>
             <input
@@ -752,7 +840,25 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               onChange={(e) => onAddManualMeditation(parseInt(e.target.value, 10))}
               min="1"
               max="120"
-              className="w-full bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-2"
+              style={{
+                width: '100%',
+                height: '38.01359176635742px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                paddingTop: '7.5px',
+                paddingBottom: '7.5px',
+                paddingLeft: '0',
+                paddingRight: '0',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+                marginTop: '7.49px',
+              }}
+              className="outline-none transition-colors text-left"
             />
           </div>
 
@@ -765,16 +871,52 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               marginTop: '22.5px',
             }}
           >
-            <label className="block mb-2 flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Contact Us
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <Mail style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: '#000000',
+                marginTop: '3.74px',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+              }}>
+                Contact Us
+              </span>
             </label>
             <Button
               onClick={() => window.location.href = 'mailto:hello@delcan.co'}
-              className="w-full bg-black hover:bg-black/90 text-white rounded-none flex items-center justify-center gap-2"
+              style={{
+                width: '100%',
+                height: '33.743343353271484px',
+                background: '#000000',
+                color: '#FFFFFF',
+                borderRadius: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '7.5px',
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
-              <Send className="h-3 w-3" />
-              Contact Us
+              <Send style={{ color: '#FFFFFF', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 400,
+                fontSize: '13.13px',
+                lineHeight: '18.75px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                color: '#FFFFFF',
+              }}>
+                Contact Us
+              </span>
             </Button>
           </div>
 
