@@ -101,15 +101,9 @@ function DraggableTodo({
   const textMeasureRef = useRef<HTMLSpanElement>(null); // Ref to measure text width
   const [scrollDistance, setScrollDistance] = useState(0);
 
-  // Long-press delay state
-  const [isDragEnabled, setIsDragEnabled] = useState(false);
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
-
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
     item: { id: todo.id, index, dateKey },
-    canDrag: () => isDragEnabled, // Only allow drag after long-press
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -157,68 +151,6 @@ function DraggableTodo({
     }
   }, [timeRemaining, todo.text]);
 
-  // Handle long-press for drag
-  useEffect(() => {
-    const handleTouchStartLocal = (e: TouchEvent) => {
-      // Don't prevent default to allow click events (selection) to fire
-      // e.preventDefault(); 
-
-      const touch = e.touches[0];
-      touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
-
-      // Start long-press timer (300ms delay)
-      longPressTimerRef.current = setTimeout(() => {
-        setIsDragEnabled(true);
-      }, 300);
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!touchStartPosRef.current || !longPressTimerRef.current) return;
-
-      const touch = e.touches[0];
-      const deltaX = Math.abs(touch.clientX - touchStartPosRef.current.x);
-      const deltaY = Math.abs(touch.clientY - touchStartPosRef.current.y);
-
-      // If user moved more than 15px, cancel the long-press
-      if (deltaX > 15 || deltaY > 15) {
-        if (longPressTimerRef.current) {
-          clearTimeout(longPressTimerRef.current);
-          longPressTimerRef.current = null;
-        }
-      }
-    };
-
-    const handleTouchEnd = () => {
-      // Clear timer and reset state
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
-      setIsDragEnabled(false);
-      touchStartPosRef.current = null;
-    };
-
-    const dragHandle = dragHandleRef.current;
-    if (dragHandle) {
-      dragHandle.addEventListener('touchstart', handleTouchStartLocal, { passive: false });
-      dragHandle.addEventListener('touchmove', handleTouchMove, { passive: true });
-      dragHandle.addEventListener('touchend', handleTouchEnd);
-      dragHandle.addEventListener('touchcancel', handleTouchEnd);
-    }
-
-    return () => {
-      if (dragHandle) {
-        dragHandle.removeEventListener('touchstart', handleTouchStartLocal);
-        dragHandle.removeEventListener('touchmove', handleTouchMove);
-        dragHandle.removeEventListener('touchend', handleTouchEnd);
-        dragHandle.removeEventListener('touchcancel', handleTouchEnd);
-      }
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-    };
-  }, []);
-
   return (
     <div
       ref={ref}
@@ -228,11 +160,10 @@ function DraggableTodo({
         position: 'relative',
         display: 'flex',
         alignItems: 'flex-start',
-        opacity: isDragging ? 0.5 : isDragEnabled ? 0.7 : 1,
+        opacity: isDragging ? 0.5 : 1,
         marginBottom: '10px', // Reverted to 10px spacing
         paddingTop: '3.74px',
         paddingBottom: '3.74px',
-        transition: 'opacity 0.1s ease',
       }}
       className={`group select-none ${meditationGlowActive && !todo.completed ? 'animate-pulse' : ''}`}
     >
@@ -668,24 +599,26 @@ function AppContent() {
       if (editingId) return;
 
       const target = e.target as HTMLElement;
-      // Check if click is not on a task span
-      const isTaskClick = target.closest('[data-task-text]');
+      // Check if click is not on a task span or within task text
+      const isTaskClick = target.closest('[data-task-text]') ||
+        target.hasAttribute('data-task-text');
 
       if (!isTaskClick) {
         // Clear native text selection
         const selection = window.getSelection();
-        if (selection) {
+        if (selection && selection.rangeCount > 0) {
           selection.removeAllRanges();
         }
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('touchend', handleClickOutside);
+    // Use capture phase to catch events early
+    document.addEventListener('touchend', handleClickOutside, { capture: true });
+    document.addEventListener('click', handleClickOutside, { capture: true });
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('touchend', handleClickOutside);
+      document.removeEventListener('touchend', handleClickOutside, { capture: true });
+      document.removeEventListener('click', handleClickOutside, { capture: true });
     };
   }, [editingId]);
 
@@ -2081,8 +2014,16 @@ function AppContent() {
 }
 
 export default function App() {
+  const backend = isTouchDevice()
+    ? TouchBackend
+    : HTML5Backend;
+
+  const backendOptions = isTouchDevice()
+    ? { delay: 300, delayTouchStart: 300 }
+    : {};
+
   return (
-    <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
+    <DndProvider backend={backend} options={backendOptions}>
       <AppContent />
     </DndProvider>
   );
