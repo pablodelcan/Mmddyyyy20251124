@@ -653,9 +653,15 @@ function AppContent() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.access_token) {
+        // Only reset merge flag on SIGNED_IN event (new login), not on existing sessions
+        if (event === 'SIGNED_IN') {
+          hasMergedLocalDataRef.current = false;
+        }
         setAccessToken(session.access_token);
         setUserId(session.user.id);
       } else {
+        // Reset merge flag on sign out
+        hasMergedLocalDataRef.current = false;
         setAccessToken(null);
         setUserId(null);
       }
@@ -674,9 +680,12 @@ function AppContent() {
     };
   }, []);
 
+  // Track if we've merged local data after authentication
+  const hasMergedLocalDataRef = useRef(false);
+
   // Load data from backend when authenticated
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && !hasMergedLocalDataRef.current) {
       loadFromBackend();
     }
   }, [accessToken]);
@@ -692,8 +701,63 @@ function AppContent() {
     }
   }, [todos, dateOfBirth, expectedLifespan, meditationDates, lastMeditationTime, totalMeditationMinutes, weekNotes, bucketList, accessToken, userId, isOnline]);
 
+  // Helper function to merge local and server tasks
+  const mergeTasks = (localTasks: TodosState, serverTasks: TodosState): TodosState => {
+    const merged: TodosState = { ...serverTasks };
+
+    // Merge tasks from local storage
+    Object.keys(localTasks).forEach(dateKey => {
+      if (!merged[dateKey]) {
+        // Server doesn't have this date, add all local tasks
+        merged[dateKey] = [...localTasks[dateKey]];
+      } else {
+        // Both have this date - merge unique tasks
+        const serverTaskIds = new Set(merged[dateKey].map(t => t.id));
+        const uniqueLocalTasks = localTasks[dateKey].filter(t => !serverTaskIds.has(t.id));
+        merged[dateKey] = [...merged[dateKey], ...uniqueLocalTasks];
+      }
+    });
+
+    return merged;
+  };
+
+  // Helper function to merge arrays (for meditationDates, bucketList, etc.)
+  const mergeArrays = <T,>(local: T[] | null, server: T[] | null | undefined): T[] => {
+    if (!server || server.length === 0) {
+      return local || [];
+    }
+    if (!local || local.length === 0) {
+      return server;
+    }
+    // Merge and deduplicate
+    const combined = [...server, ...local];
+    if (typeof combined[0] === 'string') {
+      return [...new Set(combined)] as T[];
+    }
+    // For objects, check by id if it exists
+    const seen = new Set<string>();
+    return combined.filter((item: any) => {
+      if (item.id) {
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      }
+      return true;
+    }) as T[];
+  };
+
   const loadFromBackend = async () => {
     if (!accessToken) return;
+
+    // Preserve local data before loading from backend
+    const localTodos = secureStorage.getItem<TodosState>('todos') || {};
+    const localDateOfBirth = secureStorage.getItem<string>('dateOfBirth');
+    const localExpectedLifespan = secureStorage.getItem<number>('expectedLifespan');
+    const localMeditationDates = secureStorage.getItem<string[]>('meditationDates') || [];
+    const localLastMeditationTime = secureStorage.getItem<number>('lastMeditationTime');
+    const localTotalMeditationMinutes = secureStorage.getItem<number>('totalMeditationMinutes') || 0;
+    const localWeekNotes = secureStorage.getItem<{ [weekIndex: number]: string }>('weekNotes') || {};
+    const localBucketList = secureStorage.getItem<{ id: string; text: string; completed: boolean }[]>('bucketList') || [];
 
     try {
       const response = await fetch(
@@ -707,33 +771,64 @@ function AppContent() {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.todos) {
-          setTodos(data.todos);
+        
+        // Merge todos: combine local and server tasks
+        const serverTodos = data.todos || {};
+        const mergedTodos = mergeTasks(localTodos, serverTodos);
+        setTodos(mergedTodos);
+
+        // For other data, prefer server if it exists, otherwise use local
+        if (data.dateOfBirth || localDateOfBirth) {
+          setDateOfBirth(data.dateOfBirth || localDateOfBirth);
         }
-        if (data.dateOfBirth) {
-          setDateOfBirth(data.dateOfBirth);
+        if (data.expectedLifespan !== undefined || localExpectedLifespan !== null) {
+          setExpectedLifespan(data.expectedLifespan !== undefined ? data.expectedLifespan : (localExpectedLifespan || 80));
         }
-        if (data.expectedLifespan) {
-          setExpectedLifespan(data.expectedLifespan);
+        
+        // Merge meditation dates
+        const mergedMeditationDates = mergeArrays(localMeditationDates, data.meditationDates);
+        setMeditationDates(mergedMeditationDates);
+
+        if (data.lastMeditationTime || localLastMeditationTime) {
+          // Prefer the more recent meditation time
+          const serverTime = data.lastMeditationTime || 0;
+          const localTime = localLastMeditationTime || 0;
+          setLastMeditationTime(Math.max(serverTime, localTime));
         }
-        if (data.meditationDates) {
-          setMeditationDates(data.meditationDates);
+        
+        if (data.totalMeditationMinutes !== undefined || localTotalMeditationMinutes > 0) {
+          // Sum the meditation minutes (in case user has done meditation on both local and server)
+          const serverMinutes = data.totalMeditationMinutes || 0;
+          const localMinutes = localTotalMeditationMinutes || 0;
+          // Use the larger value to avoid double counting (safer approach)
+          setTotalMeditationMinutes(Math.max(serverMinutes, localMinutes));
         }
-        if (data.lastMeditationTime) {
-          setLastMeditationTime(data.lastMeditationTime);
+
+        // Merge week notes
+        const mergedWeekNotes = { ...data.weekNotes, ...localWeekNotes };
+        if (Object.keys(mergedWeekNotes).length > 0) {
+          setWeekNotes(mergedWeekNotes);
         }
-        if (data.totalMeditationMinutes !== undefined) {
-          setTotalMeditationMinutes(data.totalMeditationMinutes);
+
+        // Merge bucket list
+        const mergedBucketList = mergeArrays(localBucketList, data.bucketList);
+        if (mergedBucketList.length > 0) {
+          setBucketList(mergedBucketList);
         }
-        if (data.weekNotes) {
-          setWeekNotes(data.weekNotes);
-        }
-        if (data.bucketList) {
-          setBucketList(data.bucketList);
-        }
+
+        // Mark that we've merged local data
+        hasMergedLocalDataRef.current = true;
+
+        // Immediately sync the merged data back to backend
+        // Use a small delay to ensure state has updated
+        setTimeout(() => {
+          syncToBackend();
+        }, 500);
       }
     } catch (err) {
       console.error('Failed to load from backend:', err);
+      // If loading fails, keep local data and mark as merged so we don't try again
+      hasMergedLocalDataRef.current = true;
     }
   };
 
@@ -790,6 +885,8 @@ function AppContent() {
   };
 
   const handleAuthSuccess = (token: string, uid: string) => {
+    // Reset merge flag so we can merge local data after authentication
+    hasMergedLocalDataRef.current = false;
     setAccessToken(token);
     setUserId(uid);
     setShowAuth(false);
@@ -798,6 +895,8 @@ function AppContent() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    // Reset merge flag for next authentication
+    hasMergedLocalDataRef.current = false;
     setAccessToken(null);
     setUserId(null);
     setTodos({});
