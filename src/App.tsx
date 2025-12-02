@@ -74,7 +74,6 @@ interface DraggableTodoProps {
   onDelete: () => void;
   onPriorityToggle: () => void;
   onTimerClick: () => void;
-  onTouchStart: (e: React.TouchEvent) => void;
   meditationGlowActive: boolean;
   timeRemaining?: string;
 }
@@ -94,7 +93,6 @@ function DraggableTodo({
   onDelete,
   onPriorityToggle,
   onTimerClick,
-  onTouchStart,
   meditationGlowActive,
   timeRemaining
 }: DraggableTodoProps) {
@@ -103,9 +101,15 @@ function DraggableTodo({
   const textMeasureRef = useRef<HTMLSpanElement>(null); // Ref to measure text width
   const [scrollDistance, setScrollDistance] = useState(0);
 
+  // Long-press delay state
+  const [isDragEnabled, setIsDragEnabled] = useState(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
     item: { id: todo.id, index, dateKey },
+    canDrag: () => isDragEnabled, // Only allow drag after long-press
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -153,6 +157,68 @@ function DraggableTodo({
     }
   }, [timeRemaining, todo.text]);
 
+  // Handle long-press for drag
+  useEffect(() => {
+    const handleTouchStartLocal = (e: TouchEvent) => {
+      // Don't prevent default to allow click events (selection) to fire
+      // e.preventDefault(); 
+
+      const touch = e.touches[0];
+      touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+
+      // Start long-press timer (300ms delay)
+      longPressTimerRef.current = setTimeout(() => {
+        setIsDragEnabled(true);
+      }, 300);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartPosRef.current || !longPressTimerRef.current) return;
+
+      const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartPosRef.current.x);
+      const deltaY = Math.abs(touch.clientY - touchStartPosRef.current.y);
+
+      // If user moved more than 15px, cancel the long-press
+      if (deltaX > 15 || deltaY > 15) {
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      // Clear timer and reset state
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      setIsDragEnabled(false);
+      touchStartPosRef.current = null;
+    };
+
+    const dragHandle = dragHandleRef.current;
+    if (dragHandle) {
+      dragHandle.addEventListener('touchstart', handleTouchStartLocal, { passive: false });
+      dragHandle.addEventListener('touchmove', handleTouchMove, { passive: true });
+      dragHandle.addEventListener('touchend', handleTouchEnd);
+      dragHandle.addEventListener('touchcancel', handleTouchEnd);
+    }
+
+    return () => {
+      if (dragHandle) {
+        dragHandle.removeEventListener('touchstart', handleTouchStartLocal);
+        dragHandle.removeEventListener('touchmove', handleTouchMove);
+        dragHandle.removeEventListener('touchend', handleTouchEnd);
+        dragHandle.removeEventListener('touchcancel', handleTouchEnd);
+      }
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div
       ref={ref}
@@ -162,10 +228,11 @@ function DraggableTodo({
         position: 'relative',
         display: 'flex',
         alignItems: 'flex-start',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : isDragEnabled ? 0.7 : 1,
         marginBottom: '10px', // Reverted to 10px spacing
         paddingTop: '3.74px',
         paddingBottom: '3.74px',
+        transition: 'opacity 0.1s ease',
       }}
       className={`group select-none ${meditationGlowActive && !todo.completed ? 'animate-pulse' : ''}`}
     >
@@ -235,7 +302,7 @@ function DraggableTodo({
             <motion.div
               ref={dragHandleRef} // Apply drag handle here
               {...drag(dragHandleRef)} // Make this div draggable
-              onTouchStart={onTouchStart} // Keep onTouchStart here for touch drag
+              data-task-text="true"
               style={{
                 position: 'relative',
                 height: '22.49px',
@@ -257,10 +324,13 @@ function DraggableTodo({
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
                 overflow: 'hidden',
+                userSelect: 'none', // Prevent text selection
+                WebkitUserSelect: 'none', // Safari/Chrome
+                MozUserSelect: 'none', // Firefox
               }}
             >
               {/* Hidden span to measure text width */}
-              <span 
+              <span
                 ref={textMeasureRef}
                 style={{
                   position: 'absolute',
@@ -317,8 +387,8 @@ function DraggableTodo({
             <span
               ref={dragHandleRef} // Apply drag handle here
               {...drag(dragHandleRef)} // Make this span draggable
-              onTouchStart={onTouchStart} // Keep onTouchStart here for touch drag
               onClick={onStartEdit}
+              data-task-text="true"
               className="cursor-text transition-all"
               style={{
                 color: '#000000',
@@ -340,6 +410,9 @@ function DraggableTodo({
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
                 cursor: 'grab', // Indicate draggable area
+                userSelect: 'none', // Prevent text selection
+                WebkitUserSelect: 'none', // Safari/Chrome
+                MozUserSelect: 'none', // Firefox
               }}
             >
               {todo.text}
@@ -588,6 +661,35 @@ function AppContent() {
     }
   }, []);
 
+  // Clear text selection when clicking outside tasks
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      // Only clear selection if not in edit mode
+      if (editingId) return;
+
+      const target = e.target as HTMLElement;
+      // Check if click is not on a task span
+      const isTaskClick = target.closest('[data-task-text]');
+
+      if (!isTaskClick) {
+        // Clear native text selection
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+        }
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('touchend', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchend', handleClickOutside);
+    };
+  }, [editingId]);
+
+
   // Monitor online/offline status
   useEffect(() => {
     const handleOnline = () => {
@@ -771,7 +873,7 @@ function AppContent() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Merge todos: combine local and server tasks
         const serverTodos = data.todos || {};
         const mergedTodos = mergeTasks(localTodos, serverTodos);
@@ -784,7 +886,7 @@ function AppContent() {
         if (data.expectedLifespan !== undefined || localExpectedLifespan !== null) {
           setExpectedLifespan(data.expectedLifespan !== undefined ? data.expectedLifespan : (localExpectedLifespan || 80));
         }
-        
+
         // Merge meditation dates
         const mergedMeditationDates = mergeArrays(localMeditationDates, data.meditationDates);
         setMeditationDates(mergedMeditationDates);
@@ -795,7 +897,7 @@ function AppContent() {
           const localTime = localLastMeditationTime || 0;
           setLastMeditationTime(Math.max(serverTime, localTime));
         }
-        
+
         if (data.totalMeditationMinutes !== undefined || localTotalMeditationMinutes > 0) {
           // Sum the meditation minutes (in case user has done meditation on both local and server)
           const serverMinutes = data.totalMeditationMinutes || 0;
@@ -1035,10 +1137,10 @@ function AppContent() {
   const moveIncompleteTasksToToday = useCallback(() => {
     const now = new Date();
     const today = getLocalDateString(now);
-    
+
     // Get the last checked date from storage or ref
     const lastCheckedDate = lastCheckedDateRef.current || secureStorage.getItem<string>('lastTaskRolloverDate');
-    
+
     // Only proceed if we've crossed midnight (date has actually changed from last check)
     // This ensures tasks only move at midnight, not during the day
     // Exception: if lastCheckedDate is null (first run), we should check once to move any past tasks
@@ -1436,543 +1538,542 @@ function AppContent() {
               willChange: 'transform',
             }}
           >
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={goToPreviousDay}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            width: 'auto',
-            height: 'auto',
-            minWidth: 'auto',
-          }}
-        >
-          <ChevronLeft
-            style={{
-              width: '16px',
-              height: '16px',
-              stroke: '#000000',
-              strokeWidth: '1.25px',
-              color: '#000000',
-            }}
-          />
-        </Button>
-
-        {/* Date text - Figma: 154px x 22px */}
-        <div
-          style={{
-            width: '154px',
-            height: '22px',
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden',
-          }}
-        >
-          <h1 style={{
-            fontSize: '15px',
-            fontWeight: 700,
-            lineHeight: '22px',
-            margin: 0,
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            alignItems: 'center',
-          }}>
-            {currentDate.toLocaleDateString('en-US', { weekday: 'short' })}.{' '}
-            {isToday && (
-              <span
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPreviousDay}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+              }}
+            >
+              <ChevronLeft
                 style={{
-                  width: '9.37px',
-                  height: '9.37px',
-                  borderRadius: '17981000px',
-                  backgroundColor: '#D84341',
-                  marginLeft: '10px',
-                  marginRight: '6.25px',
-                  display: 'inline-block',
-                  flexShrink: 0,
+                  width: '16px',
+                  height: '16px',
+                  stroke: '#000000',
+                  strokeWidth: '1.25px',
+                  color: '#000000',
                 }}
+              />
+            </Button>
+
+            {/* Date text - Figma: 154px x 22px */}
+            <div
+              style={{
+                width: '154px',
+                height: '22px',
+                display: 'flex',
+                alignItems: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <h1 style={{
+                fontSize: '15px',
+                fontWeight: 700,
+                lineHeight: '22px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                {currentDate.toLocaleDateString('en-US', { weekday: 'short' })}.{' '}
+                {isToday && (
+                  <span
+                    style={{
+                      width: '9.37px',
+                      height: '9.37px',
+                      borderRadius: '17981000px',
+                      backgroundColor: '#D84341',
+                      marginLeft: '10px',
+                      marginRight: '6.25px',
+                      display: 'inline-block',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                {(currentDate.getMonth() + 1).toString().padStart(2, '0')}/{currentDate.getDate().toString().padStart(2, '0')}/{currentDate.getFullYear()}
+              </h1>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNextDay}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+              }}
+            >
+              <ChevronRight
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  stroke: '#000000',
+                  strokeWidth: '1.25px',
+                  color: '#000000',
+                }}
+              />
+            </Button>
+            {!isToday && (
+              <Button
+                variant="ghost"
+                onClick={goToToday}
+                style={{
+                  width: '54.37px',
+                  height: '22.5px',
+                  borderRadius: '17981000px',
+                  padding: '7.5px',
+                  background: 'transparent',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '7.5px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '40px',
+                    height: '19px',
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13.13px',
+                    lineHeight: '18.75px',
+                    letterSpacing: '0px',
+                    textAlign: 'center',
+                    color: '#000000',
+                  }}
+                >
+                  Today
+                </span>
+              </Button>
+            )}
+          </div>
+
+          {/* Main Content Container - Responsive for all iPhones */}
+          <div
+            className="w-full flex flex-col"
+            style={{
+              width: 'calc(100% - 18.34px)', // ~375px on iPhone 14 Pro, responsive
+              maxWidth: '375px',
+              height: 'calc(100dvh - 80px)',
+              position: 'fixed',
+              top: '40px',
+              left: '9.17px',
+              willChange: 'auto',
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+            }}
+          >
+            {/* Calendar */}
+            <AnimatePresence>
+              {showCalendar && (
+                <motion.div
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  style={{
+                    position: 'absolute',
+                    top: '45px',
+                    left: 0,
+                    right: 0,
+                    margin: '0 auto',
+                  }}
+                >
+                  <MonthView
+                    currentDate={currentDate}
+                    todos={todos}
+                    onSelectDate={(date) => {
+                      setCurrentDate(date);
+                      setShowCalendar(false);
+                    }}
+                    meditationDates={meditationDates}
+                    onMonthChange={(direction) => {
+                      const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
+                      setCurrentDate(newDate);
+                    }}
+                    onClose={() => setShowCalendar(false)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Todos List - Dynamic positioning based on calendar visibility */}
+          <div
+            style={{
+              position: 'fixed',
+              top: showCalendar ? '453.73px' : '156.5px', // 45px (calendar top) + 378.73px (calendar height) + 30px (gap)
+              left: '31.67px',
+              width: '330px',
+              height: showCalendar
+                ? 'calc(100vh - 453.73px - 130px)' // Dynamic height when calendar is open
+                : 'calc(100vh - 156.5px - 130px)', // Dynamic height when calendar is closed  
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              zIndex: 50,
+              transform: 'translateZ(0)',
+              willChange: 'transform',
+              transition: 'top 0.3s ease-in-out, height 0.3s ease-in-out',
+            }}
+          >
+            {sortedTodos.map((todo, index) => (
+              <DraggableTodo
+                key={todo.id}
+                todo={todo}
+                index={index}
+                dateKey={dateKey}
+                editingId={editingId}
+                editText={editText}
+                onToggle={() => toggleTodo(todo.id)}
+                onStartEdit={() => startEdit(todo)}
+                onEditChange={setEditText}
+                onSave={handleSave}
+                onKeyDown={handleKeyDown}
+                onMove={moveTodo}
+                onDelete={() => deleteTodo(todo.id)}
+                onPriorityToggle={() => togglePriority(todo.id)}
+                meditationGlowActive={!!meditationGlowActive}
+                timeRemaining={getTimeRemaining(todo.timerEnd)}
+                onTimerClick={() => setTimerModalTodoId(todo.id)}
+              />
+            ))}
+          </div>
+
+          {/* Todo Input - Hide when editing */}
+          {!editingId && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '330px',
+                height: '33.74px',
+                display: 'flex',
+                gap: '7.49px',
+                alignItems: 'center',
+                paddingRight: 0,
+                zIndex: 10,
+              }}
+            >
+              <Input
+                value={newTodo}
+                onChange={(e) => setNewTodo(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+                onFocus={(e) => {
+                  setIsAddingTask(true);
+                }}
+                onBlur={() => {
+                  setIsAddingTask(false);
+                }}
+                placeholder="Add task"
+                style={{
+                  width: '292.51px',
+                  height: '33.74px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+                  paddingTop: '3.75px',
+                  paddingBottom: '3.75px',
+                  paddingLeft: 0,
+                  paddingRight: 0,
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '100%',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                }}
+                className="rounded-none add-task-input"
+              />
+              <Button
+                onClick={addTodo}
+                variant="ghost"
+                size="icon"
+                style={{
+                  width: '29.99px',
+                  height: '29.99px',
+                  borderRadius: '17981000px',
+                  paddingRight: '0.01px',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Plus style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+              </Button>
+            </div>
+          )}
+
+          {/* Bottom Controls - Hide when keyboard is visible (editing or adding task) */}
+          {!isKeyboardVisible && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: 'calc(-15px + env(safe-area-inset-bottom))',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '330px',
+                maxWidth: 'calc(100% - 40px)',
+                height: '30px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingRight: 0,
+                zIndex: 1000,
+                backgroundColor: 'transparent',
+                pointerEvents: 'auto',
+              }}
+            >
+              {!accessToken && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowAuth(true)}
+                  style={{
+                    width: '78.69px',
+                    height: '30px',
+                    background: '#FDF5ED',
+                    borderRadius: '17981000px',
+                    borderWidth: '0.54px',
+                    borderTop: '0.54px solid rgba(0, 0, 0, 0.8)',
+                    borderLeft: 'none',
+                    borderRight: 'none',
+                    borderBottom: 'none',
+                    marginTop: '-18px',
+                    marginLeft: '-10px',
+                    paddingTop: '7.5px',
+                    paddingRight: '11.25px',
+                    paddingBottom: '7.5px',
+                    paddingLeft: '11.25px',
+                    gap: '7.5px',
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13.13px',
+                    lineHeight: '18.75px',
+                    letterSpacing: '0px',
+                    textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#000000E5',
+                  }}
+                >
+                  Sign In
+                </Button>
+              )}
+              {accessToken && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSettings(true)}
+                  style={{
+                    width: '29.99px',
+                    height: '29.99px',
+                    borderRadius: '17981000px',
+                    paddingRight: '0.01px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    marginTop: '-22px', // Maintain alignment
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Settings style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                </Button>
+              )}
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowMeditation(true)}
+                  style={{
+                    width: '29.99px',
+                    height: '29.99px',
+                    background: '#FFFFFF',
+                    borderRadius: '17981000px',
+                    paddingLeft: '0.01px',
+                    padding: 0,
+                    border: 'none',
+                    marginTop: '-18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  style={{
+                    width: '29.99px',
+                    height: '29.99px',
+                    borderRadius: '17981000px',
+                    paddingRight: '0.01px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    marginTop: '-22px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Calendar style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowLifetimeView(true)}
+                  style={{
+                    width: '29.99px',
+                    height: '29.99px',
+                    borderRadius: '17981000px',
+                    paddingRight: '0.01px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    marginTop: '-22px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Grid3X3 style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Modals */}
+          <AnimatePresence>
+            {showAuth && !accessToken && (
+              <AuthModal
+                onSuccess={handleAuthSuccess}
+                onClose={() => setShowAuth(false)}
               />
             )}
-            {(currentDate.getMonth() + 1).toString().padStart(2, '0')}/{currentDate.getDate().toString().padStart(2, '0')}/{currentDate.getFullYear()}
-          </h1>
-        </div>
+          </AnimatePresence>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={goToNextDay}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            width: 'auto',
-            height: 'auto',
-            minWidth: 'auto',
-          }}
-        >
-          <ChevronRight
-            style={{
-              width: '16px',
-              height: '16px',
-              stroke: '#000000',
-              strokeWidth: '1.25px',
-              color: '#000000',
-            }}
-          />
-        </Button>
-        {!isToday && (
-          <Button
-            variant="ghost"
-            onClick={goToToday}
-            style={{
-              width: '54.37px',
-              height: '22.5px',
-              borderRadius: '17981000px',
-              padding: '7.5px',
-              background: 'transparent',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '7.5px',
-            }}
-          >
-            <span
-              style={{
-                width: '40px',
-                height: '19px',
-                fontFamily: 'Courier New',
-                fontWeight: 400,
-                fontSize: '13.13px',
-                lineHeight: '18.75px',
-                letterSpacing: '0px',
-                textAlign: 'center',
-                color: '#000000',
-              }}
-            >
-              Today
-            </span>
-          </Button>
-        )}
-      </div>
-
-      {/* Main Content Container - Responsive for all iPhones */}
-      <div
-        className="w-full flex flex-col"
-        style={{
-          width: 'calc(100% - 18.34px)', // ~375px on iPhone 14 Pro, responsive
-          maxWidth: '375px',
-          height: 'calc(100dvh - 80px)',
-          position: 'fixed',
-          top: '40px',
-          left: '9.17px',
-          willChange: 'auto',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-        }}
-      >
-        {/* Calendar */}
-        <AnimatePresence>
-          {showCalendar && (
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              style={{
-                position: 'absolute',
-                top: '45px',
-                left: 0,
-                right: 0,
-                margin: '0 auto',
-              }}
-            >
-              <MonthView
-                currentDate={currentDate}
-                todos={todos}
-                onSelectDate={(date) => {
-                  setCurrentDate(date);
-                  setShowCalendar(false);
+          {
+            showSettings && accessToken && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  width: '100vw',
+                  height: '100dvh',
+                  backgroundColor: '#FDF5ED',
+                  zIndex: 99999,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  paddingTop: 'max(env(safe-area-inset-top), 40px)',
+                  overflow: 'hidden',
                 }}
-                meditationDates={meditationDates}
-                onMonthChange={(direction) => {
-                  const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
-                  setCurrentDate(newDate);
-                }}
-                onClose={() => setShowCalendar(false)}
+              >
+                <SettingsModal
+                  onClose={() => setShowSettings(false)}
+                  accessToken={accessToken}
+                  onSignOut={handleSignOut}
+                  dateOfBirth={dateOfBirth}
+                  onSaveDateOfBirth={handleSaveDateOfBirth}
+                  expectedLifespan={expectedLifespan}
+                  onSaveLifespan={saveLifespan}
+                  meditationDuration={meditationDuration}
+                  onSaveMeditationDuration={setMeditationDuration}
+                  totalMeditationMinutes={totalMeditationMinutes}
+                  onAddManualMeditation={setTotalMeditationMinutes}
+                />
+              </motion.div>
+            )
+          }
+          {
+            showMeditation && (
+              <MeditationTimer
+                onComplete={handleMeditationComplete}
+                onClose={() => setShowMeditation(false)}
+                durationMinutes={meditationDuration}
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            )
+          }
 
-      {/* Todos List - Dynamic positioning based on calendar visibility */}
-      <div
-        style={{
-          position: 'fixed',
-          top: showCalendar ? '453.73px' : '156.5px', // 45px (calendar top) + 378.73px (calendar height) + 30px (gap)
-          left: '31.67px',
-          width: '330px',
-          height: showCalendar
-            ? 'calc(100vh - 453.73px - 130px)' // Dynamic height when calendar is open
-            : 'calc(100vh - 156.5px - 130px)', // Dynamic height when calendar is closed  
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          zIndex: 50,
-          transform: 'translateZ(0)',
-          willChange: 'transform',
-          transition: 'top 0.3s ease-in-out, height 0.3s ease-in-out',
-        }}
-      >
-        {sortedTodos.map((todo, index) => (
-          <DraggableTodo
-            key={todo.id}
-            todo={todo}
-            index={index}
-            dateKey={dateKey}
-            editingId={editingId}
-            editText={editText}
-            onToggle={() => toggleTodo(todo.id)}
-            onStartEdit={() => startEdit(todo)}
-            onEditChange={setEditText}
-            onSave={handleSave}
-            onKeyDown={handleKeyDown}
-            onMove={moveTodo}
-            onDelete={() => deleteTodo(todo.id)}
-            onPriorityToggle={() => togglePriority(todo.id)}
-            onTouchStart={handleTouchStart}
-            meditationGlowActive={!!meditationGlowActive}
-            timeRemaining={getTimeRemaining(todo.timerEnd)}
-            onTimerClick={() => setTimerModalTodoId(todo.id)}
-          />
-        ))}
-      </div>
+          {
+            showLifetimeView && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  width: '100vw',
+                  height: '100vh',
+                  backgroundColor: '#FDF5ED', // Revert to desired background color
+                  zIndex: 99999, // Keep high z-index
+                  display: 'flex',
+                  flexDirection: 'column',
+                  paddingTop: 'max(env(safe-area-inset-top), 40px)', // Reintroduce padding
+                }}
+              >
+                <LifetimeView
+                  onClose={() => setShowLifetimeView(false)}
+                  dateOfBirth={dateOfBirth}
+                  onSaveDateOfBirth={saveDateOfBirth}
+                  expectedLifespan={expectedLifespan}
+                  onSaveLifespan={saveLifespan}
+                  weekNotes={weekNotes}
+                  onSaveWeekNote={(weekIndex, note) => {
+                    setWeekNotes(prev => ({
+                      ...prev,
+                      [weekIndex]: note
+                    }));
+                  }}
+                  bucketList={bucketList}
+                  onSaveBucketList={setBucketList}
+                  totalMeditationMinutes={totalMeditationMinutes}
+                />
+              </motion.div>
+            )
+          }
 
-      {/* Todo Input - Hide when editing */}
-      {!editingId && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '330px',
-            height: '33.74px',
-            display: 'flex',
-            gap: '7.49px',
-            alignItems: 'center',
-            paddingRight: 0,
-            zIndex: 10,
-          }}
-        >
-          <Input
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
-            onFocus={(e) => {
-              setIsAddingTask(true);
-            }}
-            onBlur={() => {
-              setIsAddingTask(false);
-            }}
-            placeholder="Add task"
-            style={{
-              width: '292.51px',
-              height: '33.74px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
-              paddingTop: '3.75px',
-              paddingBottom: '3.75px',
-              paddingLeft: 0,
-              paddingRight: 0,
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              lineHeight: '100%',
-              letterSpacing: '0px',
-              color: '#000000',
-            }}
-            className="rounded-none add-task-input"
-          />
-          <Button
-            onClick={addTodo}
-            variant="ghost"
-            size="icon"
-            style={{
-              width: '29.99px',
-              height: '29.99px',
-              borderRadius: '17981000px',
-              paddingRight: '0.01px',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Plus style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-          </Button>
-        </div>
-      )}
-
-      {/* Bottom Controls - Hide when keyboard is visible (editing or adding task) */}
-      {!isKeyboardVisible && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 'calc(-15px + env(safe-area-inset-bottom))',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '330px',
-            maxWidth: 'calc(100% - 40px)',
-            height: '30px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingRight: 0,
-            zIndex: 1000,
-            backgroundColor: 'transparent',
-            pointerEvents: 'auto',
-          }}
-        >
-          {!accessToken && (
-            <Button
-              variant="ghost"
-              onClick={() => setShowAuth(true)}
-              style={{
-                width: '78.69px',
-                height: '30px',
-                background: '#FDF5ED',
-                borderRadius: '17981000px',
-                borderWidth: '0.54px',
-                borderTop: '0.54px solid rgba(0, 0, 0, 0.8)',
-                borderLeft: 'none',
-                borderRight: 'none',
-                borderBottom: 'none',
-                marginTop: '-18px',
-                marginLeft: '-10px',
-                paddingTop: '7.5px',
-                paddingRight: '11.25px',
-                paddingBottom: '7.5px',
-                paddingLeft: '11.25px',
-                gap: '7.5px',
-                fontFamily: 'Courier New',
-                fontWeight: 400,
-                fontSize: '13.13px',
-                lineHeight: '18.75px',
-                letterSpacing: '0px',
-                textAlign: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#000000E5',
-              }}
-            >
-              Sign In
-            </Button>
-          )}
-          {accessToken && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSettings(true)}
-              style={{
-                width: '29.99px',
-                height: '29.99px',
-                borderRadius: '17981000px',
-                paddingRight: '0.01px',
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                marginTop: '-22px', // Maintain alignment
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Settings style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-            </Button>
-          )}
-
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Button
-              variant="ghost"
-              onClick={() => setShowMeditation(true)}
-              style={{
-                width: '29.99px',
-                height: '29.99px',
-                background: '#FFFFFF',
-                borderRadius: '17981000px',
-                paddingLeft: '0.01px',
-                padding: 0,
-                border: 'none',
-                marginTop: '-18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowCalendar(!showCalendar)}
-              style={{
-                width: '29.99px',
-                height: '29.99px',
-                borderRadius: '17981000px',
-                paddingRight: '0.01px',
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                marginTop: '-22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Calendar style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowLifetimeView(true)}
-              style={{
-                width: '29.99px',
-                height: '29.99px',
-                borderRadius: '17981000px',
-                paddingRight: '0.01px',
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                marginTop: '-22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Grid3X3 style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Modals */}
-      <AnimatePresence>
-        {showAuth && !accessToken && (
-          <AuthModal
-            onSuccess={handleAuthSuccess}
-            onClose={() => setShowAuth(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {
-        showSettings && accessToken && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100dvh',
-              backgroundColor: '#FDF5ED',
-              zIndex: 99999,
-              display: 'flex',
-              flexDirection: 'column',
-              paddingTop: 'max(env(safe-area-inset-top), 40px)',
-              overflow: 'hidden',
-            }}
-          >
-            <SettingsModal
-              onClose={() => setShowSettings(false)}
-              accessToken={accessToken}
-              onSignOut={handleSignOut}
-              dateOfBirth={dateOfBirth}
-              onSaveDateOfBirth={handleSaveDateOfBirth}
-              expectedLifespan={expectedLifespan}
-              onSaveLifespan={saveLifespan}
-              meditationDuration={meditationDuration}
-              onSaveMeditationDuration={setMeditationDuration}
-              totalMeditationMinutes={totalMeditationMinutes}
-              onAddManualMeditation={setTotalMeditationMinutes}
-            />
-          </motion.div>
-        )
-      }
-      {
-        showMeditation && (
-          <MeditationTimer
-            onComplete={handleMeditationComplete}
-            onClose={() => setShowMeditation(false)}
-            durationMinutes={meditationDuration}
-          />
-        )
-      }
-
-      {
-        showLifetimeView && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundColor: '#FDF5ED', // Revert to desired background color
-              zIndex: 99999, // Keep high z-index
-              display: 'flex',
-              flexDirection: 'column',
-              paddingTop: 'max(env(safe-area-inset-top), 40px)', // Reintroduce padding
-            }}
-          >
-            <LifetimeView
-              onClose={() => setShowLifetimeView(false)}
-              dateOfBirth={dateOfBirth}
-              onSaveDateOfBirth={saveDateOfBirth}
-              expectedLifespan={expectedLifespan}
-              onSaveLifespan={saveLifespan}
-              weekNotes={weekNotes}
-              onSaveWeekNote={(weekIndex, note) => {
-                setWeekNotes(prev => ({
-                  ...prev,
-                  [weekIndex]: note
-                }));
-              }}
-              bucketList={bucketList}
-              onSaveBucketList={setBucketList}
-              totalMeditationMinutes={totalMeditationMinutes}
-            />
-          </motion.div>
-        )
-      }
-
-      {
-        timerModalTodoId && (
-          <TimerModal
-            onClose={() => setTimerModalTodoId(null)}
-            onSetTimer={(minutes) => {
-              setTaskTimer(timerModalTodoId, minutes);
-            }}
-            onClearTimer={() => {
-              clearTaskTimer(timerModalTodoId);
-            }}
-            taskText={currentTodos.find(t => t.id === timerModalTodoId)?.text || ''}
-            hasActiveTimer={!!currentTodos.find(t => t.id === timerModalTodoId)?.timerEnd}
-          />
-        )
-      }
+          {
+            timerModalTodoId && (
+              <TimerModal
+                onClose={() => setTimerModalTodoId(null)}
+                onSetTimer={(minutes) => {
+                  setTaskTimer(timerModalTodoId, minutes);
+                }}
+                onClearTimer={() => {
+                  clearTaskTimer(timerModalTodoId);
+                }}
+                taskText={currentTodos.find(t => t.id === timerModalTodoId)?.text || ''}
+                hasActiveTimer={!!currentTodos.find(t => t.id === timerModalTodoId)?.timerEnd}
+              />
+            )
+          }
         </>
       )}
     </div >
