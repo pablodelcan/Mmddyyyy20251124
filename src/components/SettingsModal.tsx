@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { X, Mail, Calendar, TrendingUp, Send, Database } from 'lucide-react';
@@ -33,11 +33,31 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
   });
   const [testing, setTesting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [customLifespan, setCustomLifespan] = useState(expectedLifespan.toString());
+  
+  // Refs for debouncing autosave
+  const savePreferencesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveLifespanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadPreferences();
+  }, []);
+
+  // Update customLifespan when expectedLifespan prop changes
+  useEffect(() => {
+    setCustomLifespan(expectedLifespan.toString());
+  }, [expectedLifespan]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (savePreferencesTimeoutRef.current) {
+        clearTimeout(savePreferencesTimeoutRef.current);
+      }
+      if (saveLifespanTimeoutRef.current) {
+        clearTimeout(saveLifespanTimeoutRef.current);
+      }
+    };
   }, []);
 
   const loadPreferences = async () => {
@@ -100,16 +120,9 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
     }
   };
 
-  const savePreferences = async () => {
-    setSaving(true);
-
+  // Autosave preferences with debouncing
+  const savePreferences = useCallback(async (showToast = false) => {
     try {
-      // Save lifespan
-      const lifespan = parseInt(customLifespan, 10);
-      if (!isNaN(lifespan) && lifespan > 0 && lifespan <= 120) {
-        onSaveLifespan(lifespan);
-      }
-
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/preferences`,
         {
@@ -123,18 +136,69 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
       );
 
       if (response.ok) {
-        toast.success('Settings saved');
-        onClose();
+        if (showToast) {
+          toast.success('Settings saved');
+        }
       } else {
-        toast.error('Failed to save settings');
+        console.error('Failed to save preferences');
+        if (showToast) {
+          toast.error('Failed to save settings');
+        }
       }
     } catch (err) {
       console.error('Failed to save preferences:', err);
-      toast.error('Failed to save settings');
-    } finally {
-      setSaving(false);
+      if (showToast) {
+        toast.error('Failed to save settings');
+      }
     }
-  };
+  }, [accessToken, preferences]);
+
+  // Debounced autosave for preferences
+  const autosavePreferences = useCallback(() => {
+    if (savePreferencesTimeoutRef.current) {
+      clearTimeout(savePreferencesTimeoutRef.current);
+    }
+    savePreferencesTimeoutRef.current = setTimeout(() => {
+      savePreferences(false); // Don't show toast for autosave
+    }, 1000); // Wait 1 second after last change
+  }, [savePreferences]);
+
+  // Debounced autosave for lifespan
+  const autosaveLifespan = useCallback(() => {
+    if (saveLifespanTimeoutRef.current) {
+      clearTimeout(saveLifespanTimeoutRef.current);
+    }
+    saveLifespanTimeoutRef.current = setTimeout(() => {
+      const lifespan = parseInt(customLifespan, 10);
+      if (!isNaN(lifespan) && lifespan > 0 && lifespan <= 120) {
+        onSaveLifespan(lifespan);
+      }
+    }, 1000); // Wait 1 second after last change
+  }, [customLifespan, onSaveLifespan]);
+
+  // Autosave preferences when they change
+  useEffect(() => {
+    if (!loading) {
+      autosavePreferences();
+    }
+    return () => {
+      if (savePreferencesTimeoutRef.current) {
+        clearTimeout(savePreferencesTimeoutRef.current);
+      }
+    };
+  }, [preferences, loading, autosavePreferences]);
+
+  // Autosave lifespan when it changes
+  useEffect(() => {
+    if (!loading && customLifespan !== expectedLifespan.toString()) {
+      autosaveLifespan();
+    }
+    return () => {
+      if (saveLifespanTimeoutRef.current) {
+        clearTimeout(saveLifespanTimeoutRef.current);
+      }
+    };
+  }, [customLifespan, loading, expectedLifespan, autosaveLifespan]);
 
   const testWeeklyEmail = async () => {
     if (!preferences.email) {
@@ -254,7 +318,21 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
           Settings
         </h2>
         <button
-          onClick={onClose}
+          onClick={async () => {
+            // Save any pending changes before closing
+            if (savePreferencesTimeoutRef.current) {
+              clearTimeout(savePreferencesTimeoutRef.current);
+              await savePreferences(false);
+            }
+            if (saveLifespanTimeoutRef.current) {
+              clearTimeout(saveLifespanTimeoutRef.current);
+              const lifespan = parseInt(customLifespan, 10);
+              if (!isNaN(lifespan) && lifespan > 0 && lifespan <= 120) {
+                onSaveLifespan(lifespan);
+              }
+            }
+            onClose();
+          }}
           style={{
             width: '29.99222183227539px',
             height: '29.99222183227539px',
@@ -330,6 +408,13 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               type="email"
               value={preferences.email}
               onChange={(e) => setPreferences({ ...preferences, email: e.target.value })}
+              onBlur={() => {
+                // Save immediately when user leaves the email field
+                if (savePreferencesTimeoutRef.current) {
+                  clearTimeout(savePreferencesTimeoutRef.current);
+                }
+                savePreferences(false);
+              }}
               placeholder="your@email.com"
               style={{
                 width: '100%',
@@ -724,6 +809,16 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
               type="number"
               value={customLifespan}
               onChange={(e) => setCustomLifespan(e.target.value)}
+              onBlur={() => {
+                // Save immediately when user leaves the lifespan field
+                if (saveLifespanTimeoutRef.current) {
+                  clearTimeout(saveLifespanTimeoutRef.current);
+                }
+                const lifespan = parseInt(customLifespan, 10);
+                if (!isNaN(lifespan) && lifespan > 0 && lifespan <= 120) {
+                  onSaveLifespan(lifespan);
+                }
+              }}
               min="1"
               max="120"
               style={{
@@ -1039,51 +1134,66 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             height: '79.27592468261719px',
             borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
             paddingTop: '23.03px',
-            paddingRight: '22.5px',
-            paddingLeft: '22.5px',
             marginTop: '22px',
             boxSizing: 'border-box',
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
+            flexShrink: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
           }}
         >
-          <div style={{ maxWidth: '375px', width: '100%', display: 'flex', gap: '11.24px', justifyContent: 'center' }}>
+          <Button
+            onClick={async () => {
+              // Save any pending changes before closing
+              if (savePreferencesTimeoutRef.current) {
+                clearTimeout(savePreferencesTimeoutRef.current);
+                await savePreferences(false);
+              }
+              if (saveLifespanTimeoutRef.current) {
+                clearTimeout(saveLifespanTimeoutRef.current);
+                const lifespan = parseInt(customLifespan, 10);
+                if (!isNaN(lifespan) && lifespan > 0 && lifespan <= 120) {
+                  onSaveLifespan(lifespan);
+                }
+              }
+              onClose();
+            }}
+            style={{
+              width: '108.61226654052734px',
+              height: '33.743343353271484px',
+              gap: '7.5px',
+              paddingTop: '7.5px',
+              paddingRight: '15px',
+              paddingBottom: '7.5px',
+              paddingLeft: '15px',
+              border: '0.54px solid rgba(0, 0, 0, 0.5)',
+              background: '#FDF5ED',
+              borderRadius: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+              marginRight: '5.62px',
+            }}
+          >
+            <span style={{
+              fontFamily: 'Courier New',
+              fontWeight: 400,
+              fontSize: '13.13px',
+              lineHeight: '18.75px',
+              letterSpacing: '0px',
+              textAlign: 'center',
+              color: '#000000',
+            }}>
+              Close
+            </span>
+          </Button>
+          {onSignOut && (
             <Button
-              variant="outline"
-              onClick={onClose}
-              style={{
-                width: '108.61226654052734px',
-                height: '33.743343353271484px',
-                gap: '7.5px',
-                paddingTop: '7.5px',
-                paddingRight: '15px',
-                paddingBottom: '7.5px',
-                paddingLeft: '15px',
-                border: '0.54px solid rgba(0, 0, 0, 0.2)',
-                background: '#FDF5ED',
-                borderRadius: '0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
-            >
-              <span style={{
-                fontFamily: 'Courier New',
-                fontWeight: 400,
-                fontSize: '13.13px',
-                lineHeight: '18.75px',
-                letterSpacing: '0px',
-                textAlign: 'center',
-                color: '#000000',
-              }}>
-                Cancel
-              </span>
-            </Button>
-            <Button
-              onClick={savePreferences}
-              disabled={saving || !preferences.email}
+              onClick={onSignOut}
               style={{
                 width: '108.61225891113281px',
                 height: '33.743343353271484px',
@@ -1100,6 +1210,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                 justifyContent: 'center',
                 cursor: 'pointer',
                 flexShrink: 0,
+                marginLeft: '5.62px',
               }}
             >
               <span style={{
@@ -1111,44 +1222,10 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
                 textAlign: 'center',
                 color: '#FFFFFF',
               }}>
-                {saving ? 'Saving...' : 'Save'}
+                Sign out
               </span>
             </Button>
-            {onSignOut && (
-              <Button
-                onClick={onSignOut}
-                style={{
-                  width: '108.61225891113281px',
-                  height: '33.743343353271484px',
-                  gap: '7.5px',
-                  paddingTop: '7.5px',
-                  paddingRight: '15px',
-                  paddingBottom: '7.5px',
-                  paddingLeft: '15px',
-                  background: '#000000',
-                  borderRadius: '0',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{
-                  fontFamily: 'Courier New',
-                  fontWeight: 400,
-                  fontSize: '13.13px',
-                  lineHeight: '18.75px',
-                  letterSpacing: '0px',
-                  textAlign: 'center',
-                  color: '#FFFFFF',
-                }}>
-                  Sign out
-                </span>
-              </Button>
-            )}
-          </div>
+          )}
           {/* Invisible Spacer */}
           <div
             style={{
