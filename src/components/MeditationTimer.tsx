@@ -3,6 +3,20 @@ import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { X } from 'lucide-react';
 
+// Type definition for Wake Lock API
+interface WakeLockSentinel extends EventTarget {
+  released: boolean;
+  type: 'screen';
+  release(): Promise<void>;
+  addEventListener(type: 'release', listener: () => void): void;
+}
+
+interface Navigator {
+  wakeLock?: {
+    request(type: 'screen'): Promise<WakeLockSentinel>;
+  };
+}
+
 interface MeditationTimerProps {
   onComplete: (minutes: number) => void;
   onClose: () => void;
@@ -13,12 +27,66 @@ export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: Medita
   const [timeLeft, setTimeLeft] = useState(durationMinutes * 60); // Convert minutes to seconds
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasCompletedRef = useRef(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // Request screen wake lock to prevent phone from sleeping
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        // Check if Screen Wake Lock API is supported
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+          const wakeLock = await navigator.wakeLock.request('screen');
+          wakeLockRef.current = wakeLock;
+          
+          // Handle wake lock release (e.g., when user switches tabs or screen locks)
+          wakeLock.addEventListener('release', () => {
+            // Try to reacquire if timer is still running
+            if (!hasCompletedRef.current) {
+              requestWakeLock();
+            }
+          });
+        }
+      } catch (err) {
+        // Wake lock request failed (e.g., user denied permission or not supported)
+        console.log('Wake lock not available:', err);
+      }
+    };
+
+    requestWakeLock();
+
+    // Reacquire wake lock when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !hasCompletedRef.current) {
+        if (!wakeLockRef.current || wakeLockRef.current.released) {
+          requestWakeLock();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Release wake lock when component unmounts or timer ends
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {
+          // Ignore errors when releasing
+        });
+        wakeLockRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           if (intervalRef.current) clearInterval(intervalRef.current);
+          // Release wake lock when timer completes
+          if (wakeLockRef.current) {
+            wakeLockRef.current.release().catch(() => {});
+            wakeLockRef.current = null;
+          }
           // Use setTimeout to defer the onComplete call to avoid setState during render
           if (!hasCompletedRef.current) {
             hasCompletedRef.current = true;
@@ -32,8 +100,22 @@ export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: Medita
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      // Release wake lock on cleanup
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {});
+        wakeLockRef.current = null;
+      }
     };
   }, [onComplete, durationMinutes]);
+
+  // Release wake lock when user closes the timer
+  const handleClose = () => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+    onClose();
+  };
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -75,7 +157,7 @@ export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: Medita
 
       {/* Close Button */}
       <button
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'absolute',
           top: '35px',
