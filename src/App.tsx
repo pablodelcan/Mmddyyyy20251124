@@ -928,17 +928,34 @@ function AppContent() {
     }
   };
 
-  // Move incomplete tasks from past days to today
-  const moveIncompleteTasksToToday = useCallback(() => {
-    const todayDate = new Date();
-    const today = getLocalDateString(todayDate);
+  // Track the last date we checked for task rollover
+  const lastCheckedDateRef = useRef<string | null>(null);
 
+  // Move incomplete tasks from past days to today
+  // Only moves tasks after midnight (when date actually changes)
+  const moveIncompleteTasksToToday = useCallback(() => {
+    const now = new Date();
+    const today = getLocalDateString(now);
+    
+    // Get the last checked date from storage or ref
+    const lastCheckedDate = lastCheckedDateRef.current || secureStorage.getItem<string>('lastTaskRolloverDate');
+    
+    // Only proceed if we've crossed midnight (date has actually changed from last check)
+    // This ensures tasks only move at midnight, not during the day
+    // Exception: if lastCheckedDate is null (first run), we should check once to move any past tasks
+    if (lastCheckedDate !== null && lastCheckedDate === today) {
+      // Still the same day - don't move tasks, wait for midnight
+      return;
+    }
+
+    // If we're here, either:
+    // 1. First run (lastCheckedDate is null) - move past tasks
+    // 2. Date has changed (crossed midnight) - move past tasks
     let hasChanges = false;
     const newTodos = { ...todos };
 
-    // Scan all past dates
+    // Scan all past dates (only dates strictly before today)
     Object.keys(newTodos).forEach(dateKey => {
-
       // Only process past dates (before today, using string comparison)
       if (dateKey < today) {
         const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => !t.completed);
@@ -961,6 +978,10 @@ function AppContent() {
     if (hasChanges) {
       setTodos(newTodos);
     }
+
+    // Update the last checked date to prevent moving tasks again until next midnight
+    lastCheckedDateRef.current = today;
+    secureStorage.setItem('lastTaskRolloverDate', today);
   }, [todos]);
 
   // Run on mount and when date changes
@@ -968,7 +989,7 @@ function AppContent() {
     moveIncompleteTasksToToday();
   }, [currentDate]);
 
-  // Run daily check
+  // Run daily check - check every minute to catch midnight rollover
   useEffect(() => {
     const checkInterval = setInterval(() => {
       moveIncompleteTasksToToday();
