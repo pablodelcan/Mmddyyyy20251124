@@ -75,7 +75,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
         const data = await response.json();
         if (data.preferences && Object.keys(data.preferences).length > 0) {
           setPreferences({
-            email: data.preferences.email || '',
+            email: data.preferences.email ? data.preferences.email.toLowerCase().trim() : '',
             weeklyReportEnabled: data.preferences.weeklyReportEnabled || false,
             weeklyReportDay: data.preferences.weeklyReportDay ?? 0
           });
@@ -123,6 +123,12 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
   // Autosave preferences with debouncing
   const savePreferences = useCallback(async (showToast = false) => {
     try {
+      // Normalize email to lowercase before saving
+      const normalizedPreferences = {
+        ...preferences,
+        email: preferences.email ? preferences.email.toLowerCase().trim() : ''
+      };
+
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/preferences`,
         {
@@ -131,7 +137,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
           },
-          body: JSON.stringify({ preferences })
+          body: JSON.stringify({ preferences: normalizedPreferences })
         }
       );
 
@@ -208,6 +214,9 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
 
     setTesting(true);
 
+    // Normalize email to lowercase for case-insensitive matching
+    const normalizedEmail = preferences.email.toLowerCase().trim();
+
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/test-weekly-report`,
@@ -217,12 +226,12 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
           },
-          body: JSON.stringify({ email: preferences.email })
+          body: JSON.stringify({ email: normalizedEmail })
         }
       );
 
       if (response.ok) {
-        toast.success(`Test email sent to ${preferences.email}! Check your inbox.`);
+        toast.success(`Test email sent to ${normalizedEmail}! Check your inbox.`);
       } else {
         const errorData = await response.json();
         console.error('Test email failed:', errorData);
@@ -407,7 +416,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             <input
               type="email"
               value={preferences.email}
-              onChange={(e) => setPreferences({ ...preferences, email: e.target.value })}
+              onChange={(e) => setPreferences({ ...preferences, email: e.target.value.toLowerCase().trim() })}
               onBlur={() => {
                 // Save immediately when user leaves the email field
                 if (savePreferencesTimeoutRef.current) {

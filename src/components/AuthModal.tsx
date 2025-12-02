@@ -24,6 +24,9 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
     setLoading(true);
     setError('');
 
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim();
+
     try {
       const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/signup`, {
         method: 'POST',
@@ -31,7 +34,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${publicAnonKey}`
         },
-        body: JSON.stringify({ email, password, name })
+        body: JSON.stringify({ email: normalizedEmail, password, name })
       });
 
       const data = await response.json();
@@ -44,7 +47,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
 
       // After sign up, sign in
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password
       });
 
@@ -65,9 +68,12 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
     setLoading(true);
     setError('');
 
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim();
+
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password
       });
 
@@ -89,6 +95,9 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
     setError('');
     setSuccess('');
 
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim();
+
     try {
       const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/reset-password`, {
         method: 'POST',
@@ -96,7 +105,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${publicAnonKey}`
         },
-        body: JSON.stringify({ email, newPassword: password })
+        body: JSON.stringify({ email: normalizedEmail, newPassword: password })
       });
 
       const data = await response.json();
@@ -282,7 +291,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
               required
               style={{
                 width: '100%',
