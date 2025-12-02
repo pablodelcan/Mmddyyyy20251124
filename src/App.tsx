@@ -599,6 +599,16 @@ function AppContent() {
       if (editingId) return;
 
       const target = e.target as HTMLElement;
+      // Check if click is on an input field, textarea, or any editable element
+      const isInputField = target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input') ||
+        target.closest('textarea');
+      
+      // If clicking on an input field, don't clear selection
+      if (isInputField) return;
+
       // Check if click is not on a task span or within task text
       const isTaskClick = target.closest('[data-task-text]') ||
         target.hasAttribute('data-task-text');
@@ -994,14 +1004,14 @@ function AppContent() {
   };
 
   const addToUndoStack = (action: UndoAction) => {
-    setUndoStack(prev => [...prev.slice(-9), action]);
+    setUndoStack([action]); // Only keep the latest action (one-level undo)
   };
 
-  const handleUndo = () => {
-    if (undoStack.length === 0) return;
+  const handleUndo = (actionOverride?: UndoAction) => {
+    const action = actionOverride || (undoStack.length > 0 ? undoStack[undoStack.length - 1] : undefined);
+    if (!action) return;
 
-    const action = undoStack[undoStack.length - 1];
-    setUndoStack(prev => prev.slice(0, -1));
+    setUndoStack([]); // Always clear stack since it's one-level
 
     switch (action.type) {
       case 'add':
@@ -1224,8 +1234,6 @@ function AppContent() {
         ...prev,
         [dateKey]: [...(prev[dateKey] || []), todo]
       }));
-
-      addToUndoStack({ type: 'add', todo, dateKey });
       setNewTodo('');
     }
   };
@@ -1241,7 +1249,17 @@ function AppContent() {
       )
     }));
 
-    addToUndoStack({ type: 'toggle', todo, dateKey });
+    const action: UndoAction = { type: 'toggle', todo, dateKey };
+    addToUndoStack(action);
+
+    toast('Task updated', {
+      id: 'undo-toast', // Replace previous undo toast
+      action: {
+        label: 'Undo',
+        onClick: () => handleUndo(action)
+      },
+      duration: 4000
+    });
   };
 
   const deleteTodo = (id: string) => {
@@ -1254,7 +1272,17 @@ function AppContent() {
       [dateKey]: (prev[dateKey] || []).filter(t => t.id !== id)
     }));
 
-    addToUndoStack({ type: 'delete', todo, dateKey, index });
+    const action: UndoAction = { type: 'delete', todo, dateKey, index };
+    addToUndoStack(action);
+
+    toast('Task deleted', {
+      id: 'undo-toast', // Replace previous undo toast
+      action: {
+        label: 'Undo',
+        onClick: () => handleUndo(action)
+      },
+      duration: 4000
+    });
   };
 
   const togglePriority = (id: string) => {
@@ -1267,8 +1295,6 @@ function AppContent() {
         t.id === id ? { ...t, priority: !t.priority } : t
       )
     }));
-
-    addToUndoStack({ type: 'priority', todo, dateKey });
   };
 
   const startEdit = (todo: TodoItem) => {
@@ -1289,8 +1315,6 @@ function AppContent() {
           t.id === editingId ? { ...t, text: editText.trim() } : t
         )
       }));
-
-      addToUndoStack({ type: 'edit', todo, dateKey, previousText: todo.text });
     }
 
     setEditingId(null);
@@ -1332,7 +1356,17 @@ function AppContent() {
       [dateKey]: newTodos
     }));
 
-    addToUndoStack({ type: 'reorder', todos: previousTodos, dateKey });
+    const action: UndoAction = { type: 'reorder', todos: previousTodos, dateKey };
+    addToUndoStack(action);
+
+    toast('Task reordered', {
+      id: 'undo-toast', // Replace previous undo toast
+      action: {
+        label: 'Undo',
+        onClick: () => handleUndo(action)
+      },
+      duration: 4000
+    });
   };
 
   const goToPreviousDay = () => {
