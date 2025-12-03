@@ -85,28 +85,26 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                     flexDirection: 'column',
                 }}
             >
-                <p style={{ margin: 0, marginBottom: '30px' }}>
+                <p style={{ margin: 0, marginBottom: '50px' }}>
                     Long-press a task to drag it up or down and reorder your day.
                 </p>
 
                 {/* Sample Task */}
                 <div
                     style={{
-                        width: '139.51px',
-                        height: '35.73px',
-                        padding: '0',
-                        paddingLeft: '14.99px',
+                        padding: '10px 15px',
                         backgroundColor: 'rgba(2, 2, 1, 0.1)',
                         border: '0.61px solid rgba(0, 0, 0, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '7.5px',
                         fontFamily: 'Courier New',
                         fontWeight: 700,
                         fontSize: '15px',
                         color: '#000000',
                         margin: '0 auto',
-                        marginTop: '30px',
+                        marginTop: '60px',
                     }}
                 >
                     <GripVertical style={{ width: '15px', height: '15px', color: '#666' }} />
@@ -148,7 +146,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                     alignItems: 'center',
                 }}
             >
-                <p style={{ margin: 0, marginBottom: '50px', textAlign: 'left', width: '100%' }}>
+                <p style={{ margin: 0, marginBottom: '70px', textAlign: 'left', width: '100%' }}>
                     The timer starts a focused session. When the session finishes, the task is marked complete.
                 </p>
 
@@ -275,6 +273,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        marginTop: '30px',
                     }}
                 />
             </div>
@@ -381,7 +380,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
             <div
                 style={{
                     width: '363.44px',
-                    height: step === 1 ? '376.20px' : step === 2 ? '424.95px' : step === 3 ? '449.33px' : step === 4 ? '424.95px' : step === 5 ? '424.95px' : '644.36px',
+                    height: step === 0 ? '644.36px' : '449.33px',
                     backgroundColor: '#FDF5ED',
                     border: '0.61px solid rgba(0, 0, 0, 0.1)',
                     paddingTop: '30.61px',
@@ -399,7 +398,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 <div
                     style={{
                         width: '302.22px',
-                        height: step === 1 ? '314.97px' : step === 2 ? '363.73px' : step === 3 ? '388.11px' : step === 4 ? '363.73px' : step === 5 ? '363.73px' : '583.14px',
+                        height: step === 0 ? '583.14px' : '388.11px',
                         display: 'flex',
                         flexDirection: 'column',
                     }}

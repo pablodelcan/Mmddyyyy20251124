@@ -1258,15 +1258,6 @@ function AppContent() {
 
     const action: UndoAction = { type: 'toggle', todo, dateKey };
     addToUndoStack(action);
-
-    toast('Task updated', {
-      id: 'undo-toast', // Replace previous undo toast
-      action: {
-        label: 'Undo',
-        onClick: () => handleUndo(action)
-      },
-      duration: 4000
-    });
   };
 
   const deleteTodo = (id: string) => {
@@ -1279,17 +1270,8 @@ function AppContent() {
       [dateKey]: (prev[dateKey] || []).filter(t => t.id !== id)
     }));
 
-    const action: UndoAction = { type: 'delete', todo, dateKey, index };
+    const action: UndoAction = { type: 'delete', todo, index, dateKey };
     addToUndoStack(action);
-
-    toast('Task deleted', {
-      id: 'undo-toast', // Replace previous undo toast
-      action: {
-        label: 'Undo',
-        onClick: () => handleUndo(action)
-      },
-      duration: 4000
-    });
   };
 
   const togglePriority = (id: string) => {
@@ -1365,15 +1347,6 @@ function AppContent() {
 
     const action: UndoAction = { type: 'reorder', todos: previousTodos, dateKey };
     addToUndoStack(action);
-
-    toast('Task reordered', {
-      id: 'undo-toast', // Replace previous undo toast
-      action: {
-        label: 'Undo',
-        onClick: () => handleUndo(action)
-      },
-      duration: 4000
-    });
   };
 
   const goToPreviousDay = () => {
@@ -1504,6 +1477,7 @@ function AppContent() {
               position: 'fixed',
               top: '77.5px',
               left: '31.67px',
+              right: '22.5px',
               display: 'flex',
               alignItems: 'center',
               gap: '7.5px',
@@ -1630,6 +1604,41 @@ function AppContent() {
                   Today
                 </span>
               </Button>
+            )}
+
+            {/* Undo Button - positioned absolutely at right edge */}
+            {undoStack.length > 0 && (
+              <button
+                onClick={() => handleUndo()}
+                style={{
+                  position: 'absolute',
+                  right: '22.5px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  paddingRight: '0.01px',
+                  width: '12.99px',
+                  height: '12.99px',
+                  borderRadius: '20562800px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  opacity: 1,
+                  zIndex: 10,
+                }}
+              >
+                <img
+                  src="/undo.svg"
+                  alt="Undo"
+                  style={{
+                    width: '12.99px',
+                    height: '12.99px',
+                  }}
+                />
+              </button>
             )}
           </div>
 
