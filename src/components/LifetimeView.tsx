@@ -226,340 +226,354 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
   // If showing bucket list, render that view instead
   if (showBucketList) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex flex-col"
-        style={{
-          background: '#f0d6d9',
-          paddingTop: 'max(env(safe-area-inset-top), 40px)',
-          width: '100%',
-          height: '100dvh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            width: '393.3318176269531px',
-            height: '75.5248031616211px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            opacity: 1,
-            borderBottom: '0.54px solid rgba(0, 0, 0, 0.1)',
-            boxSizing: 'border-box',
-            flexShrink: 0,
-            margin: '0 auto',
-            paddingLeft: '22.5px',
-            paddingRight: '22.5px',
-          }}
-        >
-          <h2
-            style={{
-              width: '145px',
-              height: '23px',
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              lineHeight: '22.5px',
-              letterSpacing: '0px',
-              color: '#000000',
-              margin: '0',
-            }}
-          >
-            Life bucket list
-          </h2>
-          <Button
-            onClick={() => setShowBucketList(false)}
-            style={{
-              width: '29.99222183227539px',
-              height: '29.99222183227539px',
-              borderRadius: '17981000px',
-              background: 'transparent',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
-          </Button>
-        </div>
-
-        {/* Scrollable Content */}
-        <div
-          className="overflow-y-scroll"
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: 'scroll',
-            overflowX: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            padding: '0',
-            position: 'relative',
-          }}
-          onScroll={(e) => {
-            // Stop scroll event from bubbling to document level
-            e.stopPropagation();
-          }}
-          onTouchStart={(e) => {
-            // Allow touch scrolling within this element
-            e.stopPropagation();
-          }}
-          onTouchMove={(e) => {
-            // Allow touch scrolling within this element
-            e.stopPropagation();
-          }}
-          onTouchEnd={(e) => {
-            // Allow touch scrolling within this element
-            e.stopPropagation();
-          }}
-          onWheel={(e) => {
-            // Allow wheel scrolling within this element
-            e.stopPropagation();
-          }}
-        >
-          <div
-            style={{
-              width: '393.3318176269531px',
-              margin: '0 auto',
-              paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px + 40px)',
-              boxSizing: 'border-box',
-            }}
-          >
-            {bucketList.length === 0 && (
-              <p
-                style={{
-                  fontFamily: 'Courier New',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  lineHeight: '22.5px',
-                  letterSpacing: '0px',
-                  color: '#000000',
-                  opacity: 0.9,
-                  margin: '0',
-                  padding: '22.5px',
-                }}
-              >
-                Things you want to accomplish in your lifetime
-              </p>
-            )}
-
-            {/* Bucket List Items */}
-            <div /* Removed space-y-1 */>
-              {bucketList.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    width: '348.3351135253906px',
-                    height: '48.73945236206055px',
-                    opacity: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '7.5px',
-                    background: 'transparent',
-                    paddingLeft: '22.5px',
-                    paddingRight: '22.5px',
-                    paddingTop: '11.25px',
-                    paddingBottom: '11.25px',
-                    margin: '0 auto',
-                    boxSizing: 'border-box',
-                    // Removed group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors
-                  }}
-                >
-                  <button
-                    onClick={() => toggleBucketItem(item.id)}
-                    style={{
-                      width: '18.74723243713379px',
-                      height: '18.74723243713379px',
-                      opacity: 1,
-                      border: '0.54px solid #000000',
-                      background: 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      padding: '0',
-                      flexShrink: 0,
-                      // Removed flex-shrink-0 mt-0.5
-                    }}
-                  >
-                    {item.completed ? (
-                      <CheckSquare style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
-                    ) : (
-                      <Square style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
-                    )}
-                  </button>
-
-                  {editingBucketId === item.id ? (
-                    <input
-                      value={editingBucketText}
-                      onChange={(e) => setEditingBucketText(e.target.value)}
-                      onBlur={saveBucketEdit}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveBucketEdit();
-                        if (e.key === 'Escape') {
-                          setEditingBucketId(null);
-                          setEditingBucketText('');
-                        }
-                      }}
-                      style={{
-                        flex: 1,
-                        background: 'transparent',
-                        border: 'none',
-                        borderBottom: '0.54px solid rgba(0,0,0,0.2)',
-                        outline: 'none',
-                        fontFamily: 'Courier New',
-                        fontWeight: 700,
-                        fontSize: '15px',
-                        lineHeight: '22.5px',
-                        letterSpacing: '0px',
-                        color: '#000000',
-                        padding: '0',
-                      }}
-                      // className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-0"
-                      autoFocus
-                    />
-                  ) : (
-                    <div
-                      onClick={() => startEditBucket(item)}
-                      style={{
-                        flex: 1,
-                        cursor: 'text',
-                        fontFamily: 'Courier New',
-                        fontWeight: 700,
-                        fontSize: '15px',
-                        lineHeight: '22.5px',
-                        letterSpacing: '0px',
-                        color: '#000000',
-                        textDecoration: item.completed ? 'line-through' : 'none',
-                        opacity: item.completed ? 0.6 : 1,
-                      }}
-                    // className={`flex-1 cursor-text ${
-                    //   item.completed ? 'line-through' : ''
-                    // }`}
-                    >
-                      {item.text}
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={() => deleteBucketItem(item.id)}
-                    style={{
-                      width: '29.99222183227539px',
-                      height: '29.99222183227539px',
-                      borderRadius: '17981000px',
-                      background: 'transparent',
-                      border: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      opacity: 1, // Always visible for mobile
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Minus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Add New Item - Fixed to bottom with background */}
+      <>
+        {/* Background that extends to safe areas */}
         <div
           style={{
             position: 'fixed',
-            bottom: 0,
+            top: 0,
             left: 0,
             right: 0,
-            width: '100%',
-            paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
-            paddingTop: '20px',
-            zIndex: 50,
+            bottom: 0,
             background: '#f0d6d9',
-            boxSizing: 'border-box',
+            zIndex: -1,
+          }}
+        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex flex-col"
+          style={{
+            background: '#f0d6d9',
+            paddingTop: 'max(env(safe-area-inset-top), 40px)',
+            width: '100%',
+            height: '100dvh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}
         >
+          {/* Header */}
           <div
             style={{
               width: '393.3318176269531px',
-              height: '33.743343353271484px',
+              height: '75.5248031616211px',
               display: 'flex',
-              gap: '7.5px',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              justifyContent: 'center',
+              opacity: 1,
+              borderBottom: '0.54px solid rgba(0, 0, 0, 0.1)',
+              boxSizing: 'border-box',
+              flexShrink: 0,
+              margin: '0 auto',
               paddingLeft: '22.5px',
               paddingRight: '22.5px',
-              margin: '0 auto',
+            }}
+          >
+            <h2
+              style={{
+                width: '145px',
+                height: '23px',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: '#000000',
+                margin: '0',
+              }}
+            >
+              Life bucket list
+            </h2>
+            <Button
+              onClick={() => setShowBucketList(false)}
+              style={{
+                width: '29.99222183227539px',
+                height: '29.99222183227539px',
+                borderRadius: '17981000px',
+                background: 'transparent',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+            </Button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div
+            className="overflow-y-scroll"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'scroll',
+              overflowX: 'hidden',
+              WebkitOverflowScrolling: 'touch',
+              padding: '0',
+              position: 'relative',
+            }}
+            onScroll={(e) => {
+              // Stop scroll event from bubbling to document level
+              e.stopPropagation();
+            }}
+            onTouchStart={(e) => {
+              // Allow touch scrolling within this element
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              // Allow touch scrolling within this element
+              e.stopPropagation();
+            }}
+            onTouchEnd={(e) => {
+              // Allow touch scrolling within this element
+              e.stopPropagation();
+            }}
+            onWheel={(e) => {
+              // Allow wheel scrolling within this element
+              e.stopPropagation();
+            }}
+          >
+            <div
+              style={{
+                width: '393.3318176269531px',
+                margin: '0 auto',
+                paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px + 33.743343353271484px + 20px + 40px)',
+                boxSizing: 'border-box',
+              }}
+            >
+              {bucketList.length === 0 && (
+                <p
+                  style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '22.5px',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                    opacity: 0.9,
+                    margin: '0',
+                    padding: '22.5px',
+                  }}
+                >
+                  Things you want to accomplish in your lifetime
+                </p>
+              )}
+
+              {/* Bucket List Items */}
+              <div /* Removed space-y-1 */>
+                {bucketList.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      width: '348.3351135253906px',
+                      height: '48.73945236206055px',
+                      opacity: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7.5px',
+                      background: 'transparent',
+                      paddingLeft: '22.5px',
+                      paddingRight: '22.5px',
+                      paddingTop: '11.25px',
+                      paddingBottom: '11.25px',
+                      margin: '0 auto',
+                      boxSizing: 'border-box',
+                      // Removed group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors
+                    }}
+                  >
+                    <button
+                      onClick={() => toggleBucketItem(item.id)}
+                      style={{
+                        width: '18.74723243713379px',
+                        height: '18.74723243713379px',
+                        opacity: 1,
+                        border: '0.54px solid #000000',
+                        background: 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        padding: '0',
+                        flexShrink: 0,
+                        // Removed flex-shrink-0 mt-0.5
+                      }}
+                    >
+                      {item.completed ? (
+                        <CheckSquare style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
+                      ) : (
+                        <Square style={{ width: '18.74723243713379px', height: '18.74723243713379px', color: '#000000' }} />
+                      )}
+                    </button>
+
+                    {editingBucketId === item.id ? (
+                      <input
+                        value={editingBucketText}
+                        onChange={(e) => setEditingBucketText(e.target.value)}
+                        onBlur={saveBucketEdit}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveBucketEdit();
+                          if (e.key === 'Escape') {
+                            setEditingBucketId(null);
+                            setEditingBucketText('');
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          background: 'transparent',
+                          border: 'none',
+                          borderBottom: '0.54px solid rgba(0,0,0,0.2)',
+                          outline: 'none',
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          letterSpacing: '0px',
+                          color: '#000000',
+                          padding: '0',
+                        }}
+                        // className="flex-1 bg-transparent border-0 border-b border-black/20 focus:border-black outline-none transition-colors px-0 py-0"
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        onClick={() => startEditBucket(item)}
+                        style={{
+                          flex: 1,
+                          cursor: 'text',
+                          fontFamily: 'Courier New',
+                          fontWeight: 700,
+                          fontSize: '15px',
+                          lineHeight: '22.5px',
+                          letterSpacing: '0px',
+                          color: '#000000',
+                          textDecoration: item.completed ? 'line-through' : 'none',
+                          opacity: item.completed ? 0.6 : 1,
+                        }}
+                      // className={`flex-1 cursor-text ${
+                      //   item.completed ? 'line-through' : ''
+                      // }`}
+                      >
+                        {item.text}
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={() => deleteBucketItem(item.id)}
+                      style={{
+                        width: '29.99222183227539px',
+                        height: '29.99222183227539px',
+                        borderRadius: '17981000px',
+                        background: 'transparent',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        opacity: 1, // Always visible for mobile
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Minus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Add New Item - Fixed to bottom with background */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              width: '100%',
+              paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
+              paddingTop: '20px',
+              zIndex: 50,
+              background: '#f0d6d9',
               boxSizing: 'border-box',
             }}
           >
             <div
               style={{
-                width: '348.3351135253906px',
+                width: '393.3318176269531px',
                 height: '33.743343353271484px',
                 display: 'flex',
                 gap: '7.5px',
                 alignItems: 'center',
+                justifyContent: 'center',
+                paddingLeft: '22.5px',
+                paddingRight: '22.5px',
+                margin: '0 auto',
                 boxSizing: 'border-box',
               }}
             >
-              <input
-                value={newBucketItem}
-                onChange={(e) => setNewBucketItem(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
-                placeholder="add to your bucketlist."
+              <div
                 style={{
-                  flex: 1,
+                  width: '348.3351135253906px',
                   height: '33.743343353271484px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
-                  paddingTop: '3.75px',
-                  paddingBottom: '3.75px',
-                  paddingLeft: '0px',
-                  paddingRight: '0px',
-                  fontFamily: 'Courier New',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  lineHeight: '100%',
-                  letterSpacing: '0px',
-                  color: '#000000',
-                  outline: 'none',
+                  display: 'flex',
+                  gap: '7.5px',
+                  alignItems: 'center',
                   boxSizing: 'border-box',
                 }}
-              />
-              <button
-                onClick={addBucketItem}
-                disabled={!newBucketItem.trim()}
-                style={{
-                  width: '33.743343353271484px',
-                  height: '33.743343353271484px',
-                  background: 'transparent',
-                  borderRadius: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  padding: '0',
-                  border: 'none',
-                  flexShrink: 0,
-                }}
               >
-                <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
-              </button>
+                <input
+                  value={newBucketItem}
+                  onChange={(e) => setNewBucketItem(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
+                  placeholder="add to your bucketlist."
+                  style={{
+                    flex: 1,
+                    height: '33.743343353271484px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                    paddingTop: '3.75px',
+                    paddingBottom: '3.75px',
+                    paddingLeft: '0px',
+                    paddingRight: '0px',
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '100%',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <button
+                  onClick={addBucketItem}
+                  disabled={!newBucketItem.trim()}
+                  style={{
+                    width: '33.743343353271484px',
+                    height: '33.743343353271484px',
+                    background: 'transparent',
+                    borderRadius: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    padding: '0',
+                    border: 'none',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </>
     );
   }
 
