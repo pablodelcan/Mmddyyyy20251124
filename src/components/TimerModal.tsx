@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 
 interface TimerModalProps {
   onClose: () => void;
   onSetTimer: (minutes: number) => void;
   onClearTimer?: () => void;
+  onComplete?: () => void;
   taskText: string;
   hasActiveTimer?: boolean;
 }
 
-export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasActiveTimer }: TimerModalProps) {
+export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, taskText, hasActiveTimer }: TimerModalProps) {
   const [minutes, setMinutes] = useState<string>('');
 
   const handleSet = () => {
@@ -99,21 +100,39 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, taskText, hasAct
           >
             Set Timer
           </div>
-          <Button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              right: 0,
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
-            }}
-          >
-            <X className="h-4 w-4" style={{ color: '#000000' }} />
-          </Button>
+          <div style={{ position: 'absolute', right: 0, display: 'flex', gap: '8px' }}>
+            {onComplete && (
+              <Button
+                onClick={() => {
+                  onComplete();
+                  onClose();
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  width: 'auto',
+                  height: 'auto',
+                  minWidth: 'auto',
+                }}
+              >
+                <Check className="h-4 w-4" style={{ color: '#000000' }} />
+              </Button>
+            )}
+            <Button
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+              }}
+            >
+              <X className="h-4 w-4" style={{ color: '#000000' }} />
+            </Button>
+          </div>
         </div>
 
         <div

@@ -232,7 +232,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex flex-col"
         style={{
-          background: '#FDF5ED',
+          background: '#f0d6d9',
           paddingTop: 'max(env(safe-area-inset-top), 40px)',
           width: '100%',
           height: '100dvh',
@@ -484,7 +484,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
             paddingTop: '20px',
             zIndex: 50,
-            background: '#FDF5ED',
+            background: '#f0d6d9',
             boxSizing: 'border-box',
           }}
         >
@@ -502,61 +502,61 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               boxSizing: 'border-box',
             }}
           >
-          <div
-            style={{
-              width: '348.3351135253906px',
-              height: '33.743343353271484px',
-              display: 'flex',
-              gap: '7.5px',
-              alignItems: 'center',
-              boxSizing: 'border-box',
-            }}
-          >
-          <input
-            value={newBucketItem}
-            onChange={(e) => setNewBucketItem(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
-            placeholder="Add Bucket"
-            style={{
-              flex: 1,
-              height: '33.743343353271484px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
-              paddingTop: '3.75px',
-              paddingBottom: '3.75px',
-              paddingLeft: '0px',
-              paddingRight: '0px',
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              lineHeight: '100%',
-              letterSpacing: '0px',
-              color: '#000000',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-          <button
-            onClick={addBucketItem}
-            disabled={!newBucketItem.trim()}
-            style={{
-              width: '33.743343353271484px',
-              height: '33.743343353271484px',
-              background: 'transparent',
-              borderRadius: '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              padding: '0',
-              border: 'none',
-              flexShrink: 0,
-            }}
-          >
-            <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
-          </button>
-          </div>
+            <div
+              style={{
+                width: '348.3351135253906px',
+                height: '33.743343353271484px',
+                display: 'flex',
+                gap: '7.5px',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+              }}
+            >
+              <input
+                value={newBucketItem}
+                onChange={(e) => setNewBucketItem(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
+                placeholder="add to your bucketlist."
+                style={{
+                  flex: 1,
+                  height: '33.743343353271484px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                  paddingTop: '3.75px',
+                  paddingBottom: '3.75px',
+                  paddingLeft: '0px',
+                  paddingRight: '0px',
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '100%',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                onClick={addBucketItem}
+                disabled={!newBucketItem.trim()}
+                style={{
+                  width: '33.743343353271484px',
+                  height: '33.743343353271484px',
+                  background: 'transparent',
+                  borderRadius: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: '0',
+                  border: 'none',
+                  flexShrink: 0,
+                }}
+              >
+                <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

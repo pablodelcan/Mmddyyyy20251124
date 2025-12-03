@@ -15,6 +15,7 @@ import { MeditationTimer } from './components/MeditationTimer';
 import { LifetimeView } from './components/LifetimeView';
 import { EyeOpenIcon, EyeClosedIcon } from './components/EyeIcon';
 import { TimerModal } from './components/TimerModal';
+import { OnboardingModal } from './components/OnboardingModal';
 import { getSupabaseClient } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 import { useTimeOfDay } from './hooks/useTimeOfDay';
@@ -457,6 +458,7 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const supabase = getSupabaseClient();
 
@@ -469,7 +471,7 @@ function AppContent() {
     document.documentElement.style.backgroundColor = bgColor;
 
     // Control body overflow for full-screen modals
-    if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId) {
+    if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId || showOnboarding) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -481,7 +483,7 @@ function AppContent() {
       document.documentElement.style.backgroundColor = '';
       document.body.style.overflow = '';
     };
-  }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId]);
+  }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId, showOnboarding]);
 
   // Track keyboard visibility
   useEffect(() => {
@@ -580,6 +582,11 @@ function AppContent() {
 
   // Check if first time opening app
   useEffect(() => {
+    const hasSeenOnboarding = secureStorage.getItem<boolean>('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+
     const hasSeenSplash = secureStorage.getItem<boolean>('hasSeenSplash');
     if (!hasSeenSplash) {
       setShowSplash(true);
@@ -600,12 +607,12 @@ function AppContent() {
 
       const target = e.target as HTMLElement;
       // Check if click is on an input field, textarea, or any editable element
-      const isInputField = target.tagName === 'INPUT' || 
+      const isInputField = target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.isContentEditable ||
         target.closest('input') ||
         target.closest('textarea');
-      
+
       // If clicking on an input field, don't clear selection
       if (isInputField) return;
 
@@ -2038,6 +2045,23 @@ function AppContent() {
                 }}
                 taskText={currentTodos.find(t => t.id === timerModalTodoId)?.text || ''}
                 hasActiveTimer={!!currentTodos.find(t => t.id === timerModalTodoId)?.timerEnd}
+                onComplete={() => {
+                  if (timerModalTodoId) {
+                    toggleTodo(timerModalTodoId);
+                    setTimerModalTodoId(null);
+                  }
+                }}
+              />
+            )
+          }
+
+          {
+            showOnboarding && (
+              <OnboardingModal
+                onClose={() => {
+                  setShowOnboarding(false);
+                  secureStorage.setItem('hasSeenOnboarding', true);
+                }}
               />
             )
           }
