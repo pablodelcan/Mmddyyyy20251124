@@ -378,12 +378,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 justifyContent: 'center',
             }}
         >
-            <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
+            <div
                 style={{
                     width: '363.44px',
                     height: step === 1 ? '376.20px' : step === 2 ? '424.95px' : step === 3 ? '449.33px' : step === 4 ? '424.95px' : step === 5 ? '424.95px' : '644.36px',
@@ -518,7 +513,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                         )}
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 
