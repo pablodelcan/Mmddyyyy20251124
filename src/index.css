@@ -2192,8 +2192,3 @@ html {
     opacity: .5;
   }
 }
-
-/* Position toaster to avoid iPhone safe area */
-[data-sonner-toaster] {
-  top: max(env(safe-area-inset-top, 0px) + 20px, 20px) !important;
-}

@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 import { AuthModal } from './components/AuthModal';
 import { SettingsModal } from './components/SettingsModal';
 import { MonthView } from './components/MonthView';
@@ -734,6 +735,9 @@ function AppContent() {
 
   // Track if we've merged local data after authentication
   const hasMergedLocalDataRef = useRef(false);
+  
+  // Track the last date we checked for task rollover
+  const lastCheckedDateRef = useRef<string | null>(null);
 
   // Load data from backend when authenticated
   useEffect(() => {
@@ -812,8 +816,11 @@ function AppContent() {
     const localBucketList = secureStorage.getItem<{ id: string; text: string; completed: boolean }[]>('bucketList') || [];
 
     try {
+      // Get timezone offset in minutes (negative for timezones behind UTC)
+      const timezoneOffset = -new Date().getTimezoneOffset();
+      
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/todos`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/todos?timezoneOffset=${timezoneOffset}`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -828,6 +835,11 @@ function AppContent() {
         const serverTodos = data.todos || {};
         const mergedTodos = mergeTasks(localTodos, serverTodos);
         setTodos(mergedTodos);
+        
+        // Reset the last checked date so task transfer runs again after loading
+        // This ensures tasks are properly transferred even if the app was closed at midnight
+        lastCheckedDateRef.current = null;
+        secureStorage.removeItem('lastTaskRolloverDate');
 
         // For other data, prefer server if it exists, otherwise use local
         if (data.dateOfBirth || localDateOfBirth) {
@@ -1079,9 +1091,6 @@ function AppContent() {
     }
   };
 
-  // Track the last date we checked for task rollover
-  const lastCheckedDateRef = useRef<string | null>(null);
-
   // Move incomplete tasks from past days to today
   // Only moves tasks after midnight (when date actually changes)
   const moveIncompleteTasksToToday = useCallback(() => {
@@ -1102,38 +1111,57 @@ function AppContent() {
     // If we're here, either:
     // 1. First run (lastCheckedDate is null) - move past tasks
     // 2. Date has changed (crossed midnight) - move past tasks
-    let hasChanges = false;
-    const newTodos = { ...todos };
+    // Use functional update to always work with latest state
+    setTodos(prevTodos => {
+      let hasChanges = false;
+      const newTodos = { ...prevTodos };
 
-    // Scan all past dates (only dates strictly before today)
-    Object.keys(newTodos).forEach(dateKey => {
-      // Only process past dates (before today, using string comparison)
-      if (dateKey < today) {
-        const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => !t.completed);
+      // Scan all past dates (only dates strictly before today)
+      Object.keys(newTodos).forEach(dateKey => {
+        // Only process past dates (before today, using string comparison)
+        if (dateKey < today) {
+          const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => !t.completed);
 
-        if (incompleteTasks.length > 0) {
-          hasChanges = true;
+          if (incompleteTasks.length > 0) {
+            hasChanges = true;
 
-          // Remove incomplete tasks from past date
-          newTodos[dateKey] = newTodos[dateKey].filter((t: TodoItem) => t.completed);
+            // Remove incomplete tasks from past date
+            newTodos[dateKey] = newTodos[dateKey].filter((t: TodoItem) => t.completed);
 
-          // Add incomplete tasks to today
-          if (!newTodos[today]) {
-            newTodos[today] = [];
+            // Add incomplete tasks to today (update date field and remove rolledOver flag if present)
+            if (!newTodos[today]) {
+              newTodos[today] = [];
+            }
+            // Get existing task IDs on today to prevent duplicates
+            const existingTaskIds = new Set(newTodos[today].map((t: TodoItem) => t.id));
+            // Update the date field of transferred tasks to today and filter out any that already exist
+            const transferredTasks = incompleteTasks
+              .filter(t => !existingTaskIds.has(t.id))
+              .map(t => ({
+                ...t,
+                date: today,
+                rolledOver: undefined // Remove rolledOver flag
+              }));
+            newTodos[today] = [...transferredTasks, ...newTodos[today]];
           }
-          newTodos[today] = [...incompleteTasks, ...newTodos[today]];
         }
+      });
+
+      // Update the last checked date to prevent moving tasks again until next midnight
+      if (hasChanges) {
+        lastCheckedDateRef.current = today;
+        secureStorage.setItem('lastTaskRolloverDate', today);
       }
+
+      return hasChanges ? newTodos : prevTodos;
     });
 
-    if (hasChanges) {
-      setTodos(newTodos);
+    // Update the last checked date even if no changes (to prevent checking again today)
+    if (lastCheckedDate !== today) {
+      lastCheckedDateRef.current = today;
+      secureStorage.setItem('lastTaskRolloverDate', today);
     }
-
-    // Update the last checked date to prevent moving tasks again until next midnight
-    lastCheckedDateRef.current = today;
-    secureStorage.setItem('lastTaskRolloverDate', today);
-  }, [todos]);
+  }, []);
 
   // Run on mount and when date changes
   useEffect(() => {

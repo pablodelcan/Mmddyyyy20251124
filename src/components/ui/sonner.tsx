@@ -15,6 +15,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
+          "--mobile-offset-top": "max(env(safe-area-inset-top, 0px) + 15px, 15px)",
+          "top": "max(env(safe-area-inset-top, 0px) + 15px, 15px)",
         } as React.CSSProperties
       }
       {...props}

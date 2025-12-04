@@ -86,6 +86,60 @@ app.get("/make-server-d6a7a206/debug-env", async (c) => {
   });
 });
 
+// Helper function to get local date string (YYYY-MM-DD format)
+// Can handle timezone offset from client
+const getLocalDateString = (date: Date, timezoneOffsetMinutes: number = 0): string => {
+  // Create a date adjusted for timezone offset
+  const adjustedDate = new Date(date.getTime() - (timezoneOffsetMinutes * 60 * 1000));
+  const year = adjustedDate.getUTCFullYear();
+  const month = String(adjustedDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(adjustedDate.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Helper function to transfer incomplete tasks from past dates to today
+const transferIncompleteTasks = (todosData: any, todayDate: string): { todos: any; hasChanges: boolean } => {
+  if (!todosData || typeof todosData !== 'object') {
+    return { todos: todosData || {}, hasChanges: false };
+  }
+
+  let hasChanges = false;
+  const newTodos = { ...todosData };
+
+  // Scan all past dates (only dates strictly before today)
+  Object.keys(newTodos).forEach(dateKey => {
+    // Only process past dates (before today, using string comparison)
+    if (dateKey < todayDate && Array.isArray(newTodos[dateKey])) {
+      const incompleteTasks = newTodos[dateKey].filter((t: any) => !t.completed);
+
+      if (incompleteTasks.length > 0) {
+        hasChanges = true;
+
+        // Remove incomplete tasks from past date
+        newTodos[dateKey] = newTodos[dateKey].filter((t: any) => t.completed);
+
+        // Add incomplete tasks to today (update date field)
+        if (!newTodos[todayDate]) {
+          newTodos[todayDate] = [];
+        }
+        // Get existing task IDs on today to prevent duplicates
+        const existingTaskIds = new Set(newTodos[todayDate].map((t: any) => t.id));
+        // Update the date field of transferred tasks to today and filter out any that already exist
+        const transferredTasks = incompleteTasks
+          .filter((t: any) => !existingTaskIds.has(t.id))
+          .map((t: any) => ({
+            ...t,
+            date: todayDate,
+            rolledOver: undefined // Remove rolledOver flag if present
+          }));
+        newTodos[todayDate] = [...transferredTasks, ...newTodos[todayDate]];
+      }
+    }
+  });
+
+  return { todos: newTodos, hasChanges };
+};
+
 // Get all todos for authenticated user
 app.get("/make-server-d6a7a206/todos", async (c) => {
   const accessToken = c.req.header('Authorization')?.split(' ')[1];
@@ -96,7 +150,7 @@ app.get("/make-server-d6a7a206/todos", async (c) => {
   }
 
   try {
-    const todosData = await kv.get(`todos:${user!.id}`);
+    let todosData = await kv.get(`todos:${user!.id}`) || {};
     const dateOfBirth = await kv.get(`dateOfBirth:${user!.id}`);
     const expectedLifespan = await kv.get(`expectedLifespan:${user!.id}`);
     const meditationDates = await kv.get(`meditationDates:${user!.id}`);
@@ -105,8 +159,32 @@ app.get("/make-server-d6a7a206/todos", async (c) => {
     const weekNotes = await kv.get(`weekNotes:${user!.id}`);
     const bucketList = await kv.get(`bucketList:${user!.id}`);
     
+    // Get timezone offset from query parameter (optional, defaults to 0/UTC)
+    // Format: timezoneOffset in minutes (e.g., -480 for PST which is UTC-8)
+    // Note: JavaScript getTimezoneOffset() returns positive for behind UTC, so we negate it
+    const timezoneOffsetParam = c.req.query('timezoneOffset');
+    const timezoneOffsetMinutes = timezoneOffsetParam ? parseInt(timezoneOffsetParam, 10) : 0;
+    
+    // Get today's date in the user's local timezone
+    const now = new Date();
+    const todayDate = getLocalDateString(now, timezoneOffsetMinutes);
+    
+    // Transfer incomplete tasks from past dates to today
+    // Check if we've already done the transfer today
+    const lastTransferDate = await kv.get(`lastTaskTransferDate:${user!.id}`);
+    if (!lastTransferDate || lastTransferDate !== todayDate) {
+      const transferResult = transferIncompleteTasks(todosData, todayDate);
+      
+      // Save updated todos if there were changes and update last transfer date
+      if (transferResult.hasChanges) {
+        todosData = transferResult.todos;
+        await kv.set(`todos:${user!.id}`, todosData);
+        await kv.set(`lastTaskTransferDate:${user!.id}`, todayDate);
+      }
+    }
+    
     return c.json({ 
-      todos: todosData || {},
+      todos: todosData,
       dateOfBirth: dateOfBirth || null,
       expectedLifespan: expectedLifespan || 80,
       meditationDates: meditationDates || [],
