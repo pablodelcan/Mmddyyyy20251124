@@ -9,6 +9,7 @@ interface SettingsModalProps {
   onClose: () => void;
   accessToken: string;
   onSignOut?: () => void;
+  onDeleteAccount?: () => void;
   dateOfBirth: string | null;
   onSaveDateOfBirth: (date: string) => void;
   expectedLifespan: number;
@@ -25,7 +26,7 @@ interface Preferences {
   weeklyReportDay: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
-export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation }: SettingsModalProps) {
+export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation }: SettingsModalProps) {
   const [preferences, setPreferences] = useState<Preferences>({
     email: '',
     weeklyReportEnabled: true, // Set to true by default
@@ -1102,9 +1103,13 @@ export function SettingsModal({ onClose, accessToken, onSignOut, dateOfBirth, on
             }}
           >
             <Button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete your account? You cannot recover it.')) {
-                  onSignOut?.(); // Assuming onSignOut handles the actual sign-out process
+              onClick={async () => {
+                if (window.confirm('Are you sure you want to delete your account? You cannot recover it. This will permanently delete all your data.')) {
+                  if (onDeleteAccount) {
+                    await onDeleteAccount();
+                  } else {
+                    onSignOut?.();
+                  }
                 }
               }}
               style={{

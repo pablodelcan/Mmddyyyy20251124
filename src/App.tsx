@@ -970,6 +970,59 @@ function AppContent() {
     toast.success('Signed out successfully');
   };
 
+  const handleDeleteAccount = async () => {
+    if (!accessToken) return;
+
+    try {
+      // Get fresh session token
+      const { data: { session } } = await supabase.auth.getSession();
+      const freshToken = session?.access_token;
+
+      if (!freshToken) {
+        toast.error('Unable to delete account. Please try again.');
+        return;
+      }
+
+      // Call delete endpoint
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/delete-account`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${freshToken}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        // Clear local storage
+        secureStorage.clear();
+        
+        // Reset all state
+        setTodos({});
+        setDateOfBirth(null);
+        setMeditationDates([]);
+        setLastMeditationTime(null);
+        setWeekNotes({});
+        setBucketList([]);
+        
+        // Sign out (which clears auth)
+        await supabase.auth.signOut();
+        setAccessToken(null);
+        setUserId(null);
+        
+        toast.success('Account deleted successfully');
+        setShowSettings(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to delete account');
+      }
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+      toast.error('Failed to delete account. Please try again.');
+    }
+  };
+
   const handleMeditationComplete = useCallback((minutes: number) => {
     const today = new Date().toISOString().split('T')[0];
 
@@ -2008,6 +2061,7 @@ function AppContent() {
                   onClose={() => setShowSettings(false)}
                   accessToken={accessToken}
                   onSignOut={handleSignOut}
+                  onDeleteAccount={handleDeleteAccount}
                   dateOfBirth={dateOfBirth}
                   onSaveDateOfBirth={handleSaveDateOfBirth}
                   expectedLifespan={expectedLifespan}

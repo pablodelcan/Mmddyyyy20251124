@@ -1,0 +1,47 @@
+// Delete user account and all data
+app.delete("/make-server-d6a7a206/delete-account", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const userId = user!.id;
+    const supabase = getSupabaseAdmin();
+
+    // 1. Delete all user data from KV store
+    const keysToDelete = [
+      `todos:${userId}`,
+      `dateOfBirth:${userId}`,
+      `expectedLifespan:${userId}`,
+      `meditationDates:${userId}`,
+      `lastMeditationTime:${userId}`,
+      `totalMeditationMinutes:${userId}`,
+      `weekNotes:${userId}`,
+      `bucketList:${userId}`,
+      `preferences:${userId}`,
+      `lastTaskTransferDate:${userId}`
+    ];
+
+    await kv.mdel(keysToDelete);
+
+    // 2. Delete the user from Supabase Auth
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (deleteError) {
+      console.error('Error deleting user:', deleteError);
+      return c.json({ error: 'Failed to delete user account' }, 500);
+    }
+
+    return c.json({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    return c.json({ 
+      error: 'Failed to delete account',
+      details: err instanceof Error ? err.message : String(err)
+    }, 500);
+  }
+});
+
