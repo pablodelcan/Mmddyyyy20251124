@@ -59,6 +59,8 @@ interface WebLayoutProps {
   onSelectDate: (date: Date) => void;
   onSaveWeekNote: (weekIndex: number, note: string) => void;
   timeOfDay: 'day' | 'night';
+  showBucketList: boolean;
+  setShowBucketList: (show: boolean) => void;
 }
 
 const ITEM_TYPE = 'TODO';
@@ -119,6 +121,8 @@ export const WebLayout = ({
   onSelectDate,
   onSaveWeekNote,
   timeOfDay,
+  showBucketList,
+  setShowBucketList,
 }: WebLayoutProps) => {
   const [lifetimeViewWidth, setLifetimeViewWidth] = useState(400);
   const lifetimeRef = useRef<HTMLDivElement>(null);
@@ -558,6 +562,7 @@ export const WebLayout = ({
           onSaveBucketList={setBucketList}
           totalMeditationMinutes={totalMeditationMinutes}
           containerWidth={lifetimeViewWidth}
+          onBucketListClick={() => setShowBucketList(true)}
         />
       </div>
     </div>

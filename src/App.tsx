@@ -444,6 +444,7 @@ function AppContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showBucketList, setShowBucketList] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showLifetimeView, setShowLifetimeView] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState<string | null>(null);
@@ -1556,6 +1557,8 @@ function AppContent() {
             }));
           }}
           timeOfDay={timeOfDay}
+          showBucketList={showBucketList}
+          setShowBucketList={setShowBucketList}
         />
         {/* Modals for web */}
         <AnimatePresence>
@@ -1615,6 +1618,218 @@ function AppContent() {
             taskText={currentTodos.find(t => t.id === timerModalTodoId)?.text || ''}
             hasActiveTimer={!!currentTodos.find(t => t.id === timerModalTodoId)?.timerEnd}
           />
+        )}
+        {/* Bucket List Modal - Right Side */}
+        {showBucketList && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              width: 'calc(100vw / 3.2)',
+              minWidth: '320px',
+              maxWidth: 'calc(100vw / 3.2)',
+              height: '100dvh',
+              backgroundColor: '#f0d6d9',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              borderLeft: '0.54px solid rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            {/* Header - matches left panel header area */}
+            <div style={{
+              width: '100%',
+              paddingTop: '39px',
+              paddingLeft: '39px',
+              paddingRight: '39px',
+              paddingBottom: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxSizing: 'border-box',
+              flexShrink: 0,
+            }}>
+              <h2 style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                color: '#000000',
+                margin: 0,
+              }}>
+                Bucket list
+              </h2>
+              <button
+                onClick={() => setShowBucketList(false)}
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  background: 'transparent',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <X style={{ color: '#000000', width: '15px', height: '15px' }} />
+              </button>
+            </div>
+
+            {/* Scrollable Content - takes remaining space */}
+            <div style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              padding: '0 39px',
+            }}>
+              {bucketList.length === 0 && (
+                <p style={{
+                  fontFamily: 'Courier New',
+                  fontSize: '13px',
+                  color: 'rgba(0, 0, 0, 0.6)',
+                }}>
+                  No bucket list items yet. Add something you want to do in your lifetime!
+                </p>
+              )}
+              {bucketList.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                    gap: '10px',
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      setBucketList(bucketList.map(i =>
+                        i.id === item.id ? { ...i, completed: !i.completed } : i
+                      ));
+                    }}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(0, 0, 0, 0.4)',
+                      background: item.completed ? '#000' : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.completed && (
+                      <X style={{ color: '#fff', width: '10px', height: '10px' }} strokeWidth={3} />
+                    )}
+                  </button>
+                  <span style={{
+                    fontFamily: 'Courier New',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    flex: 1,
+                    textDecoration: item.completed ? 'line-through' : 'none',
+                    opacity: item.completed ? 0.5 : 1,
+                  }}>
+                    {item.text}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setBucketList(bucketList.filter(i => i.id !== item.id));
+                    }}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Minus style={{ color: '#000', width: '14px', height: '14px' }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Item Footer - 79px height like other panels */}
+            <div style={{
+              width: '100%',
+              height: '79px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingLeft: '39px',
+              paddingRight: '39px',
+              borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+              boxSizing: 'border-box',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                <Input
+                  placeholder="Add bucket list item"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      setBucketList([...bucketList, {
+                        id: `${Date.now()}-${Math.random()}`,
+                        text: e.currentTarget.value.trim(),
+                        completed: false,
+                      }]);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    height: '26px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+                    padding: 0,
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    color: '#000000',
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const input = document.querySelector('input[placeholder="Add bucket list item"]') as HTMLInputElement;
+                    if (input && input.value.trim()) {
+                      setBucketList([...bucketList, {
+                        id: `${Date.now()}-${Math.random()}`,
+                        text: input.value.trim(),
+                        completed: false,
+                      }]);
+                      input.value = '';
+                    }
+                  }}
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Plus style={{ color: '#000000', width: '19.5px', height: '19.5px' }} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </>
     );

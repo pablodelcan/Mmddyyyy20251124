@@ -10,6 +10,7 @@ interface LifetimeViewInlineProps {
   onSaveBucketList: (list: { id: string; text: string; completed: boolean }[]) => void;
   totalMeditationMinutes: number;
   containerWidth?: number;
+  onBucketListClick?: () => void;
 }
 
 export const LifetimeViewInline = ({
@@ -20,7 +21,8 @@ export const LifetimeViewInline = ({
   bucketList,
   onSaveBucketList,
   totalMeditationMinutes,
-  containerWidth = 400
+  containerWidth = 400,
+  onBucketListClick
 }: LifetimeViewInlineProps) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -281,7 +283,7 @@ export const LifetimeViewInline = ({
       }}>
         <button
           onClick={() => {
-            // Could open bucket list modal or navigate
+            onBucketListClick?.();
           }}
           style={{
             width: '322px',

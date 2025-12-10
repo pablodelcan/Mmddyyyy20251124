@@ -223,7 +223,8 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
                     gap: '2px',
                   }}>
                     <div style={{
-                      width: '8px',
+                      width: 'auto',
+                      minWidth: '16px',
                       height: '20px',
                       fontFamily: 'Courier New',
                       fontWeight: 700,
