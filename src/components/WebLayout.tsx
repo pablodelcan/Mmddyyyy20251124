@@ -331,7 +331,7 @@ export const WebLayout = ({
               className="task-item"
               style={{
                 width: '100%',
-                maxWidth: '379px',
+                maxWidth: '500px',
                 height: '26px',
                 position: 'relative',
                 display: 'flex',
@@ -386,6 +386,7 @@ export const WebLayout = ({
                   style={{
                     height: '19.5px',
                     marginLeft: '9.75px',
+                    marginRight: '70px',
                     paddingTop: '2px',
                     color: '#000000',
                     fontFamily: 'Courier New',
@@ -400,7 +401,6 @@ export const WebLayout = ({
                         ? 'rgba(243, 235, 126, 0.4)'
                         : 'transparent',
                     cursor: 'text',
-                    flex: 1,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -493,7 +493,7 @@ export const WebLayout = ({
           {!editingId && (
             <div style={{
               width: '100%',
-              maxWidth: '379px',
+              maxWidth: '500px',
               height: '26px',
               gap: '6.5px',
               display: 'flex',
