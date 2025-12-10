@@ -398,23 +398,19 @@
   }
 
   body {
-    background-color: #E9EAE5;
+    background-color: #FBF8E8;
     color: var(--foreground);
     font-family: Courier New, Courier, monospace;
     font-size: 15px;
     font-weight: 700;
     height: 100vh;
     height: 100dvh;
-    width: 100vw;
+    width: 100%;
     margin: 0;
     padding: 0;
-    /* Prevent scrolling */
-    overflow: hidden;
+    /* Prevent keyboard from resizing viewport on iOS */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: none;
-    position: fixed;
-    top: 0;
-    left: 0;
   }
 
   /* Prevent viewport resize on input focus */
@@ -427,11 +423,7 @@
   html {
     height: 100vh;
     height: 100dvh;
-    width: 100vw;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #E9EAE5;
+    background-color: #FBF8E8;
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,
