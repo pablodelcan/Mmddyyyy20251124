@@ -138,7 +138,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
           paddingLeft: '19.5px',
           display: 'flex',
           flexDirection: 'column',
-          alignSelf: 'flex-start',
+          alignSelf: 'center',
         }}>
           {/* Weekday Headers */}
           <div style={{

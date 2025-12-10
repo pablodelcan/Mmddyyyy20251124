@@ -77,6 +77,34 @@ export const LifetimeViewInline = ({
 
   const stats = calculateLifetimeStats();
 
+  // Calculate stats for a specific week
+  const getWeekStats = (weekIndex: number) => {
+    if (!dateOfBirth || !stats) return null;
+
+    const birth = new Date(dateOfBirth);
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+
+    // Calculate the date for this week
+    const weekDate = new Date(birth.getTime() + (weekIndex * msPerWeek));
+
+    // Calculate age at this week
+    const daysLived = weekIndex * 7;
+    const yearsAtWeek = Math.floor(daysLived / 365.25);
+    const monthsAtWeek = Math.floor((daysLived % 365.25) / 30.44);
+
+    // Calculate percentage
+    const percentageAtWeek = Math.min(100, (weekIndex / stats.totalWeeks) * 100);
+
+    return {
+      date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      age: `${yearsAtWeek} years, ${monthsAtWeek} months`,
+      daysLived,
+      percentage: percentageAtWeek.toFixed(2)
+    };
+  };
+
+  const selectedWeekStats = selectedWeek !== null ? getWeekStats(selectedWeek) : null;
+
   // Show message for logged out users or users without date of birth
   if (!dateOfBirth || !stats) {
     return (
@@ -245,6 +273,148 @@ export const LifetimeViewInline = ({
               })}
             </div>
           </div>
+
+          {/* Week Detail Panel - shows when a week is selected */}
+          {selectedWeek !== null && selectedWeekStats && (
+            <div style={{
+              width: '100%',
+              maxWidth: '322px',
+              marginTop: '19.5px',
+              marginLeft: '19.5px',
+              padding: '19.5px',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              backgroundColor: '#FFFFFF',
+              boxSizing: 'border-box',
+            }}>
+              {/* Header with week number and close button */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '19.5px',
+              }}>
+                <span style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  color: '#000000',
+                }}>
+                  Week {selectedWeek + 1}
+                </span>
+                <button
+                  onClick={() => setSelectedWeek(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    color: '#000000',
+                    padding: 0,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Stats Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '13px',
+                marginBottom: '19.5px',
+              }}>
+                <div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    color: 'rgba(0, 0, 0, 0.6)',
+                    marginBottom: '4px',
+                  }}>Date</div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: '#000000',
+                  }}>{selectedWeekStats.date}</div>
+                </div>
+                <div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    color: 'rgba(0, 0, 0, 0.6)',
+                    marginBottom: '4px',
+                  }}>Age</div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: '#000000',
+                  }}>{selectedWeekStats.age}</div>
+                </div>
+                <div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    color: 'rgba(0, 0, 0, 0.6)',
+                    marginBottom: '4px',
+                  }}>Days lived</div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: '#000000',
+                  }}>{selectedWeekStats.daysLived.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    color: 'rgba(0, 0, 0, 0.6)',
+                    marginBottom: '4px',
+                  }}>Percentage</div>
+                  <div style={{
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: '#000000',
+                  }}>{selectedWeekStats.percentage}%</div>
+                </div>
+              </div>
+
+              {/* Note Section */}
+              <div>
+                <div style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 400,
+                  fontSize: '13px',
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  marginBottom: '6.5px',
+                }}>Note for this week</div>
+                <textarea
+                  placeholder="Add a memory or important moment..."
+                  value={weekNotes[selectedWeek] || ''}
+                  onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
+                  style={{
+                    width: '100%',
+                    minHeight: '65px',
+                    padding: '9.75px',
+                    fontFamily: 'Courier New',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    color: '#000000',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#F5F5F5',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Stats Text */}
           <div style={{
