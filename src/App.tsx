@@ -1575,7 +1575,9 @@ function AppContent() {
               position: 'fixed',
               top: 0,
               left: 0,
-              width: '400px',
+              width: 'calc(100vw / 3.2)',
+              minWidth: '320px',
+              maxWidth: 'calc(100vw / 3.2)',
               height: '100dvh',
               backgroundColor: '#E9EAE5',
               zIndex: 99999,
@@ -1583,6 +1585,7 @@ function AppContent() {
               flexDirection: 'column',
               paddingTop: '40px',
               overflow: 'auto',
+              borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
             }}
           >
             <SettingsModal
