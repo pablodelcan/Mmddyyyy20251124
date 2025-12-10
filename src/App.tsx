@@ -23,8 +23,10 @@ import { useTimeOfDay } from './hooks/useTimeOfDay';
 import { secureStorage } from './utils/secureStorage';
 import { Keyboard } from '@capacitor/keyboard';
 import { getLocalDateString } from './utils/dateUtils';
+import { useIsMobile } from './components/ui/use-mobile';
+import { WebLayout } from './components/WebLayout';
 
-interface TodoItem {
+export interface TodoItem {
   id: string;
   text: string;
   completed: boolean;
@@ -34,9 +36,11 @@ interface TodoItem {
   timerEnd?: number; // Timestamp when timer should complete
 }
 
-interface TodosState {
+export interface TodosState {
   [date: string]: TodoItem[];
 }
+
+export type TodosByDate = TodosState;
 
 interface UndoAction {
   type: 'add' | 'delete' | 'toggle' | 'edit' | 'reorder' | 'priority';
@@ -428,6 +432,7 @@ function DraggableTodo({
 
 function AppContent() {
   const timeOfDay = useTimeOfDay();
+  const isMobile = useIsMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const [todos, setTodos] = useState<TodosState>({});
@@ -486,99 +491,105 @@ function AppContent() {
     };
   }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId, showOnboarding]);
 
-  // Track keyboard visibility
+  // Track keyboard visibility (only on mobile/Capacitor)
   useEffect(() => {
-    let showListener: any;
-    let hideListener: any;
+    // Only run on Capacitor (mobile)
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      let showListener: any;
+      let hideListener: any;
 
-    const setupListeners = async () => {
-      showListener = await Keyboard.addListener('keyboardWillShow', () => {
-        setIsKeyboardVisible(true);
-      });
+      const setupListeners = async () => {
+        showListener = await Keyboard.addListener('keyboardWillShow', () => {
+          setIsKeyboardVisible(true);
+        });
 
-      hideListener = await Keyboard.addListener('keyboardWillHide', () => {
-        setIsKeyboardVisible(false);
-        setIsAddingTask(false);
-      });
-    };
+        hideListener = await Keyboard.addListener('keyboardWillHide', () => {
+          setIsKeyboardVisible(false);
+          setIsAddingTask(false);
+        });
+      };
 
-    setupListeners();
+      setupListeners();
 
-    return () => {
-      if (showListener) showListener.remove();
-      if (hideListener) hideListener.remove();
-    };
+      return () => {
+        if (showListener) showListener.remove();
+        if (hideListener) hideListener.remove();
+      };
+    }
   }, []);
 
-  // Prevent content shifting when keyboard appears/disappears
+  // Prevent content shifting when keyboard appears/disappears (only on mobile/Capacitor)
   useEffect(() => {
-    // Disable keyboard scrolling
-    Keyboard.setScroll({ isDisabled: true });
+    // Only run on Capacitor (mobile)
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      // Disable keyboard scrolling
+      Keyboard.setScroll({ isDisabled: true });
 
-    // Lock the initial viewport height
-    const initialHeight = window.innerHeight;
-    document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
-
-    const preventResize = () => {
       // Lock the initial viewport height
       const initialHeight = window.innerHeight;
       document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
 
-      // Instead of setting fixed heights and overflow: hidden on root, body, html, 
-      // we'll rely on the meta tag and viewport-fit=cover
-      // We only ensure scrolling is prevented
-      window.scrollTo(0, 0);
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
-    };
+      const preventResize = () => {
+        // Lock the initial viewport height
+        const initialHeight = window.innerHeight;
+        document.documentElement.style.setProperty('--initial-vh', `${initialHeight}px`);
 
-    // Prevent viewport resize on visual viewport changes (keyboard)
-    const handleVisualViewportChange = () => {
-      preventResize();
-      // Force scroll to top
-      window.scrollTo(0, 0);
-      if (window.visualViewport) {
+        // Instead of setting fixed heights and overflow: hidden on root, body, html, 
+        // we'll rely on the meta tag and viewport-fit=cover
+        // We only ensure scrolling is prevented
         window.scrollTo(0, 0);
-      }
-    };
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      };
 
-    const preventScroll = (e: Event) => {
-      // Don't prevent scrolling inside modals (SettingsModal, LifetimeView, etc.)
-      const target = e.target as HTMLElement;
-      if (target && (
-        target.closest('[class*="overflow-y-auto"]') ||
-        target.closest('[class*="overflow-y-scroll"]') ||
-        target.closest('.fixed.inset-0')
-      )) {
-        return; // Allow scrolling in modals
-      }
-      e.preventDefault();
-      window.scrollTo(0, 0);
-    };
+      // Prevent viewport resize on visual viewport changes (keyboard)
+      const handleVisualViewportChange = () => {
+        preventResize();
+        // Force scroll to top
+        window.scrollTo(0, 0);
+        if (window.visualViewport) {
+          window.scrollTo(0, 0);
+        }
+      };
 
-    // Lock viewport on resize (keyboard show/hide)
-    window.addEventListener('resize', preventResize);
-    window.addEventListener('scroll', preventScroll, { passive: false });
-    document.addEventListener('scroll', preventScroll, { passive: false });
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleVisualViewportChange);
-      window.visualViewport.addEventListener('scroll', (e) => {
+      const preventScroll = (e: Event) => {
+        // Don't prevent scrolling inside modals (SettingsModal, LifetimeView, etc.)
+        const target = e.target as HTMLElement;
+        if (target && (
+          target.closest('[class*="overflow-y-auto"]') ||
+          target.closest('[class*="overflow-y-scroll"]') ||
+          target.closest('.fixed.inset-0')
+        )) {
+          return; // Allow scrolling in modals
+        }
         e.preventDefault();
         window.scrollTo(0, 0);
-      });
-    }
+      };
 
-    preventResize(); // Initial call
+      // Lock viewport on resize (keyboard show/hide)
+      window.addEventListener('resize', preventResize);
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      document.addEventListener('scroll', preventScroll, { passive: false });
 
-    return () => {
-      window.removeEventListener('resize', preventResize);
-      window.removeEventListener('scroll', preventScroll);
-      document.removeEventListener('scroll', preventScroll);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+        window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+        window.visualViewport.addEventListener('scroll', (e) => {
+          e.preventDefault();
+          window.scrollTo(0, 0);
+        });
       }
-    };
+
+      preventResize(); // Initial call
+
+      return () => {
+        window.removeEventListener('resize', preventResize);
+        window.removeEventListener('scroll', preventScroll);
+        document.removeEventListener('scroll', preventScroll);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+        }
+      };
+    }
   }, []);
 
   // Check if first time opening app
@@ -735,7 +746,7 @@ function AppContent() {
 
   // Track if we've merged local data after authentication
   const hasMergedLocalDataRef = useRef(false);
-  
+
   // Track the last date we checked for task rollover
   const lastCheckedDateRef = useRef<string | null>(null);
 
@@ -803,10 +814,17 @@ function AppContent() {
   };
 
   const loadFromBackend = async () => {
-    if (!accessToken) return;
+    console.log('[DEBUG] loadFromBackend called, accessToken exists:', !!accessToken);
+    if (!accessToken) {
+      console.log('[DEBUG] No accessToken, returning early');
+      return;
+    }
+
+    console.log('[DEBUG] hasMergedLocalDataRef:', hasMergedLocalDataRef.current);
 
     // Preserve local data before loading from backend
     const localTodos = secureStorage.getItem<TodosState>('todos') || {};
+    console.log('[DEBUG] Local todos keys:', Object.keys(localTodos));
     const localDateOfBirth = secureStorage.getItem<string>('dateOfBirth');
     const localExpectedLifespan = secureStorage.getItem<number>('expectedLifespan');
     const localMeditationDates = secureStorage.getItem<string[]>('meditationDates') || [];
@@ -818,7 +836,7 @@ function AppContent() {
     try {
       // Get timezone offset in minutes (negative for timezones behind UTC)
       const timezoneOffset = -new Date().getTimezoneOffset();
-      
+
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/todos?timezoneOffset=${timezoneOffset}`,
         {
@@ -828,14 +846,22 @@ function AppContent() {
         }
       );
 
+      console.log('[DEBUG] Response status:', response.status, response.ok);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('[DEBUG] Server data received:', {
+          todoKeys: Object.keys(data.todos || {}),
+          totalTodos: Object.values(data.todos || {}).flat().length,
+          hasBucketList: (data.bucketList || []).length,
+          dateOfBirth: data.dateOfBirth
+        });
 
         // Merge todos: combine local and server tasks
         const serverTodos = data.todos || {};
         const mergedTodos = mergeTasks(localTodos, serverTodos);
         setTodos(mergedTodos);
-        
+
         // Reset the last checked date so task transfer runs again after loading
         // This ensures tasks are properly transferred even if the app was closed at midnight
         lastCheckedDateRef.current = null;
@@ -997,7 +1023,7 @@ function AppContent() {
       if (response.ok) {
         // Clear local storage
         secureStorage.clear();
-        
+
         // Reset all state
         setTodos({});
         setDateOfBirth(null);
@@ -1005,12 +1031,12 @@ function AppContent() {
         setLastMeditationTime(null);
         setWeekNotes({});
         setBucketList([]);
-        
+
         // Sign out (which clears auth)
         await supabase.auth.signOut();
         setAccessToken(null);
         setUserId(null);
-        
+
         toast.success('Account deleted successfully');
         setShowSettings(false);
       } else {
@@ -1467,6 +1493,131 @@ function AppContent() {
   // Keep tasks in their original order - no sorting by completion status
   const sortedTodos = [...currentTodos];
 
+  // If desktop, render WebLayout
+  if (!isMobile) {
+    return (
+      <>
+        <Toaster position="top-center" />
+        <WebLayout
+          currentDate={currentDate}
+          setCurrentDate={setCurrentDate}
+          todos={todos}
+          setTodos={setTodos}
+          newTodo={newTodo}
+          setNewTodo={setNewTodo}
+          editingId={editingId}
+          setEditingId={setEditingId}
+          editText={editText}
+          setEditText={setEditText}
+          dateKey={dateKey}
+          currentTodos={currentTodos}
+          sortedTodos={sortedTodos}
+          meditationDates={meditationDates}
+          dateOfBirth={dateOfBirth}
+          expectedLifespan={expectedLifespan}
+          weekNotes={weekNotes}
+          setWeekNotes={setWeekNotes}
+          bucketList={bucketList}
+          setBucketList={setBucketList}
+          totalMeditationMinutes={totalMeditationMinutes}
+          meditationGlowActive={!!meditationGlowActive}
+          currentTime={currentTime}
+          timerModalTodoId={timerModalTodoId}
+          setTimerModalTodoId={setTimerModalTodoId}
+          accessToken={accessToken}
+          showSettings={showSettings}
+          setShowSettings={setShowSettings}
+          showAuth={showAuth}
+          setShowAuth={setShowAuth}
+          onToggle={toggleTodo}
+          onStartEdit={startEdit}
+          onSave={handleSave}
+          onKeyDown={handleKeyDown}
+          onMove={moveTodo}
+          onDelete={deleteTodo}
+          onPriorityToggle={togglePriority}
+          onTimerClick={setTimerModalTodoId}
+          getTimeRemaining={getTimeRemaining}
+          setTaskTimer={setTaskTimer}
+          clearTaskTimer={clearTaskTimer}
+          addTodo={addTodo}
+          goToPreviousDay={goToPreviousDay}
+          goToNextDay={goToNextDay}
+          goToToday={goToToday}
+          onMonthChange={(direction) => {
+            const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
+            setCurrentDate(newDate);
+          }}
+          onSelectDate={setCurrentDate}
+          onSaveWeekNote={(weekIndex, note) => {
+            setWeekNotes(prev => ({
+              ...prev,
+              [weekIndex]: note
+            }));
+          }}
+          timeOfDay={timeOfDay}
+        />
+        {/* Modals for web */}
+        <AnimatePresence>
+          {showAuth && !accessToken && (
+            <AuthModal
+              onSuccess={handleAuthSuccess}
+              onClose={() => setShowAuth(false)}
+            />
+          )}
+        </AnimatePresence>
+        {showSettings && accessToken && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '400px',
+              height: '100dvh',
+              backgroundColor: '#E9EAE5',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: '40px',
+              overflow: 'auto',
+            }}
+          >
+            <SettingsModal
+              onClose={() => setShowSettings(false)}
+              accessToken={accessToken}
+              onSignOut={handleSignOut}
+              dateOfBirth={dateOfBirth}
+              onSaveDateOfBirth={handleSaveDateOfBirth}
+              expectedLifespan={expectedLifespan}
+              onSaveLifespan={saveLifespan}
+              meditationDuration={meditationDuration}
+              onSaveMeditationDuration={setMeditationDuration}
+              totalMeditationMinutes={totalMeditationMinutes}
+              onAddManualMeditation={setTotalMeditationMinutes}
+            />
+          </motion.div>
+        )}
+        {timerModalTodoId && (
+          <TimerModal
+            onClose={() => setTimerModalTodoId(null)}
+            onSetTimer={(minutes) => {
+              setTaskTimer(timerModalTodoId, minutes);
+            }}
+            onClearTimer={() => {
+              clearTaskTimer(timerModalTodoId);
+            }}
+            taskText={currentTodos.find(t => t.id === timerModalTodoId)?.text || ''}
+            hasActiveTimer={!!currentTodos.find(t => t.id === timerModalTodoId)?.timerEnd}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Mobile layout (existing code - unchanged)
   return (
     <div
       className="flex flex-col items-center transition-colors duration-1000"

@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { X, Mail, Calendar, TrendingUp, Send, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectId } from '../utils/supabase/info';
+import { getSupabaseClient } from '../utils/supabase/client';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -35,7 +36,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
   const [testing, setTesting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [customLifespan, setCustomLifespan] = useState(expectedLifespan.toString());
-  
+
   // Refs for debouncing autosave
   const savePreferencesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveLifespanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,7 +63,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
   }, []);
 
   const loadPreferences = async () => {
+    console.log('[DEBUG] Loading preferences...');
     try {
+      // First, get the user's email from Supabase auth
+      const supabase = getSupabaseClient();
+      const { data: { user } } = await supabase.auth.getUser(accessToken);
+      const authEmail = user?.email?.toLowerCase().trim() || '';
+      console.log('[DEBUG] User auth email:', authEmail);
+
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/preferences`,
         {
@@ -72,18 +80,32 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         }
       );
 
+      console.log('[DEBUG] Preferences response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
-        if (data.preferences && Object.keys(data.preferences).length > 0) {
-          setPreferences({
-            email: data.preferences.email ? data.preferences.email.toLowerCase().trim() : '',
-            weeklyReportEnabled: data.preferences.weeklyReportEnabled || false,
-            weeklyReportDay: data.preferences.weeklyReportDay ?? 0
-          });
-        }
+        console.log('[DEBUG] Preferences data from server:', data);
+
+        // Use saved email preference if exists, otherwise use auth email
+        const savedEmail = data.preferences?.email?.toLowerCase().trim() || '';
+        const emailToUse = savedEmail || authEmail;
+
+        console.log('[DEBUG] Setting preferences with email:', emailToUse);
+        setPreferences({
+          email: emailToUse,
+          weeklyReportEnabled: data.preferences?.weeklyReportEnabled || false,
+          weeklyReportDay: data.preferences?.weeklyReportDay ?? 0
+        });
+      } else {
+        // If no preferences saved, still use auth email
+        console.log('[DEBUG] No preferences found, using auth email:', authEmail);
+        setPreferences(prev => ({
+          ...prev,
+          email: authEmail
+        }));
       }
     } catch (err) {
-      console.error('Failed to load preferences:', err);
+      console.error('[DEBUG] Failed to load preferences:', err);
     } finally {
       setLoading(false);
     }
@@ -123,12 +145,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
 
   // Autosave preferences with debouncing
   const savePreferences = useCallback(async (showToast = false) => {
+    console.log('[DEBUG] Saving preferences...', preferences);
     try {
       // Normalize email to lowercase before saving
       const normalizedPreferences = {
         ...preferences,
         email: preferences.email ? preferences.email.toLowerCase().trim() : ''
       };
+      console.log('[DEBUG] Normalized preferences to save:', normalizedPreferences);
 
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/preferences`,
@@ -142,18 +166,21 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         }
       );
 
+      console.log('[DEBUG] Save preferences response status:', response.status);
+
       if (response.ok) {
+        console.log('[DEBUG] Preferences saved successfully');
         if (showToast) {
           toast.success('Settings saved');
         }
       } else {
-        console.error('Failed to save preferences');
+        console.error('[DEBUG] Failed to save preferences, status:', response.status);
         if (showToast) {
           toast.error('Failed to save settings');
         }
       }
     } catch (err) {
-      console.error('Failed to save preferences:', err);
+      console.error('[DEBUG] Failed to save preferences:', err);
       if (showToast) {
         toast.error('Failed to save settings');
       }
@@ -312,8 +339,8 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-            paddingLeft: '22.5px',
-            paddingRight: '22.5px',
+        paddingLeft: '22.5px',
+        paddingRight: '22.5px',
         flexShrink: 0,
         boxSizing: 'border-box',
       }}>
@@ -361,7 +388,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
       </div>
 
       {/* Scrollable Content */}
-      <div 
+      <div
         style={{
           flex: 1,
           minHeight: 0,
