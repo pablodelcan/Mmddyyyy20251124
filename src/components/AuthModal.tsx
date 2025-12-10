@@ -119,7 +119,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
       setSuccess('Password has been reset! You can now sign in with your new password.');
       setPassword('');
       setLoading(false);
-      
+
       // Auto switch to sign in after 2 seconds
       setTimeout(() => {
         setMode('signin');
@@ -144,7 +144,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
 
   const modalContent = (
     <>
-      <div 
+      <div
         style={{
           backgroundColor: 'rgba(0, 0, 0, 0.2)',
           zIndex: 99999,
@@ -185,65 +185,97 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
             pointerEvents: 'auto',
           }}
         >
-        <div
-          style={{
-            width: '302.28px',
-            height: '22.49px',
-            position: 'absolute',
-            top: '20px',
-            left: '30.53px',
-            opacity: 1,
-          }}
-        >
           <div
             style={{
-              width: '68px',
-              height: '23px',
+              width: '302.28px',
+              height: '22.49px',
               position: 'absolute',
-              top: '-0.32px',
-              left: '117.01px',
+              top: '20px',
+              left: '30.53px',
               opacity: 1,
-              backgroundColor: 'transparent',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
-            <div 
+            <div
               style={{
-                fontFamily: 'Courier New',
-                fontWeight: 700,
-                fontSize: '15px',
-                lineHeight: '22.5px',
-                letterSpacing: '0.75px',
-                textAlign: 'center',
-                textTransform: 'uppercase',
-                color: '#000000',
-                margin: 0,
-                padding: 0,
-                whiteSpace: 'nowrap',
+                width: '68px',
+                height: '23px',
+                position: 'absolute',
+                top: '-0.32px',
+                left: '117.01px',
+                opacity: 1,
+                backgroundColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {mode === 'signup' ? 'CREATE ACCOUNT' : mode === 'signin' ? 'SIGN IN' : 'RESET PASSWORD'}
+              <div
+                style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  lineHeight: '22.5px',
+                  letterSpacing: '0.75px',
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                  color: '#000000',
+                  margin: 0,
+                  padding: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {mode === 'signup' ? 'CREATE ACCOUNT' : mode === 'signin' ? 'SIGN IN' : 'RESET PASSWORD'}
+              </div>
             </div>
           </div>
-        </div>
 
-        <form 
-          onSubmit={handleSubmit} 
-          style={{
-            marginTop: '70px',
-            paddingLeft: '30.53px',
-            paddingRight: '30.53px',
-            paddingBottom: '30.53px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            flex: 1,
-            overflowY: 'auto',
-          }}
-        >
-          {mode === 'signup' && (
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              marginTop: '70px',
+              paddingLeft: '30.53px',
+              paddingRight: '30.53px',
+              paddingBottom: '30.53px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              flex: 1,
+              overflowY: 'auto',
+            }}
+          >
+            {mode === 'signup' && (
+              <div>
+                <label style={{
+                  fontFamily: 'Courier New',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  textTransform: 'uppercase',
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  display: 'block',
+                  marginBottom: '8px',
+                }}>
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                    outline: 'none',
+                    padding: '8px 0',
+                    fontFamily: 'Courier New',
+                    fontSize: '15px',
+                    color: '#000000',
+                  }}
+                />
+              </div>
+            )}
+
             <div>
               <label style={{
                 fontFamily: 'Courier New',
@@ -254,12 +286,12 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
                 display: 'block',
                 marginBottom: '8px',
               }}>
-                Name
+                Email
               </label>
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                 required
                 style={{
                   width: '100%',
@@ -274,182 +306,150 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
                 }}
               />
             </div>
-          )}
 
-          <div>
-            <label style={{
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              textTransform: 'uppercase',
-              color: 'rgba(0, 0, 0, 0.6)',
-              display: 'block',
-              marginBottom: '8px',
-            }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
-              required
+            <div>
+              <label style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                textTransform: 'uppercase',
+                color: 'rgba(0, 0, 0, 0.6)',
+                display: 'block',
+                marginBottom: '8px',
+              }}>
+                {mode === 'forgot' ? 'New Password' : 'Password'}
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                  outline: 'none',
+                  padding: '8px 0',
+                  fontFamily: 'Courier New',
+                  fontSize: '15px',
+                  color: '#000000',
+                }}
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                textAlign: 'center',
+                color: '#D84341',
+                fontFamily: 'Courier New',
+                fontSize: '13px',
+              }}>
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div style={{
+                textAlign: 'center',
+                color: '#22c55e',
+                fontFamily: 'Courier New',
+                fontSize: '13px',
+              }}>
+                {success}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
               style={{
                 width: '100%',
-                background: 'transparent',
+                backgroundColor: '#000000',
+                color: '#FFFFFF',
                 border: 'none',
-                borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
-                outline: 'none',
-                padding: '8px 0',
+                padding: '12px',
                 fontFamily: 'Courier New',
+                fontWeight: 700,
                 fontSize: '15px',
-                color: '#000000',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
               }}
-            />
-          </div>
+            >
+              {loading ? 'Loading...' : mode === 'signup' ? 'Sign Up' : mode === 'signin' ? 'Sign In' : 'Reset Password'}
+            </button>
+          </form>
 
-          <div>
-            <label style={{
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              textTransform: 'uppercase',
-              color: 'rgba(0, 0, 0, 0.6)',
-              display: 'block',
-              marginBottom: '8px',
-            }}>
-              {mode === 'forgot' ? 'New Password' : 'Password'}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
+          <div style={{
+            paddingLeft: '30.53px',
+            paddingRight: '30.53px',
+            paddingBottom: 0,
+            marginTop: '22.18px',
+            textAlign: 'center',
+          }}>
+            <button
+              onClick={() => {
+                setMode(mode === 'signup' ? 'signin' : 'signup');
+                setError('');
+              }}
               style={{
-                width: '100%',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
-                outline: 'none',
-                padding: '8px 0',
+                color: 'rgba(0, 0, 0, 0.6)',
                 fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontStyle: 'normal',
                 fontSize: '15px',
-                color: '#000000',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                padding: '4px',
               }}
-            />
+            >
+              {mode === 'signup'
+                ? 'Already have an account? Sign in'
+                : "Don't have an account? Sign up"}
+            </button>
           </div>
 
-          {error && (
-            <div style={{ 
-              textAlign: 'center', 
-              color: '#D84341',
-              fontFamily: 'Courier New',
-              fontSize: '13px',
-            }}>
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div style={{ 
-              textAlign: 'center', 
-              color: '#22c55e',
-              fontFamily: 'Courier New',
-              fontSize: '13px',
-            }}>
-              {success}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              backgroundColor: '#000000',
-              color: '#FFFFFF',
-              border: 'none',
-              padding: '12px',
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontSize: '15px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-              marginTop: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-            }}
-          >
-            {loading ? 'Loading...' : mode === 'signup' ? 'Sign Up' : mode === 'signin' ? 'Sign In' : 'Reset Password'}
-          </button>
-        </form>
-
-        <div style={{
-          paddingLeft: '30.53px',
-          paddingRight: '30.53px',
-          paddingBottom: 0,
-          marginTop: '22.18px',
-          textAlign: 'center',
-        }}>
-          <button
-            onClick={() => {
-              setMode(mode === 'signup' ? 'signin' : 'signup');
-              setError('');
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(0, 0, 0, 0.6)',
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontStyle: 'normal',
-              fontSize: '15px',
-              lineHeight: '22.5px',
-              letterSpacing: '0px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
-          >
-            {mode === 'signup' 
-              ? 'Already have an account? Sign in' 
-              : "Don't have an account? Sign up"}
-          </button>
-        </div>
-
-        <div style={{
-          paddingLeft: '30.53px',
-          paddingRight: '30.53px',
-          paddingBottom: '20px',
-          marginTop: '6.5px',
-          textAlign: 'center',
-        }}>
-          <button
-            onClick={() => {
-              setMode('forgot');
-              setError('');
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(0, 0, 0, 0.6)',
-              fontFamily: 'Courier New',
-              fontWeight: 700,
-              fontStyle: 'normal',
-              fontSize: '15px',
-              lineHeight: '22.5px',
-              letterSpacing: '0px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
-          >
-            Forgot Password?
-          </button>
-        </div>
-      </motion.div>
+          <div style={{
+            paddingLeft: '30.53px',
+            paddingRight: '30.53px',
+            paddingBottom: '20px',
+            marginTop: '6.5px',
+            textAlign: 'center',
+          }}>
+            <button
+              onClick={() => {
+                setMode('forgot');
+                setError('');
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(0, 0, 0, 0.6)',
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontStyle: 'normal',
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              Forgot Password?
+            </button>
+          </div>
+        </motion.div>
       </div>
     </>
   );

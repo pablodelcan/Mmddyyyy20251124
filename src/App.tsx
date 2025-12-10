@@ -717,26 +717,51 @@ function AppContent() {
   useEffect(() => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.access_token) {
-        // Only reset merge flag on SIGNED_IN event (new login), not on existing sessions
-        if (event === 'SIGNED_IN') {
-          hasMergedLocalDataRef.current = false;
-        }
+      console.log('[AUTH] Auth state change:', event);
+
+      if (event === 'TOKEN_REFRESHED' && session?.access_token) {
+        // Token was refreshed successfully
         setAccessToken(session.access_token);
         setUserId(session.user.id);
-      } else {
-        // Reset merge flag on sign out
+      } else if (event === 'SIGNED_IN' && session?.access_token) {
+        // New sign in - reset merge flag
+        hasMergedLocalDataRef.current = false;
+        setAccessToken(session.access_token);
+        setUserId(session.user.id);
+      } else if (event === 'SIGNED_OUT' || !session) {
+        // Signed out or session cleared
         hasMergedLocalDataRef.current = false;
         setAccessToken(null);
         setUserId(null);
       }
     });
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Get initial session with error handling for invalid refresh tokens
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('[AUTH] Error getting session:', error);
+        // If refresh token is invalid, clear any stale auth state
+        if (error.message?.includes('refresh_token') || error.code === 'refresh_token_not_found') {
+          console.log('[AUTH] Invalid refresh token, clearing session');
+          supabase.auth.signOut(); // Clear the invalid session
+          setAccessToken(null);
+          setUserId(null);
+        }
+        return;
+      }
+
       if (session?.access_token) {
         setAccessToken(session.access_token);
         setUserId(session.user.id);
+      }
+    }).catch((err) => {
+      // Handle any caught errors (like network issues)
+      console.error('[AUTH] Failed to get session:', err);
+      // If it's related to refresh token, sign out
+      if (err?.message?.includes('refresh_token') || err?.code === 'refresh_token_not_found') {
+        supabase.auth.signOut();
+        setAccessToken(null);
+        setUserId(null);
       }
     });
 

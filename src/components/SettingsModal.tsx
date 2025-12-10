@@ -396,7 +396,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
           padding: '24px',
-          paddingBottom: 'calc(24px + 50px + 20px + env(safe-area-inset-bottom))',
+          paddingBottom: 'calc(24px + 50px + 20px)',
           position: 'relative',
         }}
         onScroll={(e) => {
@@ -1275,7 +1275,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               opacity: 0,
               marginTop: '20px', // Space from the button above
               width: '100%',
-              paddingBottom: 'env(safe-area-inset-bottom)',
             }}
           ></div>
         </div>
