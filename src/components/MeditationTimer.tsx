@@ -24,7 +24,8 @@ interface MeditationTimerProps {
 }
 
 export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: MeditationTimerProps) => {
-  const [timeLeft, setTimeLeft] = useState(durationMinutes * 60); // Convert minutes to seconds
+  const [endTime] = useState(() => Date.now() + durationMinutes * 60 * 1000);
+  const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasCompletedRef = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -37,7 +38,7 @@ export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: Medita
         if ('wakeLock' in navigator && navigator.wakeLock) {
           const wakeLock = await navigator.wakeLock.request('screen');
           wakeLockRef.current = wakeLock;
-          
+
           // Handle wake lock release (e.g., when user switches tabs or screen locks)
           wakeLock.addEventListener('release', () => {
             // Try to reacquire if timer is still running
@@ -78,40 +79,41 @@ export const MeditationTimer = ({ onComplete, onClose, durationMinutes }: Medita
   }, []);
 
   useEffect(() => {
+    // Use requestAnimationFrame-like approach with short interval for accuracy
+    // Calculate remaining time from endTime each tick to prevent drift
     intervalRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          // Release wake lock when timer completes
-          if (wakeLockRef.current) {
-            wakeLockRef.current.release().catch(() => {});
-            wakeLockRef.current = null;
-          }
-          // Use setTimeout to defer the onComplete call to avoid setState during render
-          if (!hasCompletedRef.current) {
-            hasCompletedRef.current = true;
-            setTimeout(() => onComplete(durationMinutes), 0);
-          }
-          return 0;
+      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        // Release wake lock when timer completes
+        if (wakeLockRef.current) {
+          wakeLockRef.current.release().catch(() => { });
+          wakeLockRef.current = null;
         }
-        return prev - 1;
-      });
-    }, 1000);
+        // Use setTimeout to defer the onComplete call to avoid setState during render
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          setTimeout(() => onComplete(durationMinutes), 0);
+        }
+      }
+    }, 100); // Check every 100ms for more accurate timing
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       // Release wake lock on cleanup
       if (wakeLockRef.current) {
-        wakeLockRef.current.release().catch(() => {});
+        wakeLockRef.current.release().catch(() => { });
         wakeLockRef.current = null;
       }
     };
-  }, [onComplete, durationMinutes]);
+  }, [onComplete, durationMinutes, endTime]);
 
   // Release wake lock when user closes the timer
   const handleClose = () => {
     if (wakeLockRef.current) {
-      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current.release().catch(() => { });
       wakeLockRef.current = null;
     }
     onClose();

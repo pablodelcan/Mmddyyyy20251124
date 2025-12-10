@@ -61,6 +61,8 @@ interface WebLayoutProps {
   timeOfDay: 'day' | 'night';
   showBucketList: boolean;
   setShowBucketList: (show: boolean) => void;
+  undoStack: any[];
+  onUndo: () => void;
 }
 
 const ITEM_TYPE = 'TODO';
@@ -123,6 +125,8 @@ export const WebLayout = ({
   timeOfDay,
   showBucketList,
   setShowBucketList,
+  undoStack,
+  onUndo,
 }: WebLayoutProps) => {
   const [lifetimeViewWidth, setLifetimeViewWidth] = useState(400);
   const lifetimeRef = useRef<HTMLDivElement>(null);
@@ -294,6 +298,34 @@ export const WebLayout = ({
                 }}
               >
                 Today
+              </button>
+            )}
+
+            {/* Undo Button */}
+            {undoStack.length > 0 && (
+              <button
+                onClick={onUndo}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  marginLeft: 'auto',
+                  width: '19.5px',
+                  height: '19.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <img
+                  src="/undo.svg"
+                  alt="Undo"
+                  style={{
+                    width: '13px',
+                    height: '13px',
+                  }}
+                />
               </button>
             )}
           </div>

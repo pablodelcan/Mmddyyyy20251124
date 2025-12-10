@@ -770,19 +770,55 @@ function AppContent() {
   }, [todos, dateOfBirth, expectedLifespan, meditationDates, lastMeditationTime, totalMeditationMinutes, weekNotes, bucketList, accessToken, userId, isOnline]);
 
   // Helper function to merge local and server tasks
+  // When the same task exists in both, prefer the completed version (once completed, always completed)
+  // and merge other properties like priority
   const mergeTasks = (localTasks: TodosState, serverTasks: TodosState): TodosState => {
-    const merged: TodosState = { ...serverTasks };
+    const merged: TodosState = {};
 
-    // Merge tasks from local storage
-    Object.keys(localTasks).forEach(dateKey => {
-      if (!merged[dateKey]) {
-        // Server doesn't have this date, add all local tasks
-        merged[dateKey] = [...localTasks[dateKey]];
-      } else {
-        // Both have this date - merge unique tasks
-        const serverTaskIds = new Set(merged[dateKey].map(t => t.id));
-        const uniqueLocalTasks = localTasks[dateKey].filter(t => !serverTaskIds.has(t.id));
-        merged[dateKey] = [...merged[dateKey], ...uniqueLocalTasks];
+    // Get all unique date keys from both
+    const allDateKeys = new Set([...Object.keys(localTasks), ...Object.keys(serverTasks)]);
+
+    allDateKeys.forEach(dateKey => {
+      const localTasksForDate = localTasks[dateKey] || [];
+      const serverTasksForDate = serverTasks[dateKey] || [];
+
+      // Create a map of local tasks by ID for quick lookup
+      const localTaskMap = new Map(localTasksForDate.map(t => [t.id, t]));
+      const serverTaskMap = new Map(serverTasksForDate.map(t => [t.id, t]));
+
+      // Get all unique task IDs for this date
+      const allTaskIds = new Set([...localTaskMap.keys(), ...serverTaskMap.keys()]);
+
+      const mergedTasksForDate: TodoItem[] = [];
+
+      allTaskIds.forEach(taskId => {
+        const localTask = localTaskMap.get(taskId);
+        const serverTask = serverTaskMap.get(taskId);
+
+        if (localTask && serverTask) {
+          // Task exists in both - merge intelligently
+          // Once a task is completed anywhere, it stays completed (prevents completed tasks from becoming incomplete)
+          const isCompleted = localTask.completed || serverTask.completed;
+          // Priority: prefer true over false (once highlighted, keep it unless explicitly removed)
+          const isPriority = localTask.priority || serverTask.priority;
+
+          mergedTasksForDate.push({
+            ...serverTask,
+            ...localTask,
+            completed: isCompleted,
+            priority: isPriority,
+          });
+        } else if (localTask) {
+          // Only exists locally
+          mergedTasksForDate.push(localTask);
+        } else if (serverTask) {
+          // Only exists on server
+          mergedTasksForDate.push(serverTask);
+        }
+      });
+
+      if (mergedTasksForDate.length > 0) {
+        merged[dateKey] = mergedTasksForDate;
       }
     });
 
@@ -1200,13 +1236,15 @@ function AppContent() {
       Object.keys(newTodos).forEach(dateKey => {
         // Only process past dates (before today, using string comparison)
         if (dateKey < today) {
-          const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => !t.completed);
+          // Use strict boolean comparison to ensure completed priority tasks are not transferred
+          // This fixes a bug where priority tasks with completed=true were being treated as incomplete
+          const incompleteTasks = newTodos[dateKey].filter((t: TodoItem) => t.completed !== true);
 
           if (incompleteTasks.length > 0) {
             hasChanges = true;
 
-            // Remove incomplete tasks from past date
-            newTodos[dateKey] = newTodos[dateKey].filter((t: TodoItem) => t.completed);
+            // Remove incomplete tasks from past date (keep only truly completed tasks)
+            newTodos[dateKey] = newTodos[dateKey].filter((t: TodoItem) => t.completed === true);
 
             // Add incomplete tasks to today (update date field and remove rolledOver flag if present)
             if (!newTodos[today]) {
@@ -1559,6 +1597,8 @@ function AppContent() {
           timeOfDay={timeOfDay}
           showBucketList={showBucketList}
           setShowBucketList={setShowBucketList}
+          undoStack={undoStack}
+          onUndo={() => handleUndo()}
         />
         {/* Modals for web */}
         <AnimatePresence>

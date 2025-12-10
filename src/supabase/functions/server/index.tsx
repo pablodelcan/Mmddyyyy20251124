@@ -45,7 +45,7 @@ const verifyUser = async (accessToken: string | undefined) => {
 
   const supabase = getSupabaseAdmin();
   const { data: { user }, error } = await supabase.auth.getUser(accessToken);
-  
+
   if (error || !user) {
     console.log('Authorization error while verifying user:', error);
     return { error: 'Unauthorized' };
@@ -70,7 +70,7 @@ app.get("/make-server-d6a7a206/debug-env", async (c) => {
 
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
-  
+
   return c.json({
     resend: {
       exists: !!resendKey,
@@ -110,13 +110,15 @@ const transferIncompleteTasks = (todosData: any, todayDate: string): { todos: an
   Object.keys(newTodos).forEach(dateKey => {
     // Only process past dates (before today, using string comparison)
     if (dateKey < todayDate && Array.isArray(newTodos[dateKey])) {
-      const incompleteTasks = newTodos[dateKey].filter((t: any) => !t.completed);
+      // Use strict boolean comparison to ensure completed priority tasks are not transferred
+      // This fixes a bug where priority tasks with completed=true were being treated as incomplete
+      const incompleteTasks = newTodos[dateKey].filter((t: any) => t.completed !== true);
 
       if (incompleteTasks.length > 0) {
         hasChanges = true;
 
-        // Remove incomplete tasks from past date
-        newTodos[dateKey] = newTodos[dateKey].filter((t: any) => t.completed);
+        // Remove incomplete tasks from past date (keep only truly completed tasks)
+        newTodos[dateKey] = newTodos[dateKey].filter((t: any) => t.completed === true);
 
         // Add incomplete tasks to today (update date field)
         if (!newTodos[todayDate]) {
@@ -158,23 +160,23 @@ app.get("/make-server-d6a7a206/todos", async (c) => {
     const totalMeditationMinutes = await kv.get(`totalMeditationMinutes:${user!.id}`);
     const weekNotes = await kv.get(`weekNotes:${user!.id}`);
     const bucketList = await kv.get(`bucketList:${user!.id}`);
-    
+
     // Get timezone offset from query parameter (optional, defaults to 0/UTC)
     // Format: timezoneOffset in minutes (e.g., -480 for PST which is UTC-8)
     // Note: JavaScript getTimezoneOffset() returns positive for behind UTC, so we negate it
     const timezoneOffsetParam = c.req.query('timezoneOffset');
     const timezoneOffsetMinutes = timezoneOffsetParam ? parseInt(timezoneOffsetParam, 10) : 0;
-    
+
     // Get today's date in the user's local timezone
     const now = new Date();
     const todayDate = getLocalDateString(now, timezoneOffsetMinutes);
-    
+
     // Transfer incomplete tasks from past dates to today
     // Check if we've already done the transfer today
     const lastTransferDate = await kv.get(`lastTaskTransferDate:${user!.id}`);
     if (!lastTransferDate || lastTransferDate !== todayDate) {
       const transferResult = transferIncompleteTasks(todosData, todayDate);
-      
+
       // Save updated todos if there were changes and update last transfer date
       if (transferResult.hasChanges) {
         todosData = transferResult.todos;
@@ -182,8 +184,8 @@ app.get("/make-server-d6a7a206/todos", async (c) => {
         await kv.set(`lastTaskTransferDate:${user!.id}`, todayDate);
       }
     }
-    
-    return c.json({ 
+
+    return c.json({
       todos: todosData,
       dateOfBirth: dateOfBirth || null,
       expectedLifespan: expectedLifespan || 80,
@@ -210,9 +212,9 @@ app.post("/make-server-d6a7a206/todos", async (c) => {
 
   try {
     const body = await c.req.json();
-    
+
     console.log('Attempting to save data for user:', user!.id);
-    console.log('Data received:', { 
+    console.log('Data received:', {
       hasTodos: !!body.todos,
       todosKeys: body.todos ? Object.keys(body.todos).length : 0,
       hasDateOfBirth: body.dateOfBirth !== undefined,
@@ -223,47 +225,47 @@ app.post("/make-server-d6a7a206/todos", async (c) => {
       hasWeekNotes: body.weekNotes !== undefined,
       hasBucketList: body.bucketList !== undefined
     });
-    
+
     // Save all the data - only save non-null values
     if (body.todos !== null && body.todos !== undefined) {
       await kv.set(`todos:${user!.id}`, body.todos);
     }
-    
+
     if (body.dateOfBirth !== null && body.dateOfBirth !== undefined) {
       await kv.set(`dateOfBirth:${user!.id}`, body.dateOfBirth);
     }
-    
+
     if (body.expectedLifespan !== null && body.expectedLifespan !== undefined) {
       await kv.set(`expectedLifespan:${user!.id}`, body.expectedLifespan);
     }
-    
+
     if (body.meditationDates !== null && body.meditationDates !== undefined) {
       await kv.set(`meditationDates:${user!.id}`, body.meditationDates);
     }
-    
+
     if (body.lastMeditationTime !== null && body.lastMeditationTime !== undefined) {
       await kv.set(`lastMeditationTime:${user!.id}`, body.lastMeditationTime);
     }
-    
+
     if (body.totalMeditationMinutes !== null && body.totalMeditationMinutes !== undefined) {
       await kv.set(`totalMeditationMinutes:${user!.id}`, body.totalMeditationMinutes);
     }
-    
+
     if (body.weekNotes !== null && body.weekNotes !== undefined) {
       await kv.set(`weekNotes:${user!.id}`, body.weekNotes);
     }
-    
+
     if (body.bucketList !== null && body.bucketList !== undefined) {
       await kv.set(`bucketList:${user!.id}`, body.bucketList);
     }
-    
+
     console.log('Data saved successfully for user:', user!.id);
     return c.json({ success: true });
   } catch (err) {
     console.error('Error saving todos - Full error:', err);
     console.error('Error message:', err instanceof Error ? err.message : String(err));
     console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
-    return c.json({ 
+    return c.json({
       error: 'Failed to save todos',
       details: err instanceof Error ? err.message : String(err)
     }, 500);
@@ -310,7 +312,7 @@ app.post("/make-server-d6a7a206/preferences", async (c) => {
 // Generate simple weekly summary without AI
 const generateWeeklySummary = async (weekData: any) => {
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
-  
+
   if (!openaiKey) {
     // Fallback to simple message if no API key
     const rate = weekData.completionRate;
@@ -384,7 +386,7 @@ Weave this in naturally if you feel it fits—don't force it.`;
 // Send daily digest email
 app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
   const resendKey = Deno.env.get('RESEND_API_KEY');
-  
+
   if (!resendKey) {
     return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
   }
@@ -407,7 +409,7 @@ app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
       if (todayTodos.length === 0) continue;
 
       // Generate email HTML
-      const taskList = todayTodos.map((t: any) => 
+      const taskList = todayTodos.map((t: any) =>
         `<div style=\"padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);\">
           ${t.priority ? '<span style=\"color: #be8bad;\">*</span> ' : ''}${t.text}
         </div>`
@@ -459,7 +461,7 @@ app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
 // Send weekly report email
 app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
   const resendKey = Deno.env.get('RESEND_API_KEY');
-  
+
   if (!resendKey) {
     return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
   }
@@ -476,7 +478,7 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
 
       // Get user's todos
       const todosData = await kv.get(`todos:${userId}`) || {};
-      
+
       // Get last week's tasks
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
@@ -518,15 +520,15 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
 
       // Generate task lists HTML
       const outstandingList = outstandingThisWeek.length > 0
-        ? outstandingThisWeek.map(task => 
-            `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
-          ).join('')
+        ? outstandingThisWeek.map(task =>
+          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
+        ).join('')
         : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No outstanding tasks</div>';
 
       const completedList = completedLastWeek.length > 0
-        ? completedLastWeek.map(task => 
-            `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
-          ).join('')
+        ? completedLastWeek.map(task =>
+          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
+        ).join('')
         : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No completed tasks</div>';
 
       const html = `
@@ -584,18 +586,18 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
   }
 
   let resendKey = Deno.env.get('RESEND_API_KEY');
-  
+
   console.log('RESEND_API_KEY exists:', !!resendKey);
   console.log('RESEND_API_KEY length (before trim):', resendKey?.length || 0);
-  
+
   // Trim whitespace and quotes that might have been added
   if (resendKey) {
     resendKey = resendKey.trim().replace(/^["']|["']$/g, '');
   }
-  
+
   console.log('RESEND_API_KEY length (after trim):', resendKey?.length || 0);
   console.log('RESEND_API_KEY prefix:', resendKey?.substring(0, 7));
-  
+
   if (!resendKey) {
     return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
   }
@@ -610,7 +612,7 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
 
     // Get user's todos
     const todosData = await kv.get(`todos:${user!.id}`) || {};
-    
+
     // Get last week's tasks
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
@@ -649,15 +651,15 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
 
     // Generate task lists HTML
     const outstandingList = outstandingThisWeek.length > 0
-      ? outstandingThisWeek.map(task => 
-          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
-        ).join('')
+      ? outstandingThisWeek.map(task =>
+        `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
+      ).join('')
       : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No outstanding tasks</div>';
 
     const completedList = completedLastWeek.length > 0
-      ? completedLastWeek.map(task => 
-          `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
-        ).join('')
+      ? completedLastWeek.map(task =>
+        `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
+      ).join('')
       : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No completed tasks</div>';
 
     const html = `
@@ -705,10 +707,10 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
       const errorText = await emailResponse.text();
       console.log('Resend API error response:', errorText);
       console.log('Resend API error status:', emailResponse.status);
-      return c.json({ 
-        error: 'Failed to send email via Resend', 
+      return c.json({
+        error: 'Failed to send email via Resend',
         details: errorText,
-        status: emailResponse.status 
+        status: emailResponse.status
       }, 500);
     }
 
@@ -725,7 +727,7 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
 // Sign up endpoint
 app.post("/make-server-d6a7a206/signup", async (c) => {
   const supabase = getSupabaseAdmin();
-  
+
   try {
     const body = await c.req.json();
     const { email, password, name } = body;
@@ -790,7 +792,7 @@ app.delete("/make-server-d6a7a206/delete-account", async (c) => {
     return c.json({ success: true, message: 'Account deleted successfully' });
   } catch (err) {
     console.error('Error deleting account:', err);
-    return c.json({ 
+    return c.json({
       error: 'Failed to delete account',
       details: err instanceof Error ? err.message : String(err)
     }, 500);
