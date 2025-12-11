@@ -184,8 +184,8 @@ export const WebLayout = ({
 
       {/* Middle Column - Daily Tasks */}
       <div style={{
-        flex: '1.2 1 0',
-        minWidth: '350px',
+        flex: '1 1 0',
+        minWidth: '320px',
         display: 'flex',
         flexDirection: 'column',
         borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
