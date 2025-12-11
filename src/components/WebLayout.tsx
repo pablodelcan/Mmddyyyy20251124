@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { useDrag, useDrop } from 'react-dnd';
 import { MonthViewInline } from './MonthViewInline';
 import { LifetimeViewInline } from './LifetimeViewInline';
+import { ScrollingTaskText } from './ScrollingTaskText';
 import { getLocalDateString } from '../utils/dateUtils';
 import type { TodoItem, TodosState } from '../App';
 
@@ -413,33 +414,13 @@ export const WebLayout = ({
                   }}
                 />
               ) : (
-                <span
+                <ScrollingTaskText
+                  text={todo.text}
+                  timeRemaining={getTimeRemaining(todo.timerEnd)}
+                  completed={todo.completed}
+                  priority={todo.priority}
                   onClick={() => onStartEdit(todo)}
-                  style={{
-                    height: '19.5px',
-                    marginLeft: '9.75px',
-                    marginRight: '70px',
-                    paddingTop: '2px',
-                    color: '#000000',
-                    fontFamily: 'Courier New',
-                    fontWeight: 700,
-                    fontSize: '15px',
-                    lineHeight: '19.5px',
-                    textDecoration: todo.completed ? 'line-through' : 'none',
-                    opacity: todo.completed ? 0.5 : 1,
-                    background: todo.completed
-                      ? 'rgba(0,0,0,0.05)'
-                      : todo.priority
-                        ? 'rgba(243, 235, 126, 0.4)'
-                        : 'transparent',
-                    cursor: 'text',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {todo.text} {getTimeRemaining(todo.timerEnd) && `• ${getTimeRemaining(todo.timerEnd)}`}
-                </span>
+                />
               )}
 
               {/* Action Buttons Container - always visible */}
