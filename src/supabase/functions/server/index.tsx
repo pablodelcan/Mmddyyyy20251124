@@ -88,9 +88,12 @@ app.get("/make-server-d6a7a206/debug-env", async (c) => {
 
 // Helper function to get local date string (YYYY-MM-DD format)
 // Can handle timezone offset from client
+// timezoneOffset: positive = east of UTC (e.g., +480 for UTC+8)
 const getLocalDateString = (date: Date, timezoneOffsetMinutes: number = 0): string => {
-  // Create a date adjusted for timezone offset
-  const adjustedDate = new Date(date.getTime() - (timezoneOffsetMinutes * 60 * 1000));
+  // Convert UTC time to user's local time by ADDING the offset
+  // Example: If it's 16:00 UTC and user is in UTC+8 (offset=480), 
+  // we add 480 minutes to get 00:00 next day local time
+  const adjustedDate = new Date(date.getTime() + (timezoneOffsetMinutes * 60 * 1000));
   const year = adjustedDate.getUTCFullYear();
   const month = String(adjustedDate.getUTCMonth() + 1).padStart(2, '0');
   const day = String(adjustedDate.getUTCDate()).padStart(2, '0');
@@ -177,12 +180,15 @@ app.get("/make-server-d6a7a206/todos", async (c) => {
     if (!lastTransferDate || lastTransferDate !== todayDate) {
       const transferResult = transferIncompleteTasks(todosData, todayDate);
 
-      // Save updated todos if there were changes and update last transfer date
+      // Save updated todos if there were changes
       if (transferResult.hasChanges) {
         todosData = transferResult.todos;
         await kv.set(`todos:${user!.id}`, todosData);
-        await kv.set(`lastTaskTransferDate:${user!.id}`, todayDate);
       }
+
+      // Always update the last transfer date to prevent re-checking today
+      // This is saved regardless of whether there were changes
+      await kv.set(`lastTaskTransferDate:${user!.id}`, todayDate);
     }
 
     return c.json({
@@ -257,6 +263,39 @@ app.post("/make-server-d6a7a206/todos", async (c) => {
 
     if (body.bucketList !== null && body.bucketList !== undefined) {
       await kv.set(`bucketList:${user!.id}`, body.bucketList);
+    }
+
+    // Save timezone offset if provided (for use in email digests)
+    if (body.timezoneOffset !== null && body.timezoneOffset !== undefined) {
+      // Get existing preferences and merge with timezone
+      const existingPrefs = await kv.get(`preferences:${user!.id}`) || {};
+      await kv.set(`preferences:${user!.id}`, {
+        ...existingPrefs,
+        timezoneOffset: body.timezoneOffset
+      });
+    }
+
+    // Handle deleted task IDs - remove from server-side todos
+    if (body.deletedTaskIds && Array.isArray(body.deletedTaskIds) && body.deletedTaskIds.length > 0) {
+      const serverTodos = await kv.get(`todos:${user!.id}`) || {};
+      let hasChanges = false;
+      const deletedIdsSet = new Set(body.deletedTaskIds);
+
+      // Remove deleted tasks from all dates
+      Object.keys(serverTodos).forEach(dateKey => {
+        if (Array.isArray(serverTodos[dateKey])) {
+          const originalLength = serverTodos[dateKey].length;
+          serverTodos[dateKey] = serverTodos[dateKey].filter((t: any) => !deletedIdsSet.has(t.id));
+          if (serverTodos[dateKey].length !== originalLength) {
+            hasChanges = true;
+          }
+        }
+      });
+
+      if (hasChanges) {
+        await kv.set(`todos:${user!.id}`, serverTodos);
+        console.log('Removed deleted tasks from server:', body.deletedTaskIds.length);
+      }
     }
 
     console.log('Data saved successfully for user:', user!.id);
@@ -394,13 +433,17 @@ app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
   try {
     // Get all users with daily digest enabled
     const allKeys = await kv.getByPrefix('preferences:');
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
 
     for (const prefItem of allKeys) {
       const userId = prefItem.key.replace('preferences:', '');
       const prefs = prefItem.value;
 
       if (!prefs.email || !prefs.dailyDigestEnabled) continue;
+
+      // Use user's stored timezone offset, default to 0 (UTC)
+      const userTimezone = prefs.timezoneOffset || 0;
+      const today = getLocalDateString(now, userTimezone);
 
       // Get user's todos
       const todosData = await kv.get(`todos:${userId}`);
@@ -476,21 +519,25 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
 
       if (!prefs.email || !prefs.weeklyReportEnabled) continue;
 
+      // Use user's stored timezone offset, default to 0 (UTC)
+      const userTimezone = prefs.timezoneOffset || 0;
+      const now = new Date();
+
       // Get user's todos
       const todosData = await kv.get(`todos:${userId}`) || {};
 
-      // Get last week's tasks
+      // Get last week's tasks (using user's timezone)
       const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
+        const date = new Date(now);
         date.setDate(date.getDate() - i - 1); // Start from yesterday
-        return date.toISOString().split('T')[0];
+        return getLocalDateString(date, userTimezone);
       });
 
-      // Get this week's tasks (today + next 6 days)
+      // Get this week's tasks (today + next 6 days, using user's timezone)
       const thisWeekDays = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
+        const date = new Date(now);
         date.setDate(date.getDate() + i);
-        return date.toISOString().split('T')[0];
+        return getLocalDateString(date, userTimezone);
       });
 
       // Collect completed tasks from last week
@@ -610,21 +657,26 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
       return c.json({ error: 'Email is required' }, 400);
     }
 
+    // Get user preferences for timezone
+    const userPrefs = await kv.get(`preferences:${user!.id}`) || {};
+    const userTimezone = userPrefs.timezoneOffset || 0;
+    const now = new Date();
+
     // Get user's todos
     const todosData = await kv.get(`todos:${user!.id}`) || {};
 
-    // Get last week's tasks
+    // Get last week's tasks (using user's timezone)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
+      const date = new Date(now);
       date.setDate(date.getDate() - i - 1); // Start from yesterday
-      return date.toISOString().split('T')[0];
+      return getLocalDateString(date, userTimezone);
     });
 
-    // Get this week's tasks (today + next 6 days)
+    // Get this week's tasks (today + next 6 days, using user's timezone)
     const thisWeekDays = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
+      const date = new Date(now);
       date.setDate(date.getDate() + i);
-      return date.toISOString().split('T')[0];
+      return getLocalDateString(date, userTimezone);
     });
 
     // Collect completed tasks from last week

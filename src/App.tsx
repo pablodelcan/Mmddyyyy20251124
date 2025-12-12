@@ -466,6 +466,7 @@ function AppContent() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [deletedTaskIds, setDeletedTaskIds] = useState<Set<string>>(new Set());
 
   const supabase = getSupabaseClient();
 
@@ -837,8 +838,13 @@ function AppContent() {
           // Only exists locally
           mergedTasksForDate.push(localTask);
         } else if (serverTask) {
-          // Only exists on server
-          mergedTasksForDate.push(serverTask);
+          // Only exists on server - check if it was deleted locally
+          // Get deleted IDs from storage to avoid zombie tasks
+          const storedDeletedIds = secureStorage.getItem<string[]>('deletedTaskIds') || [];
+          if (!storedDeletedIds.includes(taskId)) {
+            mergedTasksForDate.push(serverTask);
+          }
+          // If task ID is in deletedTaskIds, we intentionally skip it (user deleted it)
         }
       });
 
@@ -1016,7 +1022,11 @@ function AppContent() {
             lastMeditationTime,
             totalMeditationMinutes,
             weekNotes,
-            bucketList
+            bucketList,
+            // Send timezone offset for server to store and use in email digests
+            timezoneOffset: -new Date().getTimezoneOffset(),
+            // Send deleted task IDs so server can remove them too
+            deletedTaskIds: secureStorage.getItem<string[]>('deletedTaskIds') || []
           })
         }
       );
@@ -1440,6 +1450,18 @@ function AppContent() {
       ...prev,
       [dateKey]: (prev[dateKey] || []).filter(t => t.id !== id)
     }));
+
+    // Track deleted task ID to prevent it from being restored from server
+    setDeletedTaskIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+    // Also persist to storage for cross-session persistence
+    const storedDeletedIds = secureStorage.getItem<string[]>('deletedTaskIds') || [];
+    if (!storedDeletedIds.includes(id)) {
+      secureStorage.setItem('deletedTaskIds', [...storedDeletedIds, id]);
+    }
 
     const action: UndoAction = { type: 'delete', todo, index, dateKey };
     addToUndoStack(action);
