@@ -40,17 +40,37 @@ const getSupabaseClient = () => {
 // Verify user from access token
 const verifyUser = async (accessToken: string | undefined) => {
   if (!accessToken) {
+    console.log('[AUTH] No access token provided');
     return { error: 'No access token provided' };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  console.log('[AUTH] Verifying token, length:', accessToken.length);
+
+  // Create a client with the user's token in the Authorization header
+  // This is the correct pattern for Edge Functions
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false
+      },
+      global: {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }
+    }
+  );
+
+  const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    console.log('Authorization error while verifying user:', error);
+    console.log('[AUTH] Authorization error:', error?.message, error?.code);
     return { error: 'Unauthorized' };
   }
 
+  console.log('[AUTH] User verified:', user.id);
   return { user };
 };
 

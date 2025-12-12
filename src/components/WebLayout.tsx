@@ -150,14 +150,14 @@ export const WebLayout = ({
       style={{
         display: 'flex',
         justifyContent: 'center',
-        height: '100dvh',
-        minHeight: '100vh',
-        width: '100%',
-        maxWidth: '100vw',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
         backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#E9EAE5',
         color: timeOfDay === 'night' ? '#fdf5ed' : '#000000',
         overflow: 'hidden',
-        position: 'relative',
       }}
     >
       {/* Left Column - Calendar */}

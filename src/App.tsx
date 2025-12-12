@@ -774,6 +774,9 @@ function AppContent() {
   // Track if we've merged local data after authentication
   const hasMergedLocalDataRef = useRef(false);
 
+  // Track if sync to backend is in progress (to prevent race conditions)
+  const isSyncingToBackendRef = useRef(false);
+
   // Track the last date we checked for task rollover
   const lastCheckedDateRef = useRef<string | null>(null);
 
@@ -795,14 +798,37 @@ function AppContent() {
     }
   }, [todos, dateOfBirth, expectedLifespan, meditationDates, lastMeditationTime, totalMeditationMinutes, weekNotes, bucketList, accessToken, userId, isOnline]);
 
+  // Sync when app returns from background (visibility change)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && accessToken) {
+        console.log('[SYNC] App became visible, syncing from server...');
+        loadFromBackend();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [accessToken]);
+
+  // Periodic sync disabled - was causing feedback loops with concurrent requests
+  // Sync now happens only on: 1) data changes (1s debounce), 2) app visibility change
+  // If you need periodic sync, increase interval to 60+ seconds and add proper debouncing
+
   // Helper function to merge local and server tasks
-  // When the same task exists in both, prefer the completed version (once completed, always completed)
-  // and merge other properties like priority
+  // SERVER IS SOURCE OF TRUTH - if task doesn't exist on server, it was deleted elsewhere
+  // We only add local-only tasks if they are NEW (created while offline)
   const mergeTasks = (localTasks: TodosState, serverTasks: TodosState): TodosState => {
     const merged: TodosState = {};
 
     // Get all unique date keys from both
     const allDateKeys = new Set([...Object.keys(localTasks), ...Object.keys(serverTasks)]);
+
+    // Get all task IDs from server (these are the authoritative ones)
+    const allServerTaskIds = new Set<string>();
+    Object.values(serverTasks).forEach(tasks => {
+      tasks.forEach(t => allServerTaskIds.add(t.id));
+    });
 
     allDateKeys.forEach(dateKey => {
       const localTasksForDate = localTasks[dateKey] || [];
@@ -823,9 +849,8 @@ function AppContent() {
 
         if (localTask && serverTask) {
           // Task exists in both - merge intelligently
-          // Once a task is completed anywhere, it stays completed (prevents completed tasks from becoming incomplete)
+          // Once a task is completed anywhere, it stays completed
           const isCompleted = localTask.completed || serverTask.completed;
-          // Priority: prefer true over false (once highlighted, keep it unless explicitly removed)
           const isPriority = localTask.priority || serverTask.priority;
 
           mergedTasksForDate.push({
@@ -834,18 +859,18 @@ function AppContent() {
             completed: isCompleted,
             priority: isPriority,
           });
-        } else if (localTask) {
-          // Only exists locally
+        } else if (localTask && !allServerTaskIds.has(taskId)) {
+          // Only exists locally AND never existed on server (new task created offline)
+          // Keep it - it will be synced to server
           mergedTasksForDate.push(localTask);
         } else if (serverTask) {
-          // Only exists on server - check if it was deleted locally
-          // Get deleted IDs from storage to avoid zombie tasks
+          // Only exists on server - use it unless locally deleted
           const storedDeletedIds = secureStorage.getItem<string[]>('deletedTaskIds') || [];
           if (!storedDeletedIds.includes(taskId)) {
             mergedTasksForDate.push(serverTask);
           }
-          // If task ID is in deletedTaskIds, we intentionally skip it (user deleted it)
         }
+        // If task only exists locally but WAS on server before (deleted on another device), skip it
       });
 
       if (mergedTasksForDate.length > 0) {
@@ -888,6 +913,12 @@ function AppContent() {
       return;
     }
 
+    // Skip loading if we're currently syncing to backend (prevents race condition)
+    if (isSyncingToBackendRef.current) {
+      console.log('[DEBUG] Skipping load - sync to backend in progress');
+      return;
+    }
+
     console.log('[DEBUG] hasMergedLocalDataRef:', hasMergedLocalDataRef.current);
 
     // Preserve local data before loading from backend
@@ -902,6 +933,15 @@ function AppContent() {
     const localBucketList = secureStorage.getItem<{ id: string; text: string; completed: boolean }[]>('bucketList') || [];
 
     try {
+      // Get fresh session token to avoid 401 errors with stale tokens
+      const { data: { session } } = await supabase.auth.getSession();
+      const freshToken = session?.access_token;
+
+      if (!freshToken) {
+        console.error('[DEBUG] No valid session token available');
+        return;
+      }
+
       // Get timezone offset in minutes (negative for timezones behind UTC)
       const timezoneOffset = -new Date().getTimezoneOffset();
 
@@ -909,7 +949,7 @@ function AppContent() {
         `https://${projectId}.supabase.co/functions/v1/make-server-d6a7a206/todos?timezoneOffset=${timezoneOffset}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`
+            'Authorization': `Bearer ${freshToken}`
           }
         }
       );
@@ -925,10 +965,16 @@ function AppContent() {
           dateOfBirth: data.dateOfBirth
         });
 
-        // Merge todos: combine local and server tasks
+        // USE SERVER DATA AS SOURCE OF TRUTH
+        // Server is authoritative - if task was deleted on another device, it won't be in serverTodos
         const serverTodos = data.todos || {};
-        const mergedTodos = mergeTasks(localTodos, serverTodos);
-        setTodos(mergedTodos);
+
+        // Simply use server data - don't merge with local
+        // This ensures deletions on other devices are respected
+        setTodos(serverTodos);
+
+        // Also update local storage to match server
+        secureStorage.setItem('todos', serverTodos);
 
         // Reset the last checked date so task transfer runs again after loading
         // This ensures tasks are properly transferred even if the app was closed at midnight
@@ -993,6 +1039,8 @@ function AppContent() {
   const syncToBackend = async () => {
     if (!accessToken) return;
 
+    // Set flag to prevent loadFromBackend from running during sync
+    isSyncingToBackendRef.current = true;
     setSyncing(true);
 
     try {
@@ -1003,6 +1051,7 @@ function AppContent() {
       if (!freshToken) {
         console.error('No valid session token available');
         setSyncing(false);
+        isSyncingToBackendRef.current = false;
         return;
       }
 
@@ -1032,17 +1081,17 @@ function AppContent() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to sync to backend:', errorData);
-        if (errorData.details) {
-          console.error('Error details:', errorData.details);
-        }
+        const errorText = await response.text();
+        console.error('Failed to sync to backend:', response.status, errorText);
+      } else {
+        console.log('[SYNC] Sync successful');
       }
     } catch (err) {
       // Silently fail if not connected or server is not available
       console.error('Failed to sync to backend:', err);
     } finally {
       setSyncing(false);
+      isSyncingToBackendRef.current = false;
     }
   };
 
@@ -2514,7 +2563,10 @@ function AppContent() {
                 }}
               >
                 <SettingsModal
-                  onClose={() => setShowSettings(false)}
+                  onClose={() => {
+                    setShowSettings(false);
+                    loadFromBackend();
+                  }}
                   accessToken={accessToken}
                   onSignOut={handleSignOut}
                   onDeleteAccount={handleDeleteAccount}
@@ -2534,7 +2586,10 @@ function AppContent() {
             showMeditation && (
               <MeditationTimer
                 onComplete={handleMeditationComplete}
-                onClose={() => setShowMeditation(false)}
+                onClose={() => {
+                  setShowMeditation(false);
+                  loadFromBackend();
+                }}
                 durationMinutes={meditationDuration}
               />
             )
@@ -2560,7 +2615,11 @@ function AppContent() {
                 }}
               >
                 <LifetimeView
-                  onClose={() => setShowLifetimeView(false)}
+                  onClose={() => {
+                    setShowLifetimeView(false);
+                    // Fetch fresh data when returning to main view
+                    loadFromBackend();
+                  }}
                   dateOfBirth={dateOfBirth}
                   onSaveDateOfBirth={saveDateOfBirth}
                   expectedLifespan={expectedLifespan}
