@@ -506,7 +506,7 @@ app.post("/make-server-d6a7a206/send-daily-digest", async (c) => {
           'Authorization': `Bearer ${resendKey}`
         },
         body: JSON.stringify({
-          from: 'Todo App <onboarding@resend.dev>',
+          from: 'mmddyyyy <noreply@mmddyyyy.co>',
           to: prefs.email,
           subject: `Good morning - ${todayTodos.length} tasks for today`,
           html
@@ -628,7 +628,7 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
           'Authorization': `Bearer ${resendKey}`
         },
         body: JSON.stringify({
-          from: 'mmddyyyy <onboarding@resend.dev>',
+          from: 'mmddyyyy <noreply@mmddyyyy.co>',
           to: prefs.email,
           subject: `Weekly Report - ${outstandingThisWeek.length} outstanding, ${completedLastWeek.length} completed`,
           html
@@ -768,7 +768,7 @@ app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
         'Authorization': `Bearer ${resendKey}`
       },
       body: JSON.stringify({
-        from: 'mmddyyyy <onboarding@resend.dev>',
+        from: 'mmddyyyy <noreply@mmddyyyy.co>',
         to: email,
         subject: `[Test] Weekly Report - ${outstandingThisWeek.length} outstanding, ${completedLastWeek.length} completed`,
         html
