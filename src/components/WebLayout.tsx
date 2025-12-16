@@ -247,7 +247,7 @@ export const WebLayout = ({
               lineHeight: '19.5px',
               fontFamily: 'Courier New',
             }}>
-              <span style={{ color: '#D84341' }}>
+              <span>
                 {currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()}.
               </span>{' '}
               {isToday && (
@@ -365,10 +365,13 @@ export const WebLayout = ({
               style={{
                 width: '100%',
                 maxWidth: '500px',
-                height: '26px',
+                minHeight: '26px',
+                height: 'auto',
                 position: 'relative',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start', // Top align for wrapping text
+                paddingTop: '4px',
+                paddingBottom: '4px',
               }}
             >
               {/* Mark Dot */}
@@ -383,6 +386,7 @@ export const WebLayout = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
+                  marginTop: '6px', // Align with first line of text
                 }}
                 onClick={() => onToggle(todo.id)}
               >
@@ -392,15 +396,33 @@ export const WebLayout = ({
               </div>
 
               {editingId === todo.id ? (
-                <Input
+                <textarea
                   value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
+                  onChange={(e) => {
+                    setEditText(e.target.value);
+                    e.target.style.height = 'auto'; // Reset height
+                    e.target.style.height = `${e.target.scrollHeight}px`; // Set new height
+                  }}
+                  autoFocus
+                  onFocus={(e) => {
+                    // Auto-expand on focus
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
                   onBlur={onSave}
-                  onKeyDown={onKeyDown}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault(); // Prevent newline
+                      onSave();
+                    } else {
+                      onKeyDown(e as any);
+                    }
+                  }}
                   style={{
                     flex: 1,
-                    height: '19.5px',
+                    minHeight: '19.5px',
                     marginLeft: '9.75px',
+                    marginRight: '70px', // Space for buttons
                     background: 'transparent',
                     border: 'none',
                     borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
@@ -411,16 +433,44 @@ export const WebLayout = ({
                     fontSize: '15px',
                     lineHeight: '19.5px',
                     padding: 0,
+                    resize: 'none',
+                    overflow: 'hidden',
+                    display: 'block',
                   }}
                 />
               ) : (
-                <ScrollingTaskText
-                  text={todo.text}
-                  timeRemaining={getTimeRemaining(todo.timerEnd)}
-                  completed={todo.completed}
-                  priority={todo.priority}
+                <div
                   onClick={() => onStartEdit(todo)}
-                />
+                  style={{
+                    flex: 1,
+                    marginLeft: '9.75px',
+                    marginRight: '70px',
+                    cursor: 'text',
+                    fontFamily: 'Courier New',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    lineHeight: '19.5px',
+                    color: '#000000',
+                    textDecoration: todo.completed ? 'line-through' : 'none',
+                    opacity: todo.completed ? 0.5 : 1,
+                    backgroundColor: todo.completed
+                      ? 'rgba(0,0,0,0.05)'
+                      : todo.priority
+                        ? 'rgba(243, 235, 126, 0.4)'
+                        : 'transparent',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    paddingTop: '2px', // Visual alignment
+                    paddingBottom: '2px',
+                  }}
+                >
+                  {todo.text}
+                  {getTimeRemaining(todo.timerEnd) && (
+                    <span style={{ marginLeft: '8px', opacity: 0.7 }}>
+                      • {getTimeRemaining(todo.timerEnd)}
+                    </span>
+                  )}
+                </div>
               )}
 
               {/* Action Buttons Container - always visible */}
