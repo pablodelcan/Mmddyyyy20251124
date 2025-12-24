@@ -174,7 +174,7 @@ export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
           style={{
             width: '363.34px',
             height: mode === 'signup' ? '485.75px' : '385.75px',
-            backgroundColor: '#FDF5ED',
+            backgroundColor: '#ECE8D6',
             borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
             borderWidth: '0.54px',
             position: 'relative',

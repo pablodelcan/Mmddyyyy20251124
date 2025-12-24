@@ -398,7 +398,7 @@
   }
 
   body {
-    background-color: #FBF8E8;
+    background-color: #ECE8D6;
     color: var(--foreground);
     font-family: Courier New, Courier, monospace;
     font-size: 15px;
@@ -421,7 +421,7 @@
   html {
     height: 100vh;
     height: 100dvh;
-    background-color: #FBF8E8;
+    background-color: #ECE8D6;
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,
@@ -447,13 +447,15 @@
     font-weight: 700;
   }
 
-  /* Force remove ALL white backgrounds */
+  /* Force remove ALL white backgrounds and set Courier Bold font */
   button,
   [role="button"],
   input,
   select,
   textarea {
     background: transparent !important;
+    font-family: Courier New, Courier, monospace;
+    font-weight: 700;
   }
 
   button:hover,
@@ -988,7 +990,7 @@
   }
 
   .bg-\[\#fdf5ed\] {
-    background-color: #fdf5ed;
+    background-color: #ECE8D6;
   }
 
   .bg-background {

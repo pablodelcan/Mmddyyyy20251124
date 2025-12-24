@@ -296,7 +296,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         <div style={{
           width: '375px',
           padding: '32px',
-          background: '#FDF5ED',
+          background: '#ECE8D6',
           border: '0.54px solid rgba(0, 0, 0, 0.1)',
           boxSizing: 'border-box',
         }}>
@@ -320,7 +320,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
+      className="fixed inset-0 bg-[#ECE8D6] z-50 flex flex-col"
       style={{
         top: 0,
         left: 0,
@@ -609,28 +609,31 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               onClick={testWeeklyEmail}
               disabled={testing || !preferences.email}
               style={{
-                width: '100%',
-                height: '33.743343353271484px',
+                width: '96px',
+                height: '30px',
                 background: '#000000',
-                color: '#FFFFFF',
-                borderRadius: '0', // Ensure sharp corners if not already
+                color: '#ECE8D6',
+                borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '7.5px', // Default gap for icon and text
-                border: 'none',
+                gap: '7.5px',
+                border: '1px solid #000000',
                 cursor: 'pointer',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
               }}
             >
-              <Send style={{ color: '#FFFFFF', width: '14.996110916137695px', height: '14.996110916137695px' }} />
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#FFFFFF',
+                color: '#ECE8D6',
               }}>
                 {testing ? 'Sending...' : 'Send test'}
               </span>
@@ -672,27 +675,32 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             <Button
               onClick={checkDataStatus}
               style={{
-                width: '100%',
-                height: '33.743343353271484px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: '0',
-                border: 'none',
+                width: '180px',
+                height: '30px',
+                background: '#000000',
+                color: '#ECE8D6',
+                borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
+                border: '1px solid #000000',
                 cursor: 'pointer',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
               }}
             >
-              <Database style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#000000',
+                color: '#ECE8D6',
+                whiteSpace: 'nowrap',
               }}>
                 Check data status
               </span>
@@ -1044,28 +1052,32 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             <Button
               onClick={() => window.location.href = 'mailto:hello@delcan.co'}
               style={{
-                width: '100%',
-                height: '33.743343353271484px',
+                width: '120px',
+                height: '30px',
                 background: '#000000',
-                color: '#FFFFFF',
-                borderRadius: '0',
+                color: '#ECE8D6',
+                borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
-                border: 'none',
+                border: '1px solid #000000',
                 cursor: 'pointer',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
               }}
             >
-              <Send style={{ color: '#FFFFFF', width: '14.996110916137695px', height: '14.996110916137695px' }} />
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#FFFFFF',
+                color: '#ECE8D6',
+                whiteSpace: 'nowrap',
               }}>
                 Contact Us
               </span>
@@ -1076,8 +1088,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           <div
             style={{
               width: '100%',
-              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-              paddingTop: '15.53px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -1089,26 +1099,32 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             <Button
               onClick={() => window.open('https://www.delcan.co/mmddyyyy', '_system')}
               style={{
-                width: '100%',
-                height: '33.743343353271484px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: '0',
-                border: 'none',
+                width: '140px',
+                height: '30px',
+                background: '#000000',
+                color: '#ECE8D6',
+                borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
+                border: '1px solid #000000',
                 cursor: 'pointer',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
               }}
             >
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#000000',
+                color: '#ECE8D6',
+                whiteSpace: 'nowrap',
               }}>
                 Privacy Policy
               </span>
@@ -1119,8 +1135,6 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           <div
             style={{
               width: '100%',
-              borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-              paddingTop: '15.53px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -1140,27 +1154,32 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 }
               }}
               style={{
-                width: '100%',
-                height: '33.743343353271484px',
+                width: '150px',
+                height: '30px',
                 background: '#F5D5D8',
                 color: '#000000',
-                borderRadius: '0',
-                border: 'none',
+                borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
+                border: 'none',
                 cursor: 'pointer',
+                paddingTop: '7.5px',
+                paddingRight: '11.25px',
+                paddingBottom: '7.5px',
+                paddingLeft: '11.25px',
               }}
             >
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
                 color: '#000000',
+                whiteSpace: 'nowrap',
               }}>
                 Delete Account
               </span>
@@ -1202,16 +1221,16 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               onClose();
             }}
             style={{
-              width: '108.61226654052734px',
-              height: '33.743343353271484px',
+              width: '79.64px',
+              height: '30px',
               gap: '7.5px',
               paddingTop: '7.5px',
-              paddingRight: '15px',
+              paddingRight: '11.25px',
               paddingBottom: '7.5px',
-              paddingLeft: '15px',
-              border: '0.54px solid rgba(0, 0, 0, 0.5)',
-              background: '#FDF5ED',
-              borderRadius: '0',
+              paddingLeft: '11.25px',
+              border: 'none',
+              background: '#F5D5D8',
+              borderRadius: '16777200px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1222,12 +1241,13 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           >
             <span style={{
               fontFamily: 'Courier New',
-              fontWeight: 400,
+              fontWeight: 700,
               fontSize: '13.13px',
               lineHeight: '18.75px',
               letterSpacing: '0px',
               textAlign: 'center',
               color: '#000000',
+              whiteSpace: 'nowrap',
             }}>
               Close
             </span>
@@ -1236,16 +1256,16 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             <Button
               onClick={onSignOut}
               style={{
-                width: '108.61225891113281px',
-                height: '33.743343353271484px',
+                width: '93px',
+                height: '30px',
                 gap: '7.5px',
                 paddingTop: '7.5px',
-                paddingRight: '15px',
+                paddingRight: '11.25px',
                 paddingBottom: '7.5px',
-                paddingLeft: '15px',
+                paddingLeft: '11.25px',
                 background: '#000000',
-                borderRadius: '0',
-                border: 'none',
+                borderRadius: '16777200px',
+                border: '1px solid #000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1256,12 +1276,13 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             >
               <span style={{
                 fontFamily: 'Courier New',
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: '13.13px',
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#FFFFFF',
+                color: '#ECE8D6',
+                whiteSpace: 'nowrap',
               }}>
                 Sign out
               </span>
@@ -1271,7 +1292,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           <div
             style={{
               height: '50px', // Adjustable height to push content up
-              background: '#FDF5ED',
+              background: '#ECE8D6',
               opacity: 0,
               marginTop: '20px', // Space from the button above
               width: '100%',

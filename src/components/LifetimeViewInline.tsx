@@ -440,7 +440,7 @@ export const LifetimeViewInline = ({
         </div>
       </div>
 
-      {/* Bucket List Button Container - Outside max-width wrapper for full-width separator */}
+      {/* Bucket List Button Container */}
       <div style={{
         width: '100%',
         height: '79px',
@@ -456,33 +456,32 @@ export const LifetimeViewInline = ({
             onBucketListClick?.();
           }}
           style={{
-            width: '322px',
-            height: '26px',
-            gap: '6.5px',
-            paddingTop: '6.5px',
-            paddingRight: '13px',
-            paddingBottom: '6.5px',
-            paddingLeft: '13px',
-            border: '1px solid rgba(0, 0, 0, 0.1)',
+            width: '180px',
+            height: '30px',
+            border: 'none',
             background: '#F5D5D8',
+            borderRadius: '16777200px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            paddingTop: '7.5px',
+            paddingRight: '11.25px',
+            paddingBottom: '7.5px',
+            paddingLeft: '11.25px',
           }}
         >
           <span style={{
-            width: '76px',
-            height: '17px',
             fontFamily: 'Courier New',
-            fontWeight: 400,
-            fontSize: '11.38px',
-            lineHeight: '16.25px',
+            fontWeight: 700,
+            fontSize: '13.13px',
+            lineHeight: '18.75px',
             letterSpacing: '0px',
             textAlign: 'center',
             color: '#000000',
+            whiteSpace: 'nowrap',
           }}>
-            Bucket list
+            Resolutions 2026
           </span>
         </button>
       </div>

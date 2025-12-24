@@ -178,8 +178,8 @@ function DraggableTodo({
           width: '11.24px',
           height: '11.24px',
           borderRadius: '17981000px',
-          backgroundColor: '#707070',
-          marginTop: '3.75px',
+          backgroundColor: '#FFFFFF',
+          marginTop: '5.5px',
           marginRight: '11.25px',
           cursor: 'pointer',
           display: 'flex',
@@ -194,7 +194,7 @@ function DraggableTodo({
         }}
       >
         {todo.completed && (
-          <X className="h-2.5 w-2.5" style={{ color: '#FFFFFF', stroke: '#FFFFFF' }} strokeWidth={3} />
+          <X className="h-2.5 w-2.5" style={{ color: '#000000', stroke: '#000000' }} strokeWidth={3} />
         )}
       </div>
 
@@ -474,7 +474,7 @@ function AppContent() {
 
   // Set body background color to match app
   useEffect(() => {
-    const bgColor = timeOfDay === 'night' ? '#1a1a1a' : '#FBF8E8';
+    const bgColor = timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6';
     document.body.style.backgroundColor = bgColor;
     document.documentElement.style.backgroundColor = bgColor;
 
@@ -1106,14 +1106,26 @@ function AppContent() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+
+    // Clear all local storage data
+    secureStorage.clear();
+
     // Reset merge flag for next authentication
     hasMergedLocalDataRef.current = false;
+
+    // Reset all state to empty/default values
     setAccessToken(null);
     setUserId(null);
     setTodos({});
     setDateOfBirth(null);
+    setExpectedLifespan(80); // Reset to default
     setMeditationDates([]);
     setLastMeditationTime(null);
+    setTotalMeditationMinutes(0);
+    setWeekNotes({});
+    setBucketList([]);
+    setDeletedTaskIds(new Set());
+
     toast.success('Signed out successfully');
   };
 
@@ -1798,7 +1810,7 @@ function AppContent() {
                 color: '#000000',
                 margin: 0,
               }}>
-                Bucket list
+                Resolutions 2026
               </h2>
               <button
                 onClick={() => setShowBucketList(false)}
@@ -1831,7 +1843,7 @@ function AppContent() {
                   fontSize: '13px',
                   color: 'rgba(0, 0, 0, 0.6)',
                 }}>
-                  No bucket list items yet. Add something you want to do in your lifetime!
+                  No resolution items
                 </p>
               )}
               {bucketList.map((item) => (
@@ -1912,7 +1924,7 @@ function AppContent() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
                 <Input
-                  placeholder="Add bucket list item"
+                  placeholder="Add resolution"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                       setBucketList([...bucketList, {
@@ -1938,7 +1950,7 @@ function AppContent() {
                 />
                 <button
                   onClick={() => {
-                    const input = document.querySelector('input[placeholder="Add bucket list item"]') as HTMLInputElement;
+                    const input = document.querySelector('input[placeholder="Add resolution"]') as HTMLInputElement;
                     if (input && input.value.trim()) {
                       setBucketList([...bucketList, {
                         id: `${Date.now()}-${Math.random()}`,
@@ -1976,7 +1988,7 @@ function AppContent() {
     <div
       className="flex flex-col items-center transition-colors duration-1000"
       style={{
-        backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#FBF8E8',
+        backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6',
         color: timeOfDay === 'night' ? '#fdf5ed' : '#000000',
         height: '100dvh',
         width: '100%',
@@ -2004,7 +2016,7 @@ function AppContent() {
               bottom: 0,
               width: '100vw',
               height: '100vh',
-              backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#FBF8E8',
+              backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2415,7 +2427,7 @@ function AppContent() {
                   style={{
                     width: '78.69px',
                     height: '30px',
-                    background: '#FDF5ED',
+                    background: '#F5D5D8',
                     borderRadius: '17981000px',
                     borderWidth: '0.54px',
                     borderTop: '0.54px solid rgba(0, 0, 0, 0.8)',
@@ -2430,7 +2442,7 @@ function AppContent() {
                     paddingLeft: '11.25px',
                     gap: '7.5px',
                     fontFamily: 'Courier New',
-                    fontWeight: 400,
+                    fontWeight: 700,
                     fontSize: '13.13px',
                     lineHeight: '18.75px',
                     letterSpacing: '0px',
@@ -2554,7 +2566,7 @@ function AppContent() {
                   left: 0,
                   width: '100vw',
                   height: '100dvh',
-                  backgroundColor: '#FDF5ED',
+                  backgroundColor: '#ECE8D6',
                   zIndex: 99999,
                   display: 'flex',
                   flexDirection: 'column',
@@ -2607,7 +2619,7 @@ function AppContent() {
                   left: 0,
                   width: '100vw',
                   height: '100vh',
-                  backgroundColor: '#FDF5ED', // Revert to desired background color
+                  backgroundColor: '#ECE8D6', // Revert to desired background color
                   zIndex: 99999, // Keep high z-index
                   display: 'flex',
                   flexDirection: 'column',

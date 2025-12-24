@@ -57,7 +57,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '363.34px',
-          backgroundColor: '#FDF5ED',
+          backgroundColor: '#ECE8D6',
           borderTop: '0.54px solid rgba(0, 0, 0, 0.5)',
           borderWidth: '0.54px',
           position: 'relative',
@@ -159,7 +159,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                   onClose();
                 }}
                 style={{
-                  backgroundColor: '#FDF5ED',
+                  backgroundColor: '#ECE8D6',
                   border: '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
                   color: '#000000',
@@ -230,7 +230,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                 }}
                 style={{
                   width: '100%',
-                  backgroundColor: '#FDF5ED',
+                  backgroundColor: '#ECE8D6',
                   border: '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
                   color: '#D84341',

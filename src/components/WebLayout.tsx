@@ -189,7 +189,7 @@ export const WebLayout = ({
         display: 'flex',
         flexDirection: 'column',
         borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#FBF8E8',
+        backgroundColor: '#ECE8D6',
         alignItems: 'center',
       }}>
         {/* Header Section */}

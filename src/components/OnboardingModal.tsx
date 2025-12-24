@@ -381,7 +381,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 style={{
                     width: '363.44px',
                     height: step === 0 ? '644.36px' : '449.33px',
-                    backgroundColor: '#FDF5ED',
+                    backgroundColor: '#ECE8D6',
                     border: '0.61px solid rgba(0, 0, 0, 0.1)',
                     paddingTop: '30.61px',
                     paddingRight: '30.61px',

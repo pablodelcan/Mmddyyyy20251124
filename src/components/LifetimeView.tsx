@@ -284,7 +284,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 margin: '0',
               }}
             >
-              Life bucket list
+              Resolutions 2026
             </h2>
             <Button
               onClick={() => setShowBucketList(false)}
@@ -360,7 +360,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     padding: '22.5px',
                   }}
                 >
-                  Things you want to accomplish in your lifetime
+                  No resolution items
                 </p>
               )}
 
@@ -379,8 +379,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       background: 'transparent',
                       paddingLeft: '22.5px',
                       paddingRight: '22.5px',
-                      paddingTop: '11.25px',
-                      paddingBottom: '11.25px',
+                      paddingTop: '9.25px',
+                      paddingBottom: '9.25px',
                       margin: '0 auto',
                       boxSizing: 'border-box',
                       // Removed group flex items-start gap-3 py-3 px-3 hover:bg-black/5 transition-colors
@@ -529,7 +529,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   value={newBucketItem}
                   onChange={(e) => setNewBucketItem(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addBucketItem()}
-                  placeholder="add to your bucketlist."
+                  placeholder="add resolution"
                   style={{
                     flex: 1,
                     height: '33.743343353271484px',
@@ -582,7 +582,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#fdf5ed] z-50 flex flex-col"
+      className="fixed inset-0 bg-[#ECE8D6] z-50 flex flex-col"
       style={{
         top: 0,
         left: 0,
@@ -685,7 +685,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.9, opacity: 0 }}
-                      className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6" /* Reverted className */
+                      className="w-full max-w-md bg-[#ECE8D6] border border-black/10 p-6" /* Reverted className */
                       onClick={(e) => e.stopPropagation()}
                     >
                       <h3 className="mb-4">How to use Life in Weeks</h3>
@@ -804,7 +804,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         style={{
                           marginTop: '24px',
                           width: '100%',
-                          background: '#FDF5ED',
+                          background: '#ECE8D6',
                           border: '0.54px solid rgba(0, 0, 0, 0.5)',
                           padding: '22.5px',
                           boxSizing: 'border-box',
@@ -1145,7 +1145,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     }}>
                       {/* Time lived card */}
                       <div style={{
-                        background: '#FDF5ED',
+                        background: '#ECE8D6',
                         border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
@@ -1193,7 +1193,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Percentage lived card */}
                       <div style={{
-                        background: '#FDF5ED',
+                        background: '#ECE8D6',
                         border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
@@ -1231,7 +1231,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Time remaining card */}
                       <div style={{
-                        background: '#FDF5ED',
+                        background: '#ECE8D6',
                         border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
@@ -1279,7 +1279,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Total meditation card */}
                       <div style={{
-                        background: '#FDF5ED',
+                        background: '#ECE8D6',
                         border: '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
@@ -1435,49 +1435,47 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               <div
                 style={{
                   opacity: 1,
-                  borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
-                  marginTop: '40px', // Increased to 40px to push it down further
+                  marginTop: '40px',
                   boxSizing: 'border-box',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  // Removed width and margin: '0 auto'
-                  padding: '0',
+                  justifyContent: 'flex-start',
                 }}
               >
                 <Button
                   onClick={() => setShowBucketList(true)}
                   style={{
-                    width: '100%', // Full width
-                    opacity: 1,
-                    border: '0.54px solid rgba(0, 0, 0, 0.1)',
+                    width: '180px',
+                    height: '30px',
+                    border: 'none',
                     background: '#F5D5D8',
                     color: '#000000',
-                    borderRadius: '0',
+                    borderRadius: '16777200px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontFamily: 'Courier New',
                     fontWeight: 700,
-                    fontSize: '15px',
-                    lineHeight: '22.5px',
+                    fontSize: '13.13px',
+                    lineHeight: '18.75px',
                     letterSpacing: '0px',
                     textAlign: 'center',
                     cursor: 'pointer',
                     paddingTop: '7.5px',
-                    paddingRight: '15px',
+                    paddingRight: '11.25px',
                     paddingBottom: '7.5px',
-                    paddingLeft: '15px',
+                    paddingLeft: '11.25px',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  Bucket list
+                  Resolutions 2026
                 </Button>
               </div>
               {/* Invisible Spacer */}
               <div
                 style={{
                   height: '50px', // Adjustable height to push content up
-                  background: '#FDF5ED',
+                  background: '#ECE8D6',
                   opacity: 0,
                   marginTop: '20px', // Space from the button above
                   width: '100%',
@@ -1486,7 +1484,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             </>
           ) : (
             <div className="flex flex-1 flex-col p-4" style={{ marginTop: '25px', paddingLeft: '22.5px', paddingRight: '22.5px' }}>
-              <div className="w-full max-w-md bg-[#fdf5ed] border border-black/10 p-6 rounded-lg"
+              <div className="w-full max-w-md bg-[#ECE8D6] border border-black/10 p-6 rounded-lg"
                 style={{ textAlign: 'left' }}
               >
                 <p className="mb-4"
