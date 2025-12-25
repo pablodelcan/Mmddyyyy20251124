@@ -21,6 +21,7 @@ interface SettingsModalProps {
   totalMeditationMinutes: number;
   onAddManualMeditation: (minutes: number) => void;
   timeOfDay?: 'day' | 'night';
+  isEmbedded?: boolean;
 }
 
 interface Preferences {
@@ -29,7 +30,7 @@ interface Preferences {
   weeklyReportDay: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
-export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation, timeOfDay: _providedTimeOfDay = 'day' }: SettingsModalProps) {
+export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation, timeOfDay: _providedTimeOfDay = 'day', isEmbedded = false }: SettingsModalProps) {
   const timeOfDay = useTimeOfDay();
   console.log('[SettingsModal] Hook timeOfDay:', timeOfDay);
   const [preferences, setPreferences] = useState<Preferences>({
@@ -325,11 +326,20 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
+        ...(isEmbedded ? {} : {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+        }),
         width: '100%',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'transparent',
+        backgroundColor: isEmbedded ? 'transparent' : (timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6'),
+        paddingTop: isEmbedded ? '0' : 'max(env(safe-area-inset-top), 40px)',
       }}
     >
       {/* Header */}

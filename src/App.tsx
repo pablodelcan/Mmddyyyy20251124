@@ -1779,6 +1779,7 @@ function AppContent() {
               totalMeditationMinutes={totalMeditationMinutes}
               onAddManualMeditation={setTotalMeditationMinutes}
               timeOfDay={timeOfDay as 'day' | 'night'}
+              isEmbedded={true}
             />
           </motion.div>
         )}
