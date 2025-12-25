@@ -164,11 +164,11 @@ export const WebLayout = ({
       <div style={{
         flex: '1 1 0',
         minWidth: '320px',
-        borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
+        borderRight: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        backgroundColor: '#E9EAE5',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#E9EAE5',
       }}>
         <MonthViewInline
           currentDate={currentDate}
@@ -179,6 +179,7 @@ export const WebLayout = ({
           onSettingsClick={() => setShowSettings(true)}
           accessToken={accessToken}
           onAuthClick={() => setShowAuth(true)}
+          timeOfDay={timeOfDay}
         />
       </div>
 
@@ -188,8 +189,8 @@ export const WebLayout = ({
         minWidth: '320px',
         display: 'flex',
         flexDirection: 'column',
-        borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#ECE8D6',
+        borderRight: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
         alignItems: 'center',
       }}>
         {/* Header Section */}
@@ -207,7 +208,7 @@ export const WebLayout = ({
             fontWeight: 700,
             fontSize: '15px',
             lineHeight: '19.5px',
-            color: '#000000',
+            color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
             margin: 0,
             marginBottom: '26px',
           }}>
@@ -238,7 +239,7 @@ export const WebLayout = ({
                 justifyContent: 'center',
               }}
             >
-              <ChevronLeft style={{ width: '19.5px', height: '19.5px', color: '#000000' }} />
+              <ChevronLeft style={{ width: '19.5px', height: '19.5px', color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
             </button>
 
             <span style={{
@@ -281,7 +282,7 @@ export const WebLayout = ({
                 justifyContent: 'center',
               }}
             >
-              <ChevronRight style={{ width: '19.5px', height: '19.5px', color: '#000000' }} />
+              <ChevronRight style={{ width: '19.5px', height: '19.5px', color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
             </button>
 
             {!isToday && (
@@ -296,6 +297,7 @@ export const WebLayout = ({
                   cursor: 'pointer',
                   padding: 0,
                   marginLeft: '6.5px',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
               >
                 Today
@@ -325,6 +327,7 @@ export const WebLayout = ({
                   style={{
                     width: '13px',
                     height: '13px',
+                    filter: timeOfDay === 'night' ? 'invert(1)' : 'none',
                   }}
                 />
               </button>
@@ -352,7 +355,7 @@ export const WebLayout = ({
               fontWeight: 700,
               fontSize: '15px',
               lineHeight: '19.5px',
-              color: 'rgba(0, 0, 0, 0.4)',
+              color: timeOfDay === 'night' ? 'rgba(251,248,232,0.4)' : 'rgba(0, 0, 0, 0.4)',
               paddingTop: '13px',
             }}>
               No tasks for this day
@@ -425,9 +428,9 @@ export const WebLayout = ({
                     marginRight: '70px', // Space for buttons
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                    borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.2)' : '0.54px solid rgba(0, 0, 0, 0.2)',
                     outline: 'none',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '15px',
@@ -450,13 +453,13 @@ export const WebLayout = ({
                     fontWeight: 700,
                     fontSize: '15px',
                     lineHeight: '19.5px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                     textDecoration: todo.completed ? 'line-through' : 'none',
                     opacity: todo.completed ? 0.5 : 1,
                     backgroundColor: todo.completed
-                      ? 'rgba(0,0,0,0.05)'
+                      ? (timeOfDay === 'night' ? 'rgba(251,248,232,0.05)' : 'rgba(0,0,0,0.05)')
                       : todo.priority
-                        ? 'rgba(243, 235, 126, 0.4)'
+                        ? (timeOfDay === 'night' ? 'rgba(156, 156, 156, 0.4)' : 'rgba(243, 235, 126, 0.4)')
                         : 'transparent',
                     wordBreak: 'break-word',
                     whiteSpace: 'pre-wrap',
@@ -500,7 +503,7 @@ export const WebLayout = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <Clock style={{ color: '#000000', width: '15px', height: '15px' }} />
+                  <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
                 </button>
                 <button
                   onClick={() => onPriorityToggle(todo.id)}
@@ -517,7 +520,7 @@ export const WebLayout = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <ArrowUp style={{ color: '#000000', width: '15px', height: '15px' }} />
+                  <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
                 </button>
                 <button
                   onClick={() => onDelete(todo.id)}
@@ -534,7 +537,7 @@ export const WebLayout = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <Minus style={{ color: '#000000', width: '15px', height: '15px' }} />
+                  <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
                 </button>
               </div>
             </div>
@@ -548,7 +551,7 @@ export const WebLayout = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+          borderTop: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
           marginTop: 'auto',
           boxSizing: 'border-box',
         }}>
@@ -574,12 +577,12 @@ export const WebLayout = ({
                   height: '26px',
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+                  borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.8)' : '0.54px solid rgba(0, 0, 0, 0.8)',
                   padding: 0,
                   fontFamily: 'Courier New',
                   fontWeight: 700,
                   fontSize: '15px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
               />
               <button
@@ -597,7 +600,7 @@ export const WebLayout = ({
                   justifyContent: 'center',
                 }}
               >
-                <Plus style={{ color: '#000000', width: '19.5px', height: '19.5px' }} />
+                <Plus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '19.5px', height: '19.5px' }} />
               </button>
             </div>
           )}
@@ -613,7 +616,7 @@ export const WebLayout = ({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          backgroundColor: '#F5F5F5',
+          backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#F5F5F5',
         }}
       >
         <LifetimeViewInline
@@ -626,6 +629,7 @@ export const WebLayout = ({
           totalMeditationMinutes={totalMeditationMinutes}
           containerWidth={lifetimeViewWidth}
           onBucketListClick={() => setShowBucketList(true)}
+          timeOfDay={timeOfDay}
         />
       </div>
     </div>

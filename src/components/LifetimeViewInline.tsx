@@ -11,6 +11,7 @@ interface LifetimeViewInlineProps {
   totalMeditationMinutes: number;
   containerWidth?: number;
   onBucketListClick?: () => void;
+  timeOfDay?: 'day' | 'night';
 }
 
 export const LifetimeViewInline = ({
@@ -22,7 +23,8 @@ export const LifetimeViewInline = ({
   onSaveBucketList,
   totalMeditationMinutes,
   containerWidth = 400,
-  onBucketListClick
+  onBucketListClick,
+  timeOfDay = 'day'
 }: LifetimeViewInlineProps) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -112,7 +114,7 @@ export const LifetimeViewInline = ({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#F5F5F5',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#F5F5F5',
         alignItems: 'center',
       }}>
         <div style={{
@@ -130,7 +132,7 @@ export const LifetimeViewInline = ({
             fontWeight: 700,
             fontSize: '13px',
             lineHeight: '19.5px',
-            color: '#000000',
+            color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
             margin: 0,
             marginBottom: '26px',
           }}>
@@ -141,7 +143,7 @@ export const LifetimeViewInline = ({
             fontWeight: 700,
             fontSize: '13px',
             lineHeight: '19.5px',
-            color: 'rgba(0, 0, 0, 0.6)',
+            color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
           }}>
             Please set your date of birth in Settings to view your life in weeks
           </div>
@@ -155,7 +157,7 @@ export const LifetimeViewInline = ({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      backgroundColor: '#F5F5F5',
+      backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#F5F5F5',
       position: 'relative',
       alignItems: 'center',
     }}>
@@ -182,7 +184,7 @@ export const LifetimeViewInline = ({
             fontSize: '13px',
             lineHeight: '19.5px',
             letterSpacing: '0px',
-            color: '#000000',
+            color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
             margin: 0,
           }}>
             yyyy
@@ -217,7 +219,7 @@ export const LifetimeViewInline = ({
               fontSize: '13px',
               lineHeight: '19.5px',
               letterSpacing: '0px',
-              color: 'rgba(0, 0, 0, 0.6)',
+              color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
             }}>
               Your life in weeks
             </span>
@@ -244,9 +246,9 @@ export const LifetimeViewInline = ({
                 const isSelected = selectedWeek === index;
                 const hasNote = weekNotes[index] && weekNotes[index].trim().length > 0;
 
-                let backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                let backgroundColor = timeOfDay === 'night' ? 'rgba(251,248,232,0.1)' : 'rgba(0, 0, 0, 0.1)';
                 if (isLived) {
-                  backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                  backgroundColor = timeOfDay === 'night' ? 'rgba(251,248,232,0.8)' : 'rgba(0, 0, 0, 0.8)';
                 }
                 if (hasNote) {
                   backgroundColor = '#be8bad';
@@ -282,8 +284,8 @@ export const LifetimeViewInline = ({
               marginTop: '19.5px',
               marginLeft: '19.5px',
               padding: '19.5px',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-              backgroundColor: '#FFFFFF',
+              border: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+              backgroundColor: timeOfDay === 'night' ? '#2A2A2A' : '#FFFFFF',
               boxSizing: 'border-box',
             }}>
               {/* Header with week number and close button */}
@@ -297,7 +299,7 @@ export const LifetimeViewInline = ({
                   fontFamily: 'Courier New',
                   fontWeight: 700,
                   fontSize: '15px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}>
                   Week {selectedWeek + 1}
                 </span>
@@ -308,7 +310,7 @@ export const LifetimeViewInline = ({
                     border: 'none',
                     cursor: 'pointer',
                     fontSize: '18px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                     padding: 0,
                   }}
                 >
@@ -328,14 +330,14 @@ export const LifetimeViewInline = ({
                     fontFamily: 'Courier New',
                     fontWeight: 400,
                     fontSize: '13px',
-                    color: 'rgba(0, 0, 0, 0.6)',
+                    color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                     marginBottom: '4px',
                   }}>Date</div>
                   <div style={{
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '13px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>{selectedWeekStats.date}</div>
                 </div>
                 <div>
@@ -343,14 +345,14 @@ export const LifetimeViewInline = ({
                     fontFamily: 'Courier New',
                     fontWeight: 400,
                     fontSize: '13px',
-                    color: 'rgba(0, 0, 0, 0.6)',
+                    color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                     marginBottom: '4px',
                   }}>Age</div>
                   <div style={{
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '13px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>{selectedWeekStats.age}</div>
                 </div>
                 <div>
@@ -358,14 +360,14 @@ export const LifetimeViewInline = ({
                     fontFamily: 'Courier New',
                     fontWeight: 400,
                     fontSize: '13px',
-                    color: 'rgba(0, 0, 0, 0.6)',
+                    color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                     marginBottom: '4px',
                   }}>Days lived</div>
                   <div style={{
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '13px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>{selectedWeekStats.daysLived.toLocaleString()}</div>
                 </div>
                 <div>
@@ -373,14 +375,14 @@ export const LifetimeViewInline = ({
                     fontFamily: 'Courier New',
                     fontWeight: 400,
                     fontSize: '13px',
-                    color: 'rgba(0, 0, 0, 0.6)',
+                    color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                     marginBottom: '4px',
                   }}>Percentage</div>
                   <div style={{
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '13px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>{selectedWeekStats.percentage}%</div>
                 </div>
               </div>
@@ -391,7 +393,7 @@ export const LifetimeViewInline = ({
                   fontFamily: 'Courier New',
                   fontWeight: 400,
                   fontSize: '13px',
-                  color: 'rgba(0, 0, 0, 0.6)',
+                  color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                   marginBottom: '6.5px',
                 }}>Note for this week</div>
                 <textarea
@@ -405,9 +407,9 @@ export const LifetimeViewInline = ({
                     fontFamily: 'Courier New',
                     fontWeight: 400,
                     fontSize: '13px',
-                    color: '#000000',
-                    border: '1px solid rgba(0, 0, 0, 0.1)',
-                    backgroundColor: '#F5F5F5',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                    border: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                    backgroundColor: timeOfDay === 'night' ? '#2A2A2A' : '#F5F5F5',
                     resize: 'vertical',
                     boxSizing: 'border-box',
                   }}
@@ -432,7 +434,7 @@ export const LifetimeViewInline = ({
               fontSize: '13px',
               lineHeight: '19.5px',
               letterSpacing: '0px',
-              color: 'rgba(0, 0, 0, 0.6)',
+              color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
             }}>
               You have lived {stats.years} years, {stats.months} months, and {stats.days} days ({stats.weeksLived.toLocaleString()} weeks). This represents {stats.percentageLived.toFixed(1)}% of an expected {expectedLifespan}-year lifespan. You have approximately {stats.yearsRemaining} years ({stats.weeksRemaining.toLocaleString()} weeks) remaining.
             </div>
@@ -447,7 +449,7 @@ export const LifetimeViewInline = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+        borderTop: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
         marginTop: 'auto',
         boxSizing: 'border-box',
       }}>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { X, Check } from 'lucide-react';
+import { useTimeOfDay } from '../hooks/useTimeOfDay';
 
 interface TimerModalProps {
   onClose: () => void;
@@ -15,6 +16,7 @@ interface TimerModalProps {
 
 export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, taskText, hasActiveTimer }: TimerModalProps) {
   const [minutes, setMinutes] = useState<string>('');
+  const timeOfDay = useTimeOfDay();
 
   const handleSet = () => {
     const mins = parseInt(minutes);
@@ -57,8 +59,8 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '363.34px',
-          backgroundColor: '#ECE8D6',
-          borderTop: '0.54px solid rgba(0, 0, 0, 0.5)',
+          backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+          borderTop: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
           borderWidth: '0.54px',
           position: 'relative',
           display: 'flex',
@@ -67,7 +69,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
           flexShrink: 0,
           pointerEvents: 'auto',
           fontFamily: 'Courier New, Courier, monospace', // Apply font here
-          color: '#000000',
+          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
         }}
       >
         <div
@@ -92,7 +94,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
               letterSpacing: '0.75px',
               textAlign: 'center',
               textTransform: 'uppercase',
-              color: '#000000',
+              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               margin: 0,
               padding: 0,
               whiteSpace: 'nowrap',
@@ -116,7 +118,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                   minWidth: 'auto',
                 }}
               >
-                <Check className="h-4 w-4" style={{ color: '#000000' }} />
+                <Check className="h-4 w-4" style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
               </Button>
             )}
             <Button
@@ -130,7 +132,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                 minWidth: 'auto',
               }}
             >
-              <X className="h-4 w-4" style={{ color: '#000000' }} />
+              <X className="h-4 w-4" style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
             </Button>
           </div>
         </div>
@@ -148,7 +150,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
             overflowY: 'auto',
           }}
         >
-          <p style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.6)', margin: 0, padding: 0, wordWrap: 'break-word' }}>{taskText}</p>
+          <p style={{ fontSize: '12px', color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)', margin: 0, padding: 0, wordWrap: 'break-word' }}>{taskText}</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
             {quickOptions.map((mins) => (
@@ -159,10 +161,10 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                   onClose();
                 }}
                 style={{
-                  backgroundColor: '#ECE8D6',
-                  border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                  backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                  border: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   fontFamily: 'Courier New, Courier, monospace',
                   fontWeight: 700,
                   fontSize: '15px',
@@ -179,7 +181,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
           </div>
 
           <div>
-            <label style={{ fontFamily: 'Courier New, Courier, monospace', fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', color: 'rgba(0, 0, 0, 0.6)', display: 'block', marginBottom: '8px' }}>Custom (minutes)</label>
+            <label style={{ fontFamily: 'Courier New, Courier, monospace', fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)', display: 'block', marginBottom: '8px' }}>Custom (minutes)</label>
             <div style={{ display: 'flex', gap: '10px' }}>
               <input
                 type="number"
@@ -191,21 +193,22 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                   flex: 1,
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.5)',
+                  borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                   outline: 'none',
                   padding: '8px 0',
                   fontFamily: 'Courier New, Courier, monospace',
                   fontSize: '15px',
-                  color: '#000000',
-                }}
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                  colorScheme: timeOfDay === 'night' ? 'dark' : 'light',
+                } as React.CSSProperties}
                 autoFocus
               />
               <Button
                 onClick={handleSet}
                 style={{
-                  backgroundColor: '#000000',
-                  color: '#FFFFFF',
-                  border: 'none',
+                  backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#FFFFFF',
+                  border: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.5)' : 'none',
                   padding: '12px 15px',
                   fontFamily: 'Courier New, Courier, monospace',
                   fontWeight: 700,
@@ -222,7 +225,7 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
           </div>
 
           {hasActiveTimer && onClearTimer && (
-            <div style={{ paddingTop: '15px', borderTop: '0.54px solid rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ paddingTop: '15px', borderTop: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)' }}>
               <Button
                 onClick={() => {
                   onClearTimer();
@@ -230,8 +233,8 @@ export function TimerModal({ onClose, onSetTimer, onClearTimer, onComplete, task
                 }}
                 style={{
                   width: '100%',
-                  backgroundColor: '#ECE8D6',
-                  border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                  backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                  border: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                   borderRadius: '17981000px',
                   color: '#D84341',
                   fontFamily: 'Courier New, Courier, monospace',

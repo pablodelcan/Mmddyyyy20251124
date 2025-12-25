@@ -14,9 +14,10 @@ interface MonthViewInlineProps {
   onSettingsClick?: () => void;
   accessToken?: string | null;
   onAuthClick?: () => void;
+  timeOfDay?: 'day' | 'night';
 }
 
-export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDates, onMonthChange, onMeditationComplete, onSettingsClick, accessToken, onAuthClick }: MonthViewInlineProps) => {
+export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDates, onMonthChange, onMeditationComplete, onSettingsClick, accessToken, onAuthClick, timeOfDay = 'day' }: MonthViewInlineProps) => {
   const [showMeditation, setShowMeditation] = useState(false);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -44,7 +45,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      backgroundColor: '#E9EAE5',
+      backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#E9EAE5',
       position: 'relative',
     }}>
       {/* Content Area with padding */}
@@ -65,7 +66,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
             fontSize: '15px',
             lineHeight: '19.5px',
             height: '19.5px',
-            color: '#000000',
+            color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
             margin: 0,
           }}>
             mm
@@ -98,12 +99,12 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
               padding: 0,
             }}
           >
-            <ChevronLeft style={{ height: '19.5px', width: '19.5px', color: 'black' }} />
+            <ChevronLeft style={{ height: '19.5px', width: '19.5px', color: timeOfDay === 'night' ? '#FBF8E8' : 'black' }} />
           </button>
 
           <div style={{
             letterSpacing: '.05em',
-            color: 'rgba(0,0,0,0.6)',
+            color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0,0,0,0.6)',
             fontFamily: 'Courier New, Courier, monospace',
             fontSize: '15px',
             lineHeight: '19.5px',
@@ -126,7 +127,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
               padding: 0,
             }}
           >
-            <ChevronRight style={{ height: '19.5px', width: '19.5px', color: 'black' }} />
+            <ChevronRight style={{ height: '19.5px', width: '19.5px', color: timeOfDay === 'night' ? '#FBF8E8' : 'black' }} />
           </button>
         </div>
 
@@ -159,7 +160,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
                 textAlign: 'center',
                 textTransform: 'uppercase',
                 letterSpacing: '.05em',
-                color: 'rgba(0,0,0,0.4)',
+                color: timeOfDay === 'night' ? 'rgba(251,248,232,0.4)' : 'rgba(0,0,0,0.4)',
                 fontFamily: 'Courier New, Courier, monospace',
                 fontSize: '12px',
               }}>
@@ -205,8 +206,8 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
                     aspectRatio: '1',
                     width: '100%',
                     padding: '4px',
-                    border: '1px solid rgba(0, 0, 0, 0.1)',
-                    backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+                    border: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                    backgroundColor: isSelected ? (timeOfDay === 'night' ? 'rgba(251,248,232,0.05)' : 'rgba(0, 0, 0, 0.05)') : 'transparent',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
@@ -232,7 +233,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
                       lineHeight: '19.5px',
                       letterSpacing: '0px',
                       textAlign: 'center',
-                      color: isSelected ? '#BE8BAD' : (isToday ? '#be8bad' : 'rgba(0, 0, 0, 0.8)'),
+                      color: isSelected ? '#BE8BAD' : (isToday ? '#be8bad' : (timeOfDay === 'night' ? 'rgba(251,248,232,0.8)' : 'rgba(0, 0, 0, 0.8)')),
                     }}>
                       {date.getDate()}
                     </div>
@@ -263,7 +264,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
         alignItems: 'center',
         paddingRight: '39px',
         paddingLeft: '39px',
-        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+        borderTop: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
         boxSizing: 'border-box',
       }}>
         {/* Settings Button (logged in) or Sign In Button (not logged in) */}
@@ -282,7 +283,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
               padding: 0,
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={timeOfDay === 'night' ? '#FBF8E8' : '#000000'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
@@ -304,7 +305,7 @@ export const MonthViewInline = ({ currentDate, todos, onSelectDate, meditationDa
               fontFamily: 'Courier New',
               fontWeight: 700,
               fontSize: '15px',
-              color: '#000000',
+              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
             }}
           >
             Sign In

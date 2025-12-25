@@ -325,18 +325,11 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         width: '100%',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
-        zIndex: 50,
-        paddingTop: 'max(env(safe-area-inset-top), 40px)',
+        backgroundColor: 'transparent',
       }}
     >
       {/* Header */}

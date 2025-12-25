@@ -1757,13 +1757,13 @@ function AppContent() {
               minWidth: '320px',
               maxWidth: 'calc(100vw / 3)',
               height: '100dvh',
-              backgroundColor: '#E9EAE5',
+              backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#E9EAE5',
               zIndex: 99999,
               display: 'flex',
               flexDirection: 'column',
               paddingTop: '40px',
               overflow: 'auto',
-              borderRight: '0.54px solid rgba(0, 0, 0, 0.1)',
+              borderRight: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
             }}
           >
             <SettingsModal
@@ -1809,12 +1809,12 @@ function AppContent() {
               minWidth: '320px',
               maxWidth: 'calc(100vw / 3)',
               height: '100dvh',
-              backgroundColor: '#f0d6d9',
+              backgroundColor: timeOfDay === 'night' ? '#690D1C' : '#f0d6d9',
               zIndex: 99999,
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              borderLeft: '0.54px solid rgba(0, 0, 0, 0.1)',
+              borderLeft: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
             }}
           >
             {/* Header - matches left panel header area */}
@@ -1835,7 +1835,7 @@ function AppContent() {
                 fontWeight: 700,
                 fontSize: '15px',
                 lineHeight: '22.5px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 margin: 0,
               }}>
                 Resolutions 2026
@@ -1854,7 +1854,7 @@ function AppContent() {
                   cursor: 'pointer',
                 }}
               >
-                <X style={{ color: '#000000', width: '15px', height: '15px' }} />
+                <X style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
               </button>
             </div>
 
@@ -1869,7 +1869,7 @@ function AppContent() {
                 <p style={{
                   fontFamily: 'Courier New',
                   fontSize: '13px',
-                  color: 'rgba(0, 0, 0, 0.6)',
+                  color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0, 0, 0, 0.6)',
                 }}>
                   No resolution items
                 </p>
@@ -1894,8 +1894,8 @@ function AppContent() {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: '2px solid rgba(0, 0, 0, 0.4)',
-                      background: item.completed ? '#000' : 'transparent',
+                      border: timeOfDay === 'night' ? '2px solid rgba(251,248,232,0.4)' : '2px solid rgba(0, 0, 0, 0.4)',
+                      background: item.completed ? (timeOfDay === 'night' ? '#FBF8E8' : '#000') : 'transparent',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -1904,7 +1904,7 @@ function AppContent() {
                     }}
                   >
                     {item.completed && (
-                      <X style={{ color: '#fff', width: '10px', height: '10px' }} strokeWidth={3} />
+                      <X style={{ color: timeOfDay === 'night' ? '#1D1C1C' : '#fff', width: '10px', height: '10px' }} strokeWidth={3} />
                     )}
                   </button>
                   <span style={{
@@ -1914,6 +1914,7 @@ function AppContent() {
                     flex: 1,
                     textDecoration: item.completed ? 'line-through' : 'none',
                     opacity: item.completed ? 0.5 : 1,
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>
                     {item.text}
                   </span>
@@ -1932,7 +1933,7 @@ function AppContent() {
                       justifyContent: 'center',
                     }}
                   >
-                    <Minus style={{ color: '#000', width: '14px', height: '14px' }} />
+                    <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000', width: '14px', height: '14px' }} />
                   </button>
                 </div>
               ))}
@@ -1947,7 +1948,7 @@ function AppContent() {
               alignItems: 'center',
               paddingLeft: '39px',
               paddingRight: '39px',
-              borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+              borderTop: timeOfDay === 'night' ? '1px solid rgba(251,248,232,0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
               boxSizing: 'border-box',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
@@ -1968,12 +1969,12 @@ function AppContent() {
                     height: '26px',
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+                    borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251,248,232,0.8)' : '0.54px solid rgba(0, 0, 0, 0.8)',
                     padding: 0,
                     fontFamily: 'Courier New',
                     fontWeight: 700,
                     fontSize: '15px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}
                 />
                 <button
@@ -2001,7 +2002,7 @@ function AppContent() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Plus style={{ color: '#000000', width: '19.5px', height: '19.5px' }} />
+                  <Plus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '19.5px', height: '19.5px' }} />
                 </button>
               </div>
             </div>
