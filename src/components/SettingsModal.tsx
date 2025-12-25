@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTimeOfDay } from '../hooks/useTimeOfDay';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { X, Mail, Calendar, TrendingUp, Send, Database } from 'lucide-react';
@@ -19,6 +20,7 @@ interface SettingsModalProps {
   onSaveMeditationDuration: (minutes: number) => void;
   totalMeditationMinutes: number;
   onAddManualMeditation: (minutes: number) => void;
+  timeOfDay?: 'day' | 'night';
 }
 
 interface Preferences {
@@ -27,7 +29,9 @@ interface Preferences {
   weeklyReportDay: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
-export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation }: SettingsModalProps) {
+export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation, timeOfDay: _providedTimeOfDay = 'day' }: SettingsModalProps) {
+  const timeOfDay = useTimeOfDay();
+  console.log('[SettingsModal] Hook timeOfDay:', timeOfDay);
   const [preferences, setPreferences] = useState<Preferences>({
     email: '',
     weeklyReportEnabled: true, // Set to true by default
@@ -277,7 +281,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
     return (
       <div
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : 'rgba(0, 0, 0, 0.2)',
           zIndex: 50,
           position: 'fixed',
           top: 0,
@@ -296,8 +300,8 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         <div style={{
           width: '375px',
           padding: '32px',
-          background: '#ECE8D6',
-          border: '0.54px solid rgba(0, 0, 0, 0.1)',
+          background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+          border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
           boxSizing: 'border-box',
         }}>
           <div style={{
@@ -305,7 +309,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             fontWeight: 700,
             fontSize: '15px',
             lineHeight: '22.5px',
-            color: 'rgba(0, 0, 0, 0.6)',
+            color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
             textAlign: 'center',
           }}>
             Loading...
@@ -320,8 +324,8 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#ECE8D6] z-50 flex flex-col"
       style={{
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
@@ -330,6 +334,9 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+        zIndex: 50,
+        paddingTop: 'max(env(safe-area-inset-top), 40px)',
       }}
     >
       {/* Header */}
@@ -350,7 +357,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
           fontSize: '15px',
           lineHeight: '22.5px',
           letterSpacing: '0px',
-          color: '#000000',
+          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
         }}>
           Settings
         </h2>
@@ -383,7 +390,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
             flexShrink: 0,
           }}
         >
-          <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+          <X style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
         </button>
       </div>
 
@@ -427,7 +434,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <Mail style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '3.74px',
               }} />
               <span style={{
@@ -436,7 +443,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Email address
               </span>
@@ -468,7 +475,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '100%',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}
               className="placeholder:text-black/50 outline-none transition-colors"
             />
@@ -492,7 +499,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                   <TrendingUp style={{
                     width: '14.996110916137695px',
                     height: '14.996110916137695px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }} />
                   <span style={{
                     fontFamily: 'Courier New',
@@ -500,7 +507,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                     fontSize: '15px',
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}>
                     Weekly report
                   </span>
@@ -516,7 +523,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                   height: '22.49835205078125px',
                   borderRadius: '17981000px',
                   transition: 'background-color 0.2s',
-                  backgroundColor: preferences.weeklyReportEnabled ? '#000000' : 'rgba(0,0,0,0.2)',
+                  backgroundColor: preferences.weeklyReportEnabled ? (timeOfDay === 'night' ? '#FBF8E8' : '#000000') : (timeOfDay === 'night' ? 'rgba(251,248,232,0.2)' : 'rgba(0,0,0,0.2)'),
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
@@ -552,7 +559,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                       alignItems: 'center',
                       justifyContent: 'center',
                       transition: 'background-color 0.2s, color 0.2s',
-                      backgroundColor: preferences.weeklyReportDay === index ? '#000000' : 'rgba(0,0,0,0.1)',
+                      backgroundColor: preferences.weeklyReportDay === index ? (timeOfDay === 'night' ? '#FBF8E8' : '#000000') : (timeOfDay === 'night' ? '#444444' : 'rgba(0,0,0,0.1)'),
                       border: 'none',
                       cursor: 'pointer',
                     }}
@@ -564,7 +571,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                       lineHeight: '16.5px',
                       letterSpacing: '0px',
                       textAlign: 'center',
-                      color: preferences.weeklyReportDay === index ? '#FFFFFF' : '#000000',
+                      color: preferences.weeklyReportDay === index ? (timeOfDay === 'night' ? '#000000' : '#FFFFFF') : (timeOfDay === 'night' ? '#FBF8E8' : '#000000'),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -599,7 +606,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 margin: 0, // Remove default paragraph margin
               }}
             >
@@ -611,14 +618,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               style={{
                 width: '96px',
                 height: '30px',
-                background: '#000000',
-                color: '#ECE8D6',
+                background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
-                border: '1px solid #000000',
+                border: timeOfDay === 'night' ? '1px solid #FBF8E8' : '1px solid #000000',
                 cursor: 'pointer',
                 paddingTop: '7.5px',
                 paddingRight: '11.25px',
@@ -633,7 +640,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#ECE8D6',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
               }}>
                 {testing ? 'Sending...' : 'Send test'}
               </span>
@@ -659,7 +666,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <Database style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }} />
               <span style={{
                 fontFamily: 'Courier New',
@@ -667,7 +674,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Data recovery
               </span>
@@ -677,14 +684,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               style={{
                 width: '180px',
                 height: '30px',
-                background: '#000000',
-                color: '#ECE8D6',
+                background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
-                border: '1px solid #000000',
+                border: timeOfDay === 'night' ? '1px solid #FBF8E8' : '1px solid #000000',
                 cursor: 'pointer',
                 paddingTop: '7.5px',
                 paddingRight: '11.25px',
@@ -699,7 +706,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#ECE8D6',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 whiteSpace: 'nowrap',
               }}>
                 Check data status
@@ -726,7 +733,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <Calendar style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '3.74px',
               }} />
               <span style={{
@@ -735,7 +742,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Date of birth
               </span>
@@ -747,7 +754,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: 'rgba(0,0,0,0.6)',
+                color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0,0,0,0.6)',
                 margin: 0,
                 marginTop: '7.17px', // 7.17px below the date of birth text
               }}
@@ -775,7 +782,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                   fontSize: '15px',
                   lineHeight: '22.5px',
                   letterSpacing: '0px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
                 className="outline-none transition-colors date-of-birth-input"
               />
@@ -792,7 +799,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                     fontSize: '15px',
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}
                 >
                   mm/dd/yyyy
@@ -820,7 +827,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <TrendingUp style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '3.74px',
               }} />
               <span style={{
@@ -829,7 +836,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Expected lifespan
               </span>
@@ -843,7 +850,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: 'rgba(0,0,0,0.6)',
+                color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0,0,0,0.6)',
                 margin: 0,
                 marginTop: '7.17px',
               }}
@@ -881,7 +888,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '7.49px',
               }}
               className="outline-none transition-colors"
@@ -907,7 +914,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <TrendingUp style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '3.74px',
               }} />
               <span style={{
@@ -916,7 +923,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Meditation duration
               </span>
@@ -930,7 +937,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: 'rgba(0,0,0,0.6)',
+                color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0,0,0,0.6)',
                 margin: 0,
                 marginTop: '7.17px',
               }}
@@ -958,7 +965,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '7.49px',
               }}
               className="outline-none transition-colors text-left"
@@ -984,7 +991,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               <TrendingUp style={{
                 width: '14.996110916137695px',
                 height: '14.996110916137695px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '3.74px',
               }} />
               <span style={{
@@ -993,7 +1000,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
               }}>
                 Add manual meditation
               </span>
@@ -1007,7 +1014,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: 'rgba(0,0,0,0.6)',
+                color: timeOfDay === 'night' ? 'rgba(251,248,232,0.6)' : 'rgba(0,0,0,0.6)',
                 margin: 0,
                 marginTop: '7.17px',
               }}
@@ -1035,7 +1042,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 marginTop: '7.49px',
               }}
               className="outline-none transition-colors text-left"
@@ -1054,14 +1061,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               style={{
                 width: '120px',
                 height: '30px',
-                background: '#000000',
-                color: '#ECE8D6',
+                background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
-                border: '1px solid #000000',
+                border: timeOfDay === 'night' ? '1px solid #FBF8E8' : '1px solid #000000',
                 cursor: 'pointer',
                 paddingTop: '7.5px',
                 paddingRight: '11.25px',
@@ -1076,7 +1083,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#ECE8D6',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 whiteSpace: 'nowrap',
               }}>
                 Contact Us
@@ -1101,14 +1108,14 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
               style={{
                 width: '140px',
                 height: '30px',
-                background: '#000000',
-                color: '#ECE8D6',
+                background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 borderRadius: '16777200px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '7.5px',
-                border: '1px solid #000000',
+                border: timeOfDay === 'night' ? '1px solid #FBF8E8' : '1px solid #000000',
                 cursor: 'pointer',
                 paddingTop: '7.5px',
                 paddingRight: '11.25px',
@@ -1123,7 +1130,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#ECE8D6',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 whiteSpace: 'nowrap',
               }}>
                 Privacy Policy
@@ -1263,9 +1270,9 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 paddingRight: '11.25px',
                 paddingBottom: '7.5px',
                 paddingLeft: '11.25px',
-                background: '#000000',
+                background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 borderRadius: '16777200px',
-                border: '1px solid #000000',
+                border: timeOfDay === 'night' ? '1px solid #FBF8E8' : '1px solid #000000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1281,7 +1288,7 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 lineHeight: '18.75px',
                 letterSpacing: '0px',
                 textAlign: 'center',
-                color: '#ECE8D6',
+                color: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                 whiteSpace: 'nowrap',
               }}>
                 Sign out

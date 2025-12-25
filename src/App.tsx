@@ -82,6 +82,7 @@ interface DraggableTodoProps {
   onTimerClick: () => void;
   meditationGlowActive: boolean;
   timeRemaining?: string;
+  timeOfDay: 'day' | 'night';
 }
 
 function DraggableTodo({
@@ -100,7 +101,8 @@ function DraggableTodo({
   onPriorityToggle,
   onTimerClick,
   meditationGlowActive,
-  timeRemaining
+  timeRemaining,
+  timeOfDay
 }: DraggableTodoProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null); // New ref for the drag handle
@@ -256,7 +258,7 @@ function DraggableTodo({
                 background: todo.completed
                   ? 'rgba(0,0,0,0.05)'
                   : todo.priority
-                    ? 'rgba(243, 235, 126, 0.4)'
+                    ? 'rgba(156, 156, 156, 0.4)'
                     : meditationGlowActive
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
@@ -299,7 +301,7 @@ function DraggableTodo({
                 }}
               >
                 <span style={{
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   fontFamily: 'Courier New',
                   fontWeight: 700,
                   fontSize: '15px',
@@ -309,7 +311,7 @@ function DraggableTodo({
                   {todo.text} • {timeRemaining}
                 </span>
                 <span style={{
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   fontFamily: 'Courier New',
                   fontWeight: 700,
                   fontSize: '15px',
@@ -328,7 +330,7 @@ function DraggableTodo({
               data-task-text="true"
               className="cursor-text transition-all"
               style={{
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 fontFamily: 'Courier New',
                 fontWeight: 700,
                 fontSize: '15px',
@@ -342,7 +344,7 @@ function DraggableTodo({
                 background: todo.completed
                   ? 'rgba(0,0,0,0.05)'
                   : todo.priority
-                    ? 'rgba(243, 235, 126, 0.4)'
+                    ? 'rgba(156, 156, 156, 0.4)'
                     : meditationGlowActive
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
@@ -387,7 +389,7 @@ function DraggableTodo({
           }}
           title={timeRemaining ? `Timer: ${timeRemaining}` : "Set timer"}
         >
-          <Clock style={{ color: '#000000', width: '15px', height: '15px' }} />
+          <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
         </Button>
         <Button
           variant="ghost"
@@ -405,7 +407,7 @@ function DraggableTodo({
             minWidth: 'auto',
           }}
         >
-          <ArrowUp style={{ color: '#000000', width: '15px', height: '15px' }} />
+          <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
         </Button>
         <Button
           variant="ghost"
@@ -423,7 +425,7 @@ function DraggableTodo({
             minWidth: 'auto',
           }}
         >
-          <Minus style={{ color: '#000000', width: '15px', height: '15px' }} />
+          <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
         </Button>
       </div>
     </div>
@@ -474,9 +476,34 @@ function AppContent() {
 
   // Set body background color to match app
   useEffect(() => {
-    const bgColor = timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6';
+    const bgColor = timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6';
     document.body.style.backgroundColor = bgColor;
     document.documentElement.style.backgroundColor = bgColor;
+
+    // Update theme-color meta tag for mobile status bar
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', bgColor);
+    }
+
+    // Programmatically set Native Status Bar
+    const setStatusBar = async () => {
+      try {
+        await StatusBar.setStyle({ style: timeOfDay === 'night' ? Style.Dark : Style.Light });
+        await StatusBar.setBackgroundColor({ color: bgColor });
+        // Ensure overlay is disabled if we want to set color, or enabled if we want transparent
+        // For consistent color, we set the color. If we wanted full content behind, we'd use overlay.
+        // Given contentInset: 'never', we probably want overlay to be TRUE so webview is full screen, 
+        // BUT if we want to FORCE the color, we might need overlay FALSE?
+        // Actually, if contentInset is 'never', webview is full screen.
+        // If we want the webview background to show, we should set StatusBar to transparent or overlay.
+        // BUT, given the bug, let's FORCE the color.
+        await StatusBar.setOverlaysWebView({ overlay: false });
+      } catch (e) {
+        console.error('StatusBar error:', e);
+      }
+    };
+    setStatusBar();
 
     // Control body overflow for full-screen modals
     if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId || showOnboarding) {
@@ -1751,6 +1778,7 @@ function AppContent() {
               onSaveMeditationDuration={setMeditationDuration}
               totalMeditationMinutes={totalMeditationMinutes}
               onAddManualMeditation={setTotalMeditationMinutes}
+              timeOfDay={timeOfDay as 'day' | 'night'}
             />
           </motion.div>
         )}
@@ -1988,8 +2016,8 @@ function AppContent() {
     <div
       className="flex flex-col items-center transition-colors duration-1000"
       style={{
-        backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6',
-        color: timeOfDay === 'night' ? '#fdf5ed' : '#000000',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+        color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
         height: '100dvh',
         width: '100%',
         position: 'relative',
@@ -2016,7 +2044,7 @@ function AppContent() {
               bottom: 0,
               width: '100vw',
               height: '100vh',
-              backgroundColor: timeOfDay === 'night' ? '#1a1a1a' : '#ECE8D6',
+              backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2101,9 +2129,9 @@ function AppContent() {
                 style={{
                   width: '16px',
                   height: '16px',
-                  stroke: '#000000',
+                  stroke: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   strokeWidth: '1.25px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
               />
             </Button>
@@ -2163,9 +2191,9 @@ function AppContent() {
                 style={{
                   width: '16px',
                   height: '16px',
-                  stroke: '#000000',
+                  stroke: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   strokeWidth: '1.25px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
               />
             </Button>
@@ -2196,7 +2224,7 @@ function AppContent() {
                     lineHeight: '18.75px',
                     letterSpacing: '0px',
                     textAlign: 'center',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}
                 >
                   Today
@@ -2234,6 +2262,7 @@ function AppContent() {
                   style={{
                     width: '12.99px',
                     height: '12.99px',
+                    filter: timeOfDay === 'night' ? 'invert(1) sepia(1) saturate(0) brightness(1.1)' : 'none',
                   }}
                 />
               </button>
@@ -2284,6 +2313,7 @@ function AppContent() {
                       setCurrentDate(newDate);
                     }}
                     onClose={() => setShowCalendar(false)}
+                    timeOfDay={timeOfDay as 'day' | 'night'}
                   />
                 </motion.div>
               )}
@@ -2327,6 +2357,7 @@ function AppContent() {
                 meditationGlowActive={!!meditationGlowActive}
                 timeRemaining={getTimeRemaining(todo.timerEnd)}
                 onTimerClick={() => setTimerModalTodoId(todo.id)}
+                timeOfDay={timeOfDay as 'day' | 'night'}
               />
             ))}
           </div>
@@ -2364,7 +2395,7 @@ function AppContent() {
                   height: '33.74px',
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '0.54px solid rgba(0, 0, 0, 0.8)',
+                  borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.8)' : '0.54px solid rgba(0, 0, 0, 0.8)',
                   paddingTop: '3.75px',
                   paddingBottom: '3.75px',
                   paddingLeft: 0,
@@ -2374,7 +2405,7 @@ function AppContent() {
                   fontSize: '15px',
                   lineHeight: '100%',
                   letterSpacing: '0px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 }}
                 className="rounded-none add-task-input"
               />
@@ -2395,7 +2426,7 @@ function AppContent() {
                   justifyContent: 'center',
                 }}
               >
-                <Plus style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                <Plus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.99px', height: '14.99px' }} />
               </Button>
             </div>
           )}
@@ -2475,7 +2506,7 @@ function AppContent() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Settings style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                  <Settings style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.99px', height: '14.99px' }} />
                 </Button>
               )}
 
@@ -2517,7 +2548,7 @@ function AppContent() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Calendar style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                  <Calendar style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.99px', height: '14.99px' }} />
                 </Button>
 
                 <Button
@@ -2538,7 +2569,7 @@ function AppContent() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Grid3X3 style={{ color: '#000000', width: '14.99px', height: '14.99px' }} />
+                  <Grid3X3 style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.99px', height: '14.99px' }} />
                 </Button>
               </div>
             </div>
@@ -2619,11 +2650,11 @@ function AppContent() {
                   left: 0,
                   width: '100vw',
                   height: '100vh',
-                  backgroundColor: '#ECE8D6', // Revert to desired background color
+                  backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
                   zIndex: 99999, // Keep high z-index
                   display: 'flex',
                   flexDirection: 'column',
-                  paddingTop: 'max(env(safe-area-inset-top), 40px)', // Reintroduce padding
+                  paddingTop: 'max(env(safe-area-inset-top), 40px)',
                 }}
               >
                 <LifetimeView
@@ -2646,6 +2677,7 @@ function AppContent() {
                   bucketList={bucketList}
                   onSaveBucketList={setBucketList}
                   totalMeditationMinutes={totalMeditationMinutes}
+                  timeOfDay={timeOfDay as 'day' | 'night'}
                 />
               </motion.div>
             )

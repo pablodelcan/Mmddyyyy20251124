@@ -14,9 +14,10 @@ interface LifetimeViewProps {
   bucketList: { id: string; text: string; completed: boolean }[];
   onSaveBucketList: (list: { id: string; text: string; completed: boolean }[]) => void;
   totalMeditationMinutes: number;
+  timeOfDay?: 'day' | 'night';
 }
 
-export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, weekNotes, onSaveWeekNote, bucketList, onSaveBucketList, totalMeditationMinutes }: LifetimeViewProps) => {
+export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, weekNotes, onSaveWeekNote, bucketList, onSaveBucketList, totalMeditationMinutes, timeOfDay = 'day' }: LifetimeViewProps) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
   const [searchDate, setSearchDate] = useState('');
@@ -235,7 +236,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             left: 0,
             right: 0,
             bottom: 0,
-            background: '#f0d6d9',
+            background: timeOfDay === 'night' ? '#690D1C' : '#f0d6d9',
             zIndex: -1,
           }}
         />
@@ -245,8 +246,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex flex-col"
           style={{
-            background: '#f0d6d9',
-            paddingTop: 'max(env(safe-area-inset-top), 40px)',
+            background: timeOfDay === 'night' ? '#690D1C' : '#f0d6d9',
+            paddingTop: 0, // App.tsx wrapper handles safe area
             width: '100%',
             height: '100dvh',
             display: 'flex',
@@ -258,7 +259,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           <div
             style={{
               width: '393.3318176269531px',
-              height: '75.5248031616211px',
+              height: '59.98444366455078px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -280,7 +281,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 fontSize: '15px',
                 lineHeight: '22.5px',
                 letterSpacing: '0px',
-                color: '#000000',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                 margin: '0',
               }}
             >
@@ -301,7 +302,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 flexShrink: 0,
               }}
             >
-              <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+              <X style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
             </Button>
           </div>
 
@@ -354,7 +355,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     fontSize: '15px',
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                     opacity: 0.9,
                     margin: '0',
                     padding: '22.5px',
@@ -497,7 +498,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
               paddingBottom: 'calc(30px + env(safe-area-inset-bottom) + 7.49px)',
               paddingTop: '20px',
               zIndex: 50,
-              background: '#f0d6d9',
+              background: timeOfDay === 'night' ? '#690D1C' : '#f0d6d9',
               boxSizing: 'border-box',
             }}
           >
@@ -535,7 +536,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     height: '33.743343353271484px',
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: '0.54px solid rgba(0, 0, 0, 0.2)',
+                    borderBottom: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.2)' : '0.54px solid rgba(0, 0, 0, 0.2)',
                     paddingTop: '3.75px',
                     paddingBottom: '3.75px',
                     paddingLeft: '0px',
@@ -545,7 +546,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     fontSize: '15px',
                     lineHeight: '100%',
                     letterSpacing: '0px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                     outline: 'none',
                     boxSizing: 'border-box',
                   }}
@@ -567,7 +568,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     flexShrink: 0,
                   }}
                 >
-                  <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+                  <Plus style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
                 </button>
               </div>
             </div>
@@ -582,7 +583,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-[#ECE8D6] z-50 flex flex-col"
+      className="fixed inset-0 z-50 flex flex-col"
       style={{
         top: 0,
         left: 0,
@@ -592,6 +593,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
       }}
     >
       {/* Header */}
@@ -603,8 +605,10 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
         alignItems: 'center',
         paddingLeft: '22.5px',
         paddingRight: '22.5px',
+        paddingTop: 'env(safe-area-inset-top)',
         boxSizing: 'border-box',
         flexShrink: 0, /* Ensure header does not shrink */
+        backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
       }}>
         <h2 style={{
           height: '23px',
@@ -613,7 +617,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           fontSize: '15px',
           lineHeight: '22.5px',
           letterSpacing: '0px',
-          color: '#000000',
+          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
         }}>
           Your life in weeks
         </h2>
@@ -631,7 +635,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
             flexShrink: 0,
           }}
         >
-          <X style={{ color: '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
+          <X style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '14.996110916137695px', height: '14.996110916137695px' }} />
         </button>
       </div>
 
@@ -739,9 +743,9 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     const isSelected = selectedWeek === index;
                     const hasNote = weekNotes[index] && weekNotes[index].trim().length > 0;
 
-                    let backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Empty boxes - #000000 10% opacity
+                    let backgroundColor = timeOfDay === 'night' ? '#444444' : 'rgba(0, 0, 0, 0.1)'; // Empty boxes
                     if (isLived) {
-                      backgroundColor = 'rgba(0, 0, 0, 0.8)'; // Already filled - #000000 80% opacity
+                      backgroundColor = timeOfDay === 'night' ? '#FDF5ED' : 'rgba(0, 0, 0, 0.8)'; // Already filled
                     }
                     if (hasNote) {
                       backgroundColor = '#be8bad'; // Has note (keep pink)
@@ -804,8 +808,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         style={{
                           marginTop: '24px',
                           width: '100%',
-                          background: '#ECE8D6',
-                          border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                          background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                          border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                           padding: '22.5px',
                           boxSizing: 'border-box',
                         }}
@@ -822,7 +826,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                             fontWeight: 700,
                             fontSize: '15px',
                             lineHeight: '22.5px',
-                            color: '#000000',
+                            color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                             margin: 0,
                           }}>
                             Week {selectedWeek + 1}
@@ -844,7 +848,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               padding: 0,
                             }}
                           >
-                            <X style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: '#000000' }} />
+                            <X style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: timeOfDay === 'night' ? '#FBF8E8' : '#000000' }} />
                           </button>
                         </div>
 
@@ -870,7 +874,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: '#000000',
+                              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                             }}>
                               {weekStats.date}
                             </div>
@@ -891,7 +895,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: '#000000',
+                              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                             }}>
                               {weekStats.age}
                             </div>
@@ -912,7 +916,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: '#000000',
+                              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                             }}>
                               {weekStats.daysLived.toLocaleString()}
                             </div>
@@ -933,7 +937,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: '#000000',
+                              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                             }}>
                               {weekStats.percentage}%
                             </div>
@@ -968,7 +972,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: '#000000',
+                              color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                               padding: '7.5px',
                               outline: 'none',
                               resize: 'none',
@@ -1001,7 +1005,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                   fontSize: '15px',
                   lineHeight: '22.5px',
                   letterSpacing: '0px',
-                  color: '#000000',
+                  color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   margin: '0', // Remove default margin
                 }}>
                   Find week
@@ -1013,7 +1017,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     fontSize: '15px',
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
-                    color: 'rgba(0, 0, 0, 0.9)',
+                    color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.9)' : 'rgba(0, 0, 0, 0.9)',
                     margin: '0', // Remove default margin
                     marginTop: '7.17px', // 7.17px below the Find week text
                   }}
@@ -1033,7 +1037,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     style={{
                       flex: '1',
                       height: '38.54946517944336px',
-                      border: '0.54px solid rgba(0, 0, 0, 0.2)',
+                      border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.2)' : '0.54px solid rgba(0, 0, 0, 0.2)',
                       background: 'transparent',
                       padding: '0',
                       fontFamily: 'Courier New',
@@ -1041,7 +1045,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       fontSize: '15px',
                       lineHeight: '100%',
                       letterSpacing: '0px',
-                      color: '#000000',
+                      color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                       boxSizing: 'border-box',
                       textAlign: 'center',
                       outline: 'none',
@@ -1059,8 +1063,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       paddingRight: '15px',
                       paddingBottom: '7.5px',
                       paddingLeft: '15px',
-                      background: '#000000',
-                      color: '#FFFFFF',
+                      background: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+                      color: timeOfDay === 'night' ? '#000000' : '#FFFFFF',
                       borderRadius: '0',
                       border: 'none',
                       display: 'flex',
@@ -1068,7 +1072,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                       justifyContent: 'center',
                       cursor: 'pointer',
                       fontFamily: 'Courier New',
-                      fontWeight: 400,
+                      fontWeight: 700,
                       fontSize: '13.13px',
                       lineHeight: '18.75px',
                       letterSpacing: '0px',
@@ -1101,7 +1105,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
                     textAlign: 'center',
-                    color: 'rgba(0, 0, 0, 0.6)', // 60% opacity for text and arrow
+                    color: timeOfDay === 'night' ? 'rgba(253, 245, 237, 0.6)' : 'rgba(0, 0, 0, 0.6)', // 60% opacity for text and arrow
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-start',
@@ -1114,12 +1118,12 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 >
                   {showMoreInfo ? (
                     <>
-                      <ChevronUp style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: 'rgba(0, 0, 0, 0.6)' }} />
+                      <ChevronUp style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: timeOfDay === 'night' ? 'rgba(253, 245, 237, 0.6)' : 'rgba(0, 0, 0, 0.6)' }} />
                       <span>Hide more information</span>
                     </>
                   ) : (
                     <>
-                      <ChevronDown style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: 'rgba(0, 0, 0, 0.6)' }} />
+                      <ChevronDown style={{ width: '14.996110916137695px', height: '14.996110916137695px', color: timeOfDay === 'night' ? 'rgba(253, 245, 237, 0.6)' : 'rgba(0, 0, 0, 0.6)' }} />
                       <span>Show more information</span>
                     </>
                   )}
@@ -1145,8 +1149,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     }}>
                       {/* Time lived card */}
                       <div style={{
-                        background: '#ECE8D6',
-                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                        background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                        border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1155,7 +1159,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           Time lived
@@ -1165,7 +1169,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           {stats.years}
@@ -1175,7 +1179,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           years, {stats.months} months, {stats.days} days
@@ -1185,7 +1189,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           {stats.weeksLived.toLocaleString()} weeks
                         </div>
@@ -1193,8 +1197,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Percentage lived card */}
                       <div style={{
-                        background: '#ECE8D6',
-                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                        background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                        border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1203,7 +1207,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           Percentage lived
@@ -1213,7 +1217,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           {stats.percentageLived.toFixed(1)}%
@@ -1223,7 +1227,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           of {expectedLifespan} years
                         </div>
@@ -1231,8 +1235,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Time remaining card */}
                       <div style={{
-                        background: '#ECE8D6',
-                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                        background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                        border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1241,7 +1245,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           Time remaining
@@ -1251,7 +1255,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           {stats.yearsRemaining}
@@ -1261,7 +1265,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           years ({stats.monthsRemaining} months)
@@ -1271,7 +1275,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           {stats.weeksRemaining.toLocaleString()} weeks
                         </div>
@@ -1279,8 +1283,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                       {/* Total meditation card */}
                       <div style={{
-                        background: '#ECE8D6',
-                        border: '0.54px solid rgba(0, 0, 0, 0.5)',
+                        background: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
+                        border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.5)' : '0.54px solid rgba(0, 0, 0, 0.5)',
                         padding: '22.5px',
                         boxSizing: 'border-box',
                       }}>
@@ -1289,7 +1293,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           Total meditation
@@ -1299,7 +1303,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           {totalMeditationMinutes.toLocaleString()}
@@ -1309,7 +1313,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                           marginBottom: '7.5px',
                         }}>
                           minutes
@@ -1319,7 +1323,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           {(totalMeditationMinutes / 60).toFixed(1)} hours
                         </div>
@@ -1343,7 +1347,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           width: '18px',
                           height: '18px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          backgroundColor: timeOfDay === 'night' ? '#FDF5ED' : 'rgba(0, 0, 0, 0.8)',
                           flexShrink: 0,
                         }} />
                         <span style={{
@@ -1351,7 +1355,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           Weeks lived
                         </span>
@@ -1372,7 +1376,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           Current week
                         </span>
@@ -1385,7 +1389,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                         <div style={{
                           width: '18px',
                           height: '18px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          backgroundColor: timeOfDay === 'night' ? '#444444' : 'rgba(0, 0, 0, 0.1)',
                           flexShrink: 0,
                         }} />
                         <span style={{
@@ -1393,7 +1397,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           Weeks remaining
                         </span>
@@ -1414,7 +1418,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           fontWeight: 700,
                           fontSize: '15px',
                           lineHeight: '22.5px',
-                          color: '#000000',
+                          color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                         }}>
                           Has note
                         </span>
@@ -1494,7 +1498,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                     fontSize: '15px',
                     lineHeight: '22.5px',
                     letterSpacing: '0px',
-                    color: '#000000',
+                    color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
                   }}
                 >
                   Please set your date of birth in Settings to view your life in weeks

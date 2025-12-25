@@ -398,7 +398,7 @@
   }
 
   body {
-    background-color: #ECE8D6;
+    background-color: transparent;
     color: var(--foreground);
     font-family: Courier New, Courier, monospace;
     font-size: 15px;
@@ -421,7 +421,7 @@
   html {
     height: 100vh;
     height: 100dvh;
-    background-color: #ECE8D6;
+    background-color: transparent;
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,

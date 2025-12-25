@@ -8,6 +8,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        // Ensure the window respects system appearance (light/dark mode)
+        if let window = UIApplication.shared.windows.first {
+            window.overrideUserInterfaceStyle = .unspecified
+            // Set window background color to dark for dark mode safe area
+            window.backgroundColor = UIColor(red: 29/255, green: 28/255, blue: 28/255, alpha: 1.0) // #1D1C1C
+        }
         return true
     }
 

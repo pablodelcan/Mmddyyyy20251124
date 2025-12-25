@@ -9,9 +9,10 @@ interface MonthViewProps {
   meditationDates: string[];
   onMonthChange: (direction: number) => void;
   onClose: () => void;
+  timeOfDay?: 'day' | 'night';
 }
 
-export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, onMonthChange, onClose }: MonthViewProps) => {
+export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, onMonthChange, onClose, timeOfDay = 'day' }: MonthViewProps) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -47,7 +48,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      backgroundColor: '#ECE8D6',
+      backgroundColor: timeOfDay === 'night' ? '#1D1C1C' : '#ECE8D6',
       margin: '0 auto',
     }}>
       {/* Container 1: Month Header with Navigation */}
@@ -69,10 +70,10 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
             appearance: 'none',
           }}
         >
-          <ChevronLeft style={{ height: '16px', width: '16px', color: 'black' }} />
+          <ChevronLeft style={{ height: '16px', width: '16px', color: timeOfDay === 'night' ? '#FBF8E8' : 'black' }} />
         </button>
 
-        <div style={{ textAlign: 'center', letterSpacing: '.05em', color: 'rgba(0,0,0,0.6)', fontFamily: 'Courier New, Courier, monospace' }}>
+        <div style={{ textAlign: 'center', letterSpacing: '.05em', color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0,0,0,0.6)', fontFamily: 'Courier New, Courier, monospace' }}>
           {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
 
@@ -94,7 +95,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
               appearance: 'none',
             }}
           >
-            <ChevronRight style={{ height: '16px', width: '16px', color: 'black' }} />
+            <ChevronRight style={{ height: '16px', width: '16px', color: timeOfDay === 'night' ? '#FBF8E8' : 'black' }} />
           </button>
 
           <button
@@ -114,7 +115,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
               appearance: 'none',
             }}
           >
-            <X style={{ height: '16px', width: '16px', color: 'black' }} />
+            <X style={{ height: '16px', width: '16px', color: timeOfDay === 'night' ? '#FBF8E8' : 'black' }} />
           </button>
         </div>
       </div>
@@ -129,7 +130,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
         justifyItems: 'center',
       }}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-          <div key={i} style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.05em', color: 'rgba(0,0,0,0.4)', fontFamily: 'Courier New, Courier, monospace', padding: '8px' }}>
+          <div key={i} style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '.05em', color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.4)' : 'rgba(0,0,0,0.4)', fontFamily: 'Courier New, Courier, monospace', padding: '8px' }}>
             {day}
           </div>
         ))}
@@ -178,7 +179,7 @@ export const MonthView = ({ currentDate, todos, onSelectDate, meditationDates, o
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <div style={{ color: isSelected ? '#BE8BAD' : (isToday ? '#be8bad' : 'rgba(0, 0, 0, 0.8)') }}>
+                <div style={{ color: isSelected ? '#BE8BAD' : (isToday ? '#be8bad' : (timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.8)' : 'rgba(0, 0, 0, 0.8)')) }}>
                   {date.getDate()}
                 </div>
                 {total > 0 && (

@@ -8,14 +8,14 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   ios: {
-    contentInset: 'always',
-    backgroundColor: '#FBF8E8',
+    contentInset: 'never',
+    backgroundColor: '#1D1C1C',
     scrollEnabled: true
   },
   plugins: {
     SplashScreen: {
       launchAutoHide: true,
-      backgroundColor: '#FBF8E8',
+      backgroundColor: '#1D1C1C',
       androidSplashResourceName: 'splash',
       showSpinner: false
     }

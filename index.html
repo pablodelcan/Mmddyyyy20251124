@@ -1,44 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content" />
-      <title>mm/dd/yyyy</title>
-    <style>
-      * { -webkit-overflow-scrolling: touch; }
-      html, body { 
-        width: 100% !important;
-        height: 100% !important;
-        height: 100dvh !important;
-        -webkit-overflow-scrolling: none !important;
-        overscroll-behavior: none !important;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content" />
+  <meta name="theme-color" content="#ECE8D6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1D1C1C" media="(prefers-color-scheme: dark)" />
+  <title>mm/dd/yyyy</title>
+  <style>
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    html,
+    body {
+      width: 100% !important;
+      height: 100% !important;
+      height: 100dvh !important;
+      -webkit-overflow-scrolling: none !important;
+      overscroll-behavior: none !important;
+    }
+
+    #root {
+      width: 100% !important;
+      height: 100% !important;
+      height: 100dvh !important;
+      background-color: transparent !important;
+    }
+
+    /* Prevent keyboard from resizing viewport */
+    @supports (-webkit-touch-callout: none) {
+
+      html,
+      body {
+        height: -webkit-fill-available !important;
       }
+
       #root {
-        width: 100% !important;
-        height: 100% !important;
-        height: 100dvh !important;
-        background-color: #FBF8E8 !important;
+        height: -webkit-fill-available !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
       }
-      /* Prevent keyboard from resizing viewport */
-      @supports (-webkit-touch-callout: none) {
-        html, body {
-          height: -webkit-fill-available !important;
-        }
-        #root {
-          height: -webkit-fill-available !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-        }
-      }
-    </style>
-    </head>
+    }
+  </style>
+</head>
 
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
