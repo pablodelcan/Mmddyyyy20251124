@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTimeOfDay } from '../hooks/useTimeOfDay';
+import { useTimeOfDay, isDarkModeActive, setThemePreference, getThemePreference } from '../hooks/useTimeOfDay';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
-import { X, Mail, Calendar, TrendingUp, Send, Database } from 'lucide-react';
+import { X, Mail, Calendar, TrendingUp, Send, Database, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 import { projectId } from '../utils/supabase/info';
 import { getSupabaseClient } from '../utils/supabase/client';
@@ -428,6 +428,62 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
         }}
       >
         <div className="max-w-[375px] mx-auto">
+          {/* Dark Mode Toggle */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '22.5px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7.5px' }}>
+              <Moon style={{
+                width: '14.996110916137695px',
+                height: '14.996110916137695px',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+              }} />
+              <span style={{
+                fontFamily: 'Courier New',
+                fontWeight: 700,
+                fontSize: '15px',
+                lineHeight: '22.5px',
+                letterSpacing: '0px',
+                color: timeOfDay === 'night' ? '#FBF8E8' : '#000000',
+              }}>
+                Dark mode
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                // Toggle: if currently dark, switch to light; if light, switch to dark
+                const currentlyDark = isDarkModeActive();
+                setThemePreference(currentlyDark ? 'light' : 'dark');
+              }}
+              style={{
+                width: '41.24558639526367px',
+                height: '22.49835205078125px',
+                borderRadius: '17981000px',
+                transition: 'background-color 0.2s',
+                backgroundColor: timeOfDay === 'night' ? (timeOfDay === 'night' ? '#FBF8E8' : '#000000') : (timeOfDay === 'night' ? 'rgba(251,248,232,0.2)' : 'rgba(0,0,0,0.2)'),
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                position: 'relative',
+                padding: '1.88px',
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+              }}
+            >
+              <div
+                className={`h-5 w-5 rounded-full bg-white transition-transform duration-200 ease-in-out`}
+                style={{
+                  transform: timeOfDay === 'night' ? 'translateX(19.36px)' : 'translateX(0px)',
+                }}
+              />
+            </button>
+          </div>
+
           {/* Email Address */}
           <div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '7.5px', marginBottom: '2px' }}>

@@ -12,12 +12,27 @@ interface TimeOfDayColors {
   pink: string;
 }
 
+// Global state for theme preference callbacks
+let themeListeners: (() => void)[] = [];
+
 export const useTimeOfDay = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check system preference on initial load
+    // Check if user has set a theme preference
+    if (typeof window !== 'undefined') {
+      const themePref = localStorage.getItem('themePreference');
+      if (themePref === 'dark') {
+        console.log('[useTimeOfDay] Theme preference: dark');
+        return true;
+      }
+      if (themePref === 'light') {
+        console.log('[useTimeOfDay] Theme preference: light');
+        return false;
+      }
+    }
+    // No preference set, check system preference on initial load
     if (typeof window !== 'undefined' && window.matchMedia) {
       const result = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      console.log('[useTimeOfDay] Initial dark mode check:', result);
+      console.log('[useTimeOfDay] System dark mode check:', result);
       return result;
     }
     console.log('[useTimeOfDay] matchMedia not available, defaulting to light mode');
@@ -25,29 +40,100 @@ export const useTimeOfDay = () => {
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
+    // Function to update theme based on preference
+    const updateTheme = () => {
+      const themePref = localStorage.getItem('themePreference');
+      if (themePref === 'dark') {
+        setIsDarkMode(true);
+      } else if (themePref === 'light') {
+        setIsDarkMode(false);
+      } else {
+        // Follow system
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        setIsDarkMode(mediaQuery.matches);
+      }
+    };
+
+    // Register this component as a listener
+    themeListeners.push(updateTheme);
+
+    // Check theme preference
+    const themePref = localStorage.getItem('themePreference');
+    if (themePref === 'dark') {
+      setIsDarkMode(true);
+      return () => {
+        themeListeners = themeListeners.filter(l => l !== updateTheme);
+      };
+    } else if (themePref === 'light') {
+      setIsDarkMode(false);
+      return () => {
+        themeListeners = themeListeners.filter(l => l !== updateTheme);
+      };
+    }
+
+    // No preference, listen for system changes
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return () => {
+        themeListeners = themeListeners.filter(l => l !== updateTheme);
+      };
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     console.log('[useTimeOfDay] Setting up listener, current matches:', mediaQuery.matches);
-
-    // Update immediately in case it changed
     setIsDarkMode(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
-      console.log('[useTimeOfDay] Dark mode changed:', e.matches);
-      setIsDarkMode(e.matches);
+      const pref = localStorage.getItem('themePreference');
+      if (!pref) {
+        console.log('[useTimeOfDay] System dark mode changed:', e.matches);
+        setIsDarkMode(e.matches);
+      }
     };
 
-    // Listen for changes
     mediaQuery.addEventListener('change', handleChange);
 
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+      themeListeners = themeListeners.filter(l => l !== updateTheme);
+    };
   }, []);
 
-  // Return 'day' or 'night' based on system preference
   const result = isDarkMode ? 'night' : 'day';
   console.log('[useTimeOfDay] Returning:', result);
   return result;
+};
+
+// Helper functions for managing theme preference
+export const setThemePreference = (preference: 'dark' | 'light') => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('themePreference', preference);
+    // Notify all listeners to update
+    themeListeners.forEach(listener => listener());
+  }
+};
+
+export const getThemePreference = (): 'dark' | 'light' | null => {
+  if (typeof window !== 'undefined') {
+    const pref = localStorage.getItem('themePreference');
+    if (pref === 'dark' || pref === 'light') {
+      return pref;
+    }
+  }
+  return null;
+};
+
+// Check if currently in dark mode (either by preference or system)
+export const isDarkModeActive = (): boolean => {
+  if (typeof window !== 'undefined') {
+    const pref = localStorage.getItem('themePreference');
+    if (pref === 'dark') return true;
+    if (pref === 'light') return false;
+    // Follow system
+    if (window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+  }
+  return false;
 };
 
 function getTimeOfDayColors(): TimeOfDayColors {
