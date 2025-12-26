@@ -243,3 +243,8 @@ html {
   letter-spacing: 0px;
   opacity: 1;
 }
+
+/* Task item action buttons - show on hover (web only) */
+.task-item:hover .task-actions {
+  opacity: 1 !important;
+}

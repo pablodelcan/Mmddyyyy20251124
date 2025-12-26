@@ -22,6 +22,8 @@ interface SettingsModalProps {
   onAddManualMeditation: (minutes: number) => void;
   timeOfDay?: 'day' | 'night';
   isEmbedded?: boolean;
+  isPro?: boolean;
+  onShowPaywall?: () => void;
 }
 
 interface Preferences {
@@ -30,12 +32,12 @@ interface Preferences {
   weeklyReportDay: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
-export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation, timeOfDay: _providedTimeOfDay = 'day', isEmbedded = false }: SettingsModalProps) {
+export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, meditationDuration, onSaveMeditationDuration, totalMeditationMinutes, onAddManualMeditation, timeOfDay: _providedTimeOfDay = 'day', isEmbedded = false, isPro = false, onShowPaywall }: SettingsModalProps) {
   const timeOfDay = useTimeOfDay();
   console.log('[SettingsModal] Hook timeOfDay:', timeOfDay);
   const [preferences, setPreferences] = useState<Preferences>({
     email: '',
-    weeklyReportEnabled: true, // Set to true by default
+    weeklyReportEnabled: false, // Set to false by default - requires Pro subscription
     weeklyReportDay: 0 // Default to Sunday
   });
   const [testing, setTesting] = useState(false);
@@ -573,34 +575,41 @@ export function SettingsModal({ onClose, accessToken, onSignOut, onDeleteAccount
                 </div>
               </div>
               <button
-                onClick={() => setPreferences({
-                  ...preferences,
-                  weeklyReportEnabled: !preferences.weeklyReportEnabled
-                })}
+                onClick={() => {
+                  if (!isPro && onShowPaywall) {
+                    onShowPaywall();
+                    return;
+                  }
+                  setPreferences({
+                    ...preferences,
+                    weeklyReportEnabled: !preferences.weeklyReportEnabled
+                  });
+                }}
                 style={{
                   width: '41.24558639526367px',
                   height: '22.49835205078125px',
                   borderRadius: '17981000px',
                   transition: 'background-color 0.2s',
-                  backgroundColor: preferences.weeklyReportEnabled ? (timeOfDay === 'night' ? '#FBF8E8' : '#000000') : (timeOfDay === 'night' ? 'rgba(251,248,232,0.2)' : 'rgba(0,0,0,0.2)'),
+                  backgroundColor: (isPro && preferences.weeklyReportEnabled) ? (timeOfDay === 'night' ? '#FBF8E8' : '#000000') : (timeOfDay === 'night' ? 'rgba(251,248,232,0.2)' : 'rgba(0,0,0,0.2)'),
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   position: 'relative',
                   padding: '1.88px',
                   boxSizing: 'border-box',
+                  cursor: 'pointer',
                 }}
               >
                 <div
                   className={`h-5 w-5 rounded-full bg-white transition-transform duration-200 ease-in-out`}
                   style={{
-                    transform: preferences.weeklyReportEnabled ? 'translateX(19.36px)' : 'translateX(0px)',
+                    transform: (isPro && preferences.weeklyReportEnabled) ? 'translateX(19.36px)' : 'translateX(0px)',
                   }}
                 />
               </button>
             </div>
 
-            {preferences.weeklyReportEnabled && (
+            {isPro && preferences.weeklyReportEnabled && (
               <div style={{ display: 'flex', gap: '1.5px', justifyContent: 'space-between', marginLeft: '0px', marginRight: '0px' }}>
                 {['Su', 'M', 'T', 'W', 'Th', 'F', 'Sa'].map((day, index) => (
                   <button

@@ -2,6 +2,7 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import Stripe from "npm:stripe@14";
 import * as kv from "./kv_store.tsx";
 
 const app = new Hono();
@@ -866,6 +867,298 @@ app.delete("/make-server-d6a7a206/delete-account", async (c) => {
     console.error('Error deleting account:', err);
     return c.json({
       error: 'Failed to delete account',
+      details: err instanceof Error ? err.message : String(err)
+    }, 500);
+  }
+});
+
+// ===========================================
+// STRIPE SUBSCRIPTION ENDPOINTS
+// ===========================================
+
+// Initialize Stripe
+const getStripe = () => {
+  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!stripeKey) {
+    throw new Error('STRIPE_SECRET_KEY not configured');
+  }
+  return new Stripe(stripeKey, {
+    apiVersion: '2023-10-16',
+  });
+};
+
+// Get subscription status for authenticated user
+app.get("/make-server-d6a7a206/subscription-status", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const subscription = await kv.get(`subscription:${user!.id}`);
+
+    if (!subscription) {
+      return c.json({
+        stripeCustomerId: null,
+        subscriptionId: null,
+        status: null,
+        currentPeriodEnd: null,
+        trialEnd: null,
+        priceId: null,
+      });
+    }
+
+    return c.json(subscription);
+  } catch (err) {
+    console.error('Error fetching subscription status:', err);
+    return c.json({ error: 'Failed to fetch subscription status' }, 500);
+  }
+});
+
+// Create Stripe checkout session
+app.post("/make-server-d6a7a206/create-checkout-session", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const stripe = getStripe();
+    const body = await c.req.json();
+    const { priceType } = body; // 'monthly' or 'yearly'
+
+    // Get the appropriate price ID
+    const priceId = priceType === 'yearly'
+      ? Deno.env.get('STRIPE_PRICE_YEARLY')
+      : Deno.env.get('STRIPE_PRICE_MONTHLY');
+
+    if (!priceId) {
+      return c.json({ error: `STRIPE_PRICE_${priceType.toUpperCase()} not configured` }, 500);
+    }
+
+    // Check if user already has a Stripe customer ID
+    let existingSubscription = await kv.get(`subscription:${user!.id}`);
+    let customerId = existingSubscription?.stripeCustomerId;
+
+    // Get user email from Supabase
+    const supabase = getSupabaseAdmin();
+    const { data: userData } = await supabase.auth.admin.getUserById(user!.id);
+    const userEmail = userData?.user?.email;
+
+    // Create or retrieve customer
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: userEmail,
+        metadata: {
+          supabase_user_id: user!.id,
+        },
+      });
+      customerId = customer.id;
+    }
+
+    // Calculate trial end date (3 months from now)
+    const trialEnd = Math.floor(Date.now() / 1000) + (90 * 24 * 60 * 60); // 90 days
+
+    // Create checkout session with trial
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      subscription_data: {
+        trial_end: trialEnd,
+        metadata: {
+          supabase_user_id: user!.id,
+        },
+      },
+      success_url: `${c.req.header('origin') || 'https://mmddyyyy.co'}?subscription=success`,
+      cancel_url: `${c.req.header('origin') || 'https://mmddyyyy.co'}?subscription=canceled`,
+      metadata: {
+        supabase_user_id: user!.id,
+      },
+    });
+
+    return c.json({ url: session.url });
+  } catch (err) {
+    console.error('Error creating checkout session:', err);
+    return c.json({
+      error: 'Failed to create checkout session',
+      details: err instanceof Error ? err.message : String(err)
+    }, 500);
+  }
+});
+
+// Create Stripe customer portal session
+app.post("/make-server-d6a7a206/create-portal-session", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const stripe = getStripe();
+    const subscription = await kv.get(`subscription:${user!.id}`);
+
+    if (!subscription?.stripeCustomerId) {
+      return c.json({ error: 'No subscription found' }, 404);
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripeCustomerId,
+      return_url: c.req.header('origin') || 'https://mmddyyyy.co',
+    });
+
+    return c.json({ url: session.url });
+  } catch (err) {
+    console.error('Error creating portal session:', err);
+    return c.json({
+      error: 'Failed to create portal session',
+      details: err instanceof Error ? err.message : String(err)
+    }, 500);
+  }
+});
+
+// Stripe webhook handler
+app.post("/make-server-d6a7a206/stripe-webhook", async (c) => {
+  const stripe = getStripe();
+  const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return c.json({ error: 'Webhook not configured' }, 500);
+  }
+
+  try {
+    const body = await c.req.text();
+    const signature = c.req.header('stripe-signature');
+
+    if (!signature) {
+      return c.json({ error: 'No signature' }, 400);
+    }
+
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      return c.json({ error: 'Invalid signature' }, 400);
+    }
+
+    console.log('Stripe webhook event:', event.type);
+
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const userId = session.metadata?.supabase_user_id;
+
+        if (userId && session.subscription) {
+          // Fetch the full subscription details
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+
+          await kv.set(`subscription:${userId}`, {
+            stripeCustomerId: session.customer as string,
+            subscriptionId: subscription.id,
+            status: subscription.status,
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+            trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            priceId: subscription.items.data[0]?.price.id || null,
+          });
+
+          console.log('Subscription created for user:', userId);
+        }
+        break;
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = subscription.metadata?.supabase_user_id;
+
+        if (userId) {
+          await kv.set(`subscription:${userId}`, {
+            stripeCustomerId: subscription.customer as string,
+            subscriptionId: subscription.id,
+            status: subscription.status,
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+            trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            priceId: subscription.items.data[0]?.price.id || null,
+          });
+
+          console.log('Subscription updated for user:', userId, 'Status:', subscription.status);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = subscription.metadata?.supabase_user_id;
+
+        if (userId) {
+          await kv.set(`subscription:${userId}`, {
+            stripeCustomerId: subscription.customer as string,
+            subscriptionId: subscription.id,
+            status: 'canceled',
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+            trialEnd: null,
+            priceId: null,
+          });
+
+          console.log('Subscription canceled for user:', userId);
+        }
+        break;
+      }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log('Payment succeeded for invoice:', invoice.id);
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string;
+
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const userId = subscription.metadata?.supabase_user_id;
+
+          if (userId) {
+            await kv.set(`subscription:${userId}`, {
+              stripeCustomerId: invoice.customer as string,
+              subscriptionId: subscription.id,
+              status: 'past_due',
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+              trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+              priceId: subscription.items.data[0]?.price.id || null,
+            });
+
+            console.log('Payment failed for user:', userId);
+          }
+        }
+        break;
+      }
+
+      default:
+        console.log('Unhandled event type:', event.type);
+    }
+
+    return c.json({ received: true });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    return c.json({
+      error: 'Webhook handler failed',
       details: err instanceof Error ? err.message : String(err)
     }, 500);
   }

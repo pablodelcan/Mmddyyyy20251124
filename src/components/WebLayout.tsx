@@ -64,6 +64,8 @@ interface WebLayoutProps {
   setShowBucketList: (show: boolean) => void;
   undoStack: any[];
   onUndo: () => void;
+  isPro?: boolean;
+  onShowPaywall?: () => void;
 }
 
 const ITEM_TYPE = 'TODO';
@@ -128,6 +130,8 @@ export const WebLayout = ({
   setShowBucketList,
   undoStack,
   onUndo,
+  isPro = false,
+  onShowPaywall,
 }: WebLayoutProps) => {
   const [lifetimeViewWidth, setLifetimeViewWidth] = useState(400);
   const lifetimeRef = useRef<HTMLDivElement>(null);
@@ -476,8 +480,9 @@ export const WebLayout = ({
                 </div>
               )}
 
-              {/* Action Buttons Container - always visible */}
+              {/* Action Buttons Container - hidden by default, shown on hover */}
               <div
+                className="task-actions"
                 style={{
                   width: '65px',
                   height: '19.5px',
@@ -486,6 +491,8 @@ export const WebLayout = ({
                   alignItems: 'center',
                   position: 'absolute',
                   right: 0,
+                  opacity: 0,
+                  transition: 'opacity 0.2s',
                 }}
               >
                 <button
@@ -630,6 +637,8 @@ export const WebLayout = ({
           containerWidth={lifetimeViewWidth}
           onBucketListClick={() => setShowBucketList(true)}
           timeOfDay={timeOfDay}
+          isPro={isPro}
+          onShowPaywall={onShowPaywall}
         />
       </div>
     </div>

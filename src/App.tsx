@@ -25,6 +25,8 @@ import { Keyboard } from '@capacitor/keyboard';
 import { getLocalDateString } from './utils/dateUtils';
 import { useIsMobile } from './components/ui/use-mobile';
 import { WebLayout } from './components/WebLayout';
+import { useSubscription } from './hooks/useSubscription';
+import { ProPaywall } from './components/ProPaywall';
 
 export interface TodoItem {
   id: string;
@@ -108,6 +110,7 @@ function DraggableTodo({
   const dragHandleRef = useRef<HTMLDivElement>(null); // New ref for the drag handle
   const textMeasureRef = useRef<HTMLSpanElement>(null); // Ref to measure text width
   const [scrollDistance, setScrollDistance] = useState(0);
+  const [showActions, setShowActions] = useState(false);
 
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
@@ -162,6 +165,7 @@ function DraggableTodo({
   return (
     <div
       ref={ref}
+      onClick={() => setShowActions(!showActions)}
       style={{
         width: '330px',
         minHeight: '29.98px',
@@ -258,7 +262,7 @@ function DraggableTodo({
                 background: todo.completed
                   ? 'rgba(0,0,0,0.05)'
                   : todo.priority
-                    ? 'rgba(156, 156, 156, 0.4)'
+                    ? (timeOfDay === 'night' ? 'rgba(156, 156, 156, 0.4)' : 'rgba(243, 235, 126, 0.4)')
                     : meditationGlowActive
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
@@ -344,7 +348,7 @@ function DraggableTodo({
                 background: todo.completed
                   ? 'rgba(0,0,0,0.05)'
                   : todo.priority
-                    ? 'rgba(156, 156, 156, 0.4)'
+                    ? (timeOfDay === 'night' ? 'rgba(156, 156, 156, 0.4)' : 'rgba(243, 235, 126, 0.4)')
                     : meditationGlowActive
                       ? 'rgba(190, 139, 173, 0.05)'
                       : 'transparent',
@@ -360,74 +364,76 @@ function DraggableTodo({
         </div>
       )}
 
-      <div
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          display: 'flex',
-          gap: '6px',
-          alignItems: 'center',
-          zIndex: 10,
-        }}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent drag on click
-            onTimerClick();
-          }}
+      {showActions && (
+        <div
           style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            width: 'auto',
-            height: 'auto',
-            minWidth: 'auto',
-          }}
-          title={timeRemaining ? `Timer: ${timeRemaining}` : "Set timer"}
-        >
-          <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent drag on click
-            onPriorityToggle();
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            width: 'auto',
-            height: 'auto',
-            minWidth: 'auto',
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            gap: '6px',
+            alignItems: 'center',
+            zIndex: 10,
           }}
         >
-          <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent drag on click
-            onDelete();
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            width: 'auto',
-            height: 'auto',
-            minWidth: 'auto',
-          }}
-        >
-          <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-        </Button>
-      </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent drag on click
+              onTimerClick();
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              width: 'auto',
+              height: 'auto',
+              minWidth: 'auto',
+            }}
+            title={timeRemaining ? `Timer: ${timeRemaining}` : "Set timer"}
+          >
+            <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent drag on click
+              onPriorityToggle();
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              width: 'auto',
+              height: 'auto',
+              minWidth: 'auto',
+            }}
+          >
+            <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent drag on click
+              onDelete();
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              width: 'auto',
+              height: 'auto',
+              minWidth: 'auto',
+            }}
+          >
+            <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -469,8 +475,12 @@ function AppContent() {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [deletedTaskIds, setDeletedTaskIds] = useState<Set<string>>(new Set());
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const supabase = getSupabaseClient();
+
+  // Subscription management
+  const { isPro, isLoading: isSubscriptionLoading, createCheckoutSession, refresh: refreshSubscription } = useSubscription(accessToken);
 
   const dateKey = getLocalDateString(currentDate);
 
@@ -1734,6 +1744,8 @@ function AppContent() {
           setShowBucketList={setShowBucketList}
           undoStack={undoStack}
           onUndo={() => handleUndo()}
+          isPro={isPro}
+          onShowPaywall={() => setShowPaywall(true)}
         />
         {/* Modals for web */}
         <AnimatePresence>
@@ -1780,6 +1792,8 @@ function AppContent() {
               onAddManualMeditation={setTotalMeditationMinutes}
               timeOfDay={timeOfDay as 'day' | 'night'}
               isEmbedded={true}
+              isPro={isPro}
+              onShowPaywall={() => setShowPaywall(true)}
             />
           </motion.div>
         )}
@@ -2009,6 +2023,19 @@ function AppContent() {
             </div>
           </motion.div>
         )}
+
+        {/* Pro Paywall Modal for Web */}
+        <ProPaywall
+          isOpen={showPaywall}
+          onClose={() => setShowPaywall(false)}
+          onStartTrial={async (priceType) => {
+            const url = await createCheckoutSession(priceType);
+            if (url) {
+              window.location.href = url;
+            }
+          }}
+          timeOfDay={timeOfDay as 'day' | 'night'}
+        />
       </>
     );
   }
@@ -2623,6 +2650,8 @@ function AppContent() {
                   onSaveMeditationDuration={setMeditationDuration}
                   totalMeditationMinutes={totalMeditationMinutes}
                   onAddManualMeditation={setTotalMeditationMinutes}
+                  isPro={isPro}
+                  onShowPaywall={() => setShowPaywall(true)}
                 />
               </motion.div>
             )
@@ -2680,6 +2709,8 @@ function AppContent() {
                   onSaveBucketList={setBucketList}
                   totalMeditationMinutes={totalMeditationMinutes}
                   timeOfDay={timeOfDay as 'day' | 'night'}
+                  isPro={isPro}
+                  onShowPaywall={() => setShowPaywall(true)}
                 />
               </motion.div>
             )
@@ -2717,6 +2748,19 @@ function AppContent() {
               />
             )
           }
+
+          {/* Pro Paywall Modal */}
+          <ProPaywall
+            isOpen={showPaywall}
+            onClose={() => setShowPaywall(false)}
+            onStartTrial={async (priceType) => {
+              const url = await createCheckoutSession(priceType);
+              if (url) {
+                window.location.href = url;
+              }
+            }}
+            timeOfDay={timeOfDay as 'day' | 'night'}
+          />
         </>
       )}
     </div >

@@ -12,6 +12,8 @@ interface LifetimeViewInlineProps {
   containerWidth?: number;
   onBucketListClick?: () => void;
   timeOfDay?: 'day' | 'night';
+  isPro?: boolean;
+  onShowPaywall?: () => void;
 }
 
 export const LifetimeViewInline = ({
@@ -24,7 +26,9 @@ export const LifetimeViewInline = ({
   totalMeditationMinutes,
   containerWidth = 400,
   onBucketListClick,
-  timeOfDay = 'day'
+  timeOfDay = 'day',
+  isPro = false,
+  onShowPaywall
 }: LifetimeViewInlineProps) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -397,9 +401,21 @@ export const LifetimeViewInline = ({
                   marginBottom: '6.5px',
                 }}>Note for this week</div>
                 <textarea
-                  placeholder="Add a memory or important moment..."
+                  placeholder={isPro ? "Add a memory or important moment..." : "Upgrade to Pro to add notes..."}
                   value={weekNotes[selectedWeek] || ''}
-                  onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
+                  onChange={(e) => {
+                    if (!isPro && onShowPaywall) {
+                      onShowPaywall();
+                      return;
+                    }
+                    onSaveWeekNote(selectedWeek, e.target.value);
+                  }}
+                  onFocus={(e) => {
+                    if (!isPro && onShowPaywall) {
+                      e.target.blur();
+                      onShowPaywall();
+                    }
+                  }}
                   style={{
                     width: '100%',
                     minHeight: '65px',
@@ -412,6 +428,8 @@ export const LifetimeViewInline = ({
                     backgroundColor: timeOfDay === 'night' ? '#2A2A2A' : '#F5F5F5',
                     resize: 'vertical',
                     boxSizing: 'border-box',
+                    opacity: isPro ? 1 : 0.5,
+                    cursor: isPro ? 'text' : 'pointer',
                   }}
                 />
               </div>
@@ -455,6 +473,10 @@ export const LifetimeViewInline = ({
       }}>
         <button
           onClick={() => {
+            if (!isPro && onShowPaywall) {
+              onShowPaywall();
+              return;
+            }
             onBucketListClick?.();
           }}
           style={{

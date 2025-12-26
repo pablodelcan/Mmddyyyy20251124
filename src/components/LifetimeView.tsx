@@ -15,9 +15,11 @@ interface LifetimeViewProps {
   onSaveBucketList: (list: { id: string; text: string; completed: boolean }[]) => void;
   totalMeditationMinutes: number;
   timeOfDay?: 'day' | 'night';
+  isPro?: boolean;
+  onShowPaywall?: () => void;
 }
 
-export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, weekNotes, onSaveWeekNote, bucketList, onSaveBucketList, totalMeditationMinutes, timeOfDay = 'day' }: LifetimeViewProps) => {
+export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expectedLifespan, onSaveLifespan, weekNotes, onSaveWeekNote, bucketList, onSaveBucketList, totalMeditationMinutes, timeOfDay = 'day', isPro = false, onShowPaywall }: LifetimeViewProps) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
   const [searchDate, setSearchDate] = useState('');
@@ -864,7 +866,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: 'rgba(0, 0, 0, 0.6)',
+                              color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                               marginBottom: '7.5px',
                             }}>
                               Date
@@ -885,7 +887,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: 'rgba(0, 0, 0, 0.6)',
+                              color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                               marginBottom: '7.5px',
                             }}>
                               Age
@@ -906,7 +908,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: 'rgba(0, 0, 0, 0.6)',
+                              color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                               marginBottom: '7.5px',
                             }}>
                               Days lived
@@ -927,7 +929,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               fontWeight: 700,
                               fontSize: '15px',
                               lineHeight: '22.5px',
-                              color: 'rgba(0, 0, 0, 0.6)',
+                              color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                               marginBottom: '7.5px',
                             }}>
                               Percentage
@@ -946,7 +948,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
 
                         {/* Note Input */}
                         <div style={{
-                          borderTop: '0.54px solid rgba(0, 0, 0, 0.1)',
+                          borderTop: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.1)' : '0.54px solid rgba(0, 0, 0, 0.1)',
                           paddingTop: '22.5px',
                         }}>
                           <label style={{
@@ -954,7 +956,7 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                             fontWeight: 700,
                             fontSize: '15px',
                             lineHeight: '22.5px',
-                            color: 'rgba(0, 0, 0, 0.6)',
+                            color: timeOfDay === 'night' ? 'rgba(251, 248, 232, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                             display: 'block',
                             marginBottom: '7.5px',
                           }}>
@@ -962,12 +964,24 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                           </label>
                           <textarea
                             value={currentNote}
-                            onChange={(e) => onSaveWeekNote(selectedWeek, e.target.value)}
-                            placeholder="Add a memory or important moment..."
+                            onChange={(e) => {
+                              if (!isPro && onShowPaywall) {
+                                onShowPaywall();
+                                return;
+                              }
+                              onSaveWeekNote(selectedWeek, e.target.value);
+                            }}
+                            onFocus={(e) => {
+                              if (!isPro && onShowPaywall) {
+                                e.target.blur();
+                                onShowPaywall();
+                              }
+                            }}
+                            placeholder={isPro ? "Add a memory or important moment..." : "Upgrade to Pro to add notes..."}
                             style={{
                               width: '100%',
                               background: 'transparent',
-                              border: '0.54px solid rgba(0, 0, 0, 0.2)',
+                              border: timeOfDay === 'night' ? '0.54px solid rgba(251, 248, 232, 0.2)' : '0.54px solid rgba(0, 0, 0, 0.2)',
                               fontFamily: 'Courier New',
                               fontWeight: 700,
                               fontSize: '15px',
@@ -978,6 +992,8 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                               resize: 'none',
                               boxSizing: 'border-box',
                               minHeight: '80px',
+                              opacity: isPro ? 1 : 0.5,
+                              cursor: isPro ? 'text' : 'pointer',
                             }}
                             rows={3}
                           />
@@ -1447,7 +1463,13 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
                 }}
               >
                 <Button
-                  onClick={() => setShowBucketList(true)}
+                  onClick={() => {
+                    if (!isPro && onShowPaywall) {
+                      onShowPaywall();
+                      return;
+                    }
+                    setShowBucketList(true);
+                  }}
                   style={{
                     width: '180px',
                     height: '30px',
@@ -1508,6 +1530,6 @@ export const LifetimeView = ({ onClose, dateOfBirth, onSaveDateOfBirth, expected
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.div >
   );
 };
