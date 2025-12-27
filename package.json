@@ -4,6 +4,7 @@
     "private": true,
     "dependencies": {
         "@capacitor/assets": "*",
+        "@capacitor/browser": "^7.0.3",
         "@capacitor/cli": "*",
         "@capacitor/ios": "*",
         "@capacitor/keyboard": "^7.0.3",

@@ -1034,6 +1034,8 @@ app.post("/make-server-d6a7a206/stripe-webhook", async (c) => {
   const stripe = getStripe();
   const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 
+  console.log('Webhook secret loaded:', webhookSecret ? `${webhookSecret.substring(0, 10)}...` : 'NOT FOUND');
+
   if (!webhookSecret) {
     console.error('STRIPE_WEBHOOK_SECRET not configured');
     return c.json({ error: 'Webhook not configured' }, 500);
@@ -1049,7 +1051,8 @@ app.post("/make-server-d6a7a206/stripe-webhook", async (c) => {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      // Use async version for Deno/Supabase Edge Runtime compatibility
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
       return c.json({ error: 'Invalid signature' }, 400);

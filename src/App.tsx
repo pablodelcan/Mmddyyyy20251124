@@ -22,6 +22,7 @@ import { projectId } from './utils/supabase/info';
 import { useTimeOfDay } from './hooks/useTimeOfDay';
 import { secureStorage } from './utils/secureStorage';
 import { Keyboard } from '@capacitor/keyboard';
+import { Browser } from '@capacitor/browser';
 import { getLocalDateString } from './utils/dateUtils';
 import { useIsMobile } from './components/ui/use-mobile';
 import { WebLayout } from './components/WebLayout';
@@ -477,10 +478,59 @@ function AppContent() {
   const [deletedTaskIds, setDeletedTaskIds] = useState<Set<string>>(new Set());
   const [showPaywall, setShowPaywall] = useState(false);
 
+  // Check for subscription success/cancel params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const subscription = params.get('subscription');
+
+    if (subscription === 'success') {
+      toast.success('Pro Subscription Activated! 🎉', {
+        description: 'Thank you for upgrading. Your 3-month free trial has started.',
+        duration: 5000,
+      });
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    } else if (subscription === 'canceled') {
+      toast.info('Subscription checkout canceled');
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
   const supabase = getSupabaseClient();
 
   // Subscription management
   const { isPro, isLoading: isSubscriptionLoading, createCheckoutSession, refresh: refreshSubscription } = useSubscription(accessToken);
+
+  // Refresh subscription when returning from in-app browser or app comes to foreground
+  useEffect(() => {
+    // Listen for browser close events
+    const handleBrowserFinished = () => {
+      console.log('Browser closed, refreshing subscription...');
+      // Small delay to allow webhook to process
+      setTimeout(() => {
+        refreshSubscription();
+      }, 2000);
+    };
+
+    // Listen for visibility change (app comes to foreground)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('App visible, refreshing subscription...');
+        refreshSubscription();
+      }
+    };
+
+    Browser.addListener('browserFinished', handleBrowserFinished);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      Browser.removeAllListeners();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refreshSubscription]);
 
   const dateKey = getLocalDateString(currentDate);
 
@@ -2031,7 +2081,8 @@ function AppContent() {
           onStartTrial={async (priceType) => {
             const url = await createCheckoutSession(priceType);
             if (url) {
-              window.location.href = url;
+              // Use in-app browser for better UX
+              await Browser.open({ url });
             }
           }}
           timeOfDay={timeOfDay as 'day' | 'night'}
@@ -2756,7 +2807,8 @@ function AppContent() {
             onStartTrial={async (priceType) => {
               const url = await createCheckoutSession(priceType);
               if (url) {
-                window.location.href = url;
+                // Use in-app browser for better UX
+                await Browser.open({ url });
               }
             }}
             timeOfDay={timeOfDay as 'day' | 'night'}
