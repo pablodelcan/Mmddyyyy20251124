@@ -27,6 +27,7 @@ import { getLocalDateString } from './utils/dateUtils';
 import { useIsMobile } from './components/ui/use-mobile';
 import { WebLayout } from './components/WebLayout';
 import { useSubscription } from './hooks/useSubscription';
+import { useApplePurchases } from './hooks/useApplePurchases';
 import { ProPaywall } from './components/ProPaywall';
 
 export interface TodoItem {
@@ -111,7 +112,6 @@ function DraggableTodo({
   const dragHandleRef = useRef<HTMLDivElement>(null); // New ref for the drag handle
   const textMeasureRef = useRef<HTMLSpanElement>(null); // Ref to measure text width
   const [scrollDistance, setScrollDistance] = useState(0);
-  const [showActions, setShowActions] = useState(false);
 
   const [{ isDragging }, drag] = useDrag({
     type: ITEM_TYPE,
@@ -166,7 +166,6 @@ function DraggableTodo({
   return (
     <div
       ref={ref}
-      onClick={() => setShowActions(!showActions)}
       style={{
         width: '330px',
         minHeight: '29.98px',
@@ -365,76 +364,74 @@ function DraggableTodo({
         </div>
       )}
 
-      {showActions && (
-        <div
+      <div
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          gap: '6px',
+          alignItems: 'center',
+          zIndex: 10,
+        }}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onTimerClick();
+          }}
           style={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            display: 'flex',
-            gap: '6px',
-            alignItems: 'center',
-            zIndex: 10,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            width: 'auto',
+            height: 'auto',
+            minWidth: 'auto',
+          }}
+          title={timeRemaining ? `Timer: ${timeRemaining}` : "Set timer"}
+        >
+          <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onPriorityToggle();
+          }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            width: 'auto',
+            height: 'auto',
+            minWidth: 'auto',
           }}
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent drag on click
-              onTimerClick();
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
-            }}
-            title={timeRemaining ? `Timer: ${timeRemaining}` : "Set timer"}
-          >
-            <Clock style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent drag on click
-              onPriorityToggle();
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
-            }}
-          >
-            <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent drag on click
-              onDelete();
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              width: 'auto',
-              height: 'auto',
-              minWidth: 'auto',
-            }}
-          >
-            <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
-          </Button>
-        </div>
-      )}
+          <ArrowUp style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent drag on click
+            onDelete();
+          }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            width: 'auto',
+            height: 'auto',
+            minWidth: 'auto',
+          }}
+        >
+          <Minus style={{ color: timeOfDay === 'night' ? '#FBF8E8' : '#000000', width: '15px', height: '15px' }} />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -502,7 +499,13 @@ function AppContent() {
   const supabase = getSupabaseClient();
 
   // Subscription management
-  const { isPro, isLoading: isSubscriptionLoading, createCheckoutSession, refresh: refreshSubscription } = useSubscription(accessToken);
+  const { isPro: isStripePro, isLoading: isSubscriptionLoading, createCheckoutSession, refresh: refreshSubscription } = useSubscription(accessToken);
+
+  // Apple In-App Purchases (iOS only)
+  const { isPro: isApplePro, purchase: applePurchase, restorePurchases, isIOSNative } = useApplePurchases(accessToken);
+
+  // Combined Pro status (either Stripe or Apple)
+  const isPro = isStripePro || isApplePro;
 
   // Refresh subscription when returning from in-app browser or app comes to foreground
   useEffect(() => {
@@ -2085,6 +2088,8 @@ function AppContent() {
               await Browser.open({ url });
             }
           }}
+          onApplePurchase={applePurchase}
+          onRestorePurchases={restorePurchases}
           timeOfDay={timeOfDay as 'day' | 'night'}
         />
       </>
@@ -2811,6 +2816,8 @@ function AppContent() {
                 await Browser.open({ url });
               }
             }}
+            onApplePurchase={applePurchase}
+            onRestorePurchases={restorePurchases}
             timeOfDay={timeOfDay as 'day' | 'night'}
           />
         </>

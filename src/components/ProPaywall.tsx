@@ -1,24 +1,62 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 interface ProPaywallProps {
     isOpen: boolean;
     onClose: () => void;
     onStartTrial: (priceType: 'monthly' | 'yearly') => Promise<void>;
+    onApplePurchase?: (productId: string) => Promise<boolean>;
+    onRestorePurchases?: () => Promise<boolean>;
     timeOfDay?: 'day' | 'night';
 }
 
-export function ProPaywall({ isOpen, onClose, onStartTrial, timeOfDay = 'day' }: ProPaywallProps) {
+export function ProPaywall({
+    isOpen,
+    onClose,
+    onStartTrial,
+    onApplePurchase,
+    onRestorePurchases,
+    timeOfDay = 'day'
+}: ProPaywallProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isRestoring, setIsRestoring] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+
+    // Check if we're on iOS native
+    const isIOSNative = Capacitor.getPlatform() === 'ios';
 
     const handleStartTrial = async () => {
         setIsLoading(true);
         try {
-            await onStartTrial(selectedPlan);
+            if (isIOSNative && onApplePurchase) {
+                // Use Apple IAP on iOS
+                const productId = selectedPlan === 'monthly' ? 'mm_month' : 'mm_yearly';
+                const success = await onApplePurchase(productId);
+                if (success) {
+                    onClose();
+                }
+            } else {
+                // Use Stripe on web
+                await onStartTrial(selectedPlan);
+            }
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRestore = async () => {
+        if (!onRestorePurchases) return;
+
+        setIsRestoring(true);
+        try {
+            const success = await onRestorePurchases();
+            if (success) {
+                onClose();
+            }
+        } finally {
+            setIsRestoring(false);
         }
     };
 
@@ -124,7 +162,7 @@ export function ProPaywall({ isOpen, onClose, onStartTrial, timeOfDay = 'day' }:
                                 margin: '0 0 24px 0',
                             }}
                         >
-                            3 months free
+                            {isIOSNative ? 'Unlock all features' : '3 months free'}
                         </p>
 
                         {/* Features */}
@@ -177,7 +215,7 @@ export function ProPaywall({ isOpen, onClose, onStartTrial, timeOfDay = 'day' }:
                                     margin: '0 0 8px 0',
                                 }}
                             >
-                                After trial:
+                                {isIOSNative ? 'Choose plan:' : 'After trial:'}
                             </p>
 
                             {/* Plan Selection */}
@@ -288,8 +326,31 @@ export function ProPaywall({ isOpen, onClose, onStartTrial, timeOfDay = 'day' }:
                                     transition: 'opacity 0.2s',
                                 }}
                             >
-                                {isLoading ? 'Loading...' : 'Start 3-Month Trial'}
+                                {isLoading ? 'Loading...' : (isIOSNative ? 'Subscribe Now' : 'Start 3-Month Trial')}
                             </button>
+
+                            {/* Restore Purchases - only on iOS */}
+                            {isIOSNative && onRestorePurchases && (
+                                <button
+                                    onClick={handleRestore}
+                                    disabled={isRestoring}
+                                    style={{
+                                        width: '100%',
+                                        height: '48px',
+                                        backgroundColor: colors.buttonOutlineBg,
+                                        color: colors.text,
+                                        border: `1px solid ${colors.buttonOutlineBorder}`,
+                                        borderRadius: '24px',
+                                        fontFamily: 'Courier New, monospace',
+                                        fontWeight: 700,
+                                        fontSize: '14px',
+                                        cursor: isRestoring ? 'wait' : 'pointer',
+                                        opacity: isRestoring ? 0.7 : 1,
+                                    }}
+                                >
+                                    {isRestoring ? 'Restoring...' : 'Restore Purchases'}
+                                </button>
+                            )}
 
                             <button
                                 onClick={onClose}

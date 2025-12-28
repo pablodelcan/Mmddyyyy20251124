@@ -361,6 +361,8 @@ app.post("/make-server-d6a7a206/preferences", async (c) => {
 
   try {
     const body = await c.req.json();
+    console.log(`Saving preferences for user ${user!.id}:`, JSON.stringify(body.preferences));
+    console.log(`weeklyReportEnabled: ${body.preferences.weeklyReportEnabled}, weeklyReportDay: ${body.preferences.weeklyReportDay}`);
     await kv.set(`preferences:${user!.id}`, body.preferences);
     return c.json({ success: true });
   } catch (err) {
@@ -543,6 +545,20 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
       // Use user's stored timezone offset, default to 0 (UTC)
       const userTimezone = prefs.timezoneOffset || 0;
       const now = new Date();
+
+      // Calculate user's local time using their timezone offset
+      const userLocalTime = new Date(now.getTime() - (userTimezone * 60 * 1000));
+      const userDayOfWeek = userLocalTime.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+
+      // Check if today is the user's chosen day for weekly reports
+      // weeklyReportDay: 0 = Sunday, 1 = Monday, etc. (matches JavaScript's getDay())
+      const chosenDay = prefs.weeklyReportDay ?? 0; // Default to Sunday if not set
+      if (userDayOfWeek !== chosenDay) {
+        console.log(`Skipping user ${userId}: Today is ${userDayOfWeek}, user wants ${chosenDay}`);
+        continue;
+      }
+
+      console.log(`Sending weekly report to user ${userId} on day ${chosenDay}`);
 
       // Get user's todos
       const todosData = await kv.get(`todos:${userId}`) || {};
@@ -914,6 +930,46 @@ app.get("/make-server-d6a7a206/subscription-status", async (c) => {
   } catch (err) {
     console.error('Error fetching subscription status:', err);
     return c.json({ error: 'Failed to fetch subscription status' }, 500);
+  }
+});
+
+// Sync Apple subscription from iOS
+app.post("/make-server-d6a7a206/sync-apple-subscription", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
+
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  try {
+    const body = await c.req.json();
+    const { productId, transactionId, originalTransactionId, purchaseDate, expirationDate, isSubscribed } = body;
+
+    if (!isSubscribed) {
+      return c.json({ success: false, message: 'No active subscription' });
+    }
+
+    // Save Apple subscription to KV store
+    await kv.set(`subscription:${user!.id}`, {
+      stripeCustomerId: null, // Not applicable for Apple
+      subscriptionId: originalTransactionId || transactionId,
+      status: 'active', // StoreKit 2 only returns valid/verified transactions
+      currentPeriodEnd: expirationDate || null,
+      trialEnd: null, // Apple doesn't expose trial info the same way
+      priceId: productId,
+      platform: 'apple', // Mark as Apple subscription
+      transactionId: transactionId,
+      originalTransactionId: originalTransactionId,
+      purchaseDate: purchaseDate,
+    });
+
+    console.log('Apple subscription synced for user:', user!.id, 'Product:', productId);
+
+    return c.json({ success: true });
+  } catch (err) {
+    console.error('Error syncing Apple subscription:', err);
+    return c.json({ error: 'Failed to sync subscription' }, 500);
   }
 });
 

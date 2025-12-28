@@ -14,7 +14,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // Set window background color to dark for dark mode safe area
             window.backgroundColor = UIColor(red: 29/255, green: 28/255, blue: 28/255, alpha: 1.0) // #1D1C1C
         }
+        
         return true
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Register StoreKit plugin when app becomes active (bridge is ready)
+        if let vc = window?.rootViewController as? CAPBridgeViewController {
+            vc.bridge?.registerPluginInstance(StoreKitPlugin())
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -29,10 +37,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
