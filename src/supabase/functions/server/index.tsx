@@ -659,7 +659,133 @@ app.post("/make-server-d6a7a206/send-weekly-report", async (c) => {
     return c.json({ error: 'Failed to send weekly reports' }, 500);
   }
 });
+// Trigger immediate weekly report for authenticated user
+app.post("/make-server-d6a7a206/trigger-weekly-report", async (c) => {
+  const accessToken = c.req.header('Authorization')?.split(' ')[1];
+  const { user, error } = await verifyUser(accessToken);
 
+  if (error) {
+    return c.json({ error }, 401);
+  }
+
+  const resendKey = Deno.env.get('RESEND_API_KEY');
+  if (!resendKey) {
+    return c.json({ error: 'RESEND_API_KEY not configured' }, 500);
+  }
+
+  try {
+    // Get user preferences
+    const preferences = await kv.get(`preferences:${user!.id}`) || {};
+    const email = preferences.email; // Use saved email
+
+    if (!email) {
+      return c.json({ error: 'No email found in preferences' }, 400);
+    }
+
+    const userTimezone = preferences.timezoneOffset || 0;
+    const now = new Date();
+
+    // Get user's todos
+    const todosData = await kv.get(`todos:${user!.id}`) || {};
+
+    // Get last week's tasks (using user's timezone)
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i - 1); // Start from yesterday
+      return getLocalDateString(date, userTimezone);
+    });
+
+    // Get this week's tasks (today + next 6 days, using user's timezone)
+    const thisWeekDays = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() + i);
+      return getLocalDateString(date, userTimezone);
+    });
+
+    // Collect completed tasks from last week
+    const completedLastWeek: string[] = [];
+    last7Days.forEach(dateKey => {
+      const dayTodos = todosData[dateKey] || [];
+      dayTodos.forEach((t: any) => {
+        if (t.completed) {
+          completedLastWeek.push(t.text);
+        }
+      });
+    });
+
+    // Collect outstanding tasks from this week
+    const outstandingThisWeek: string[] = [];
+    thisWeekDays.forEach(dateKey => {
+      const dayTodos = todosData[dateKey] || [];
+      dayTodos.forEach((t: any) => {
+        if (!t.completed) {
+          outstandingThisWeek.push(t.text);
+        }
+      });
+    });
+
+    // Generate task lists HTML
+    const outstandingList = outstandingThisWeek.length > 0
+      ? outstandingThisWeek.map(task =>
+        `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${task}</div>`
+      ).join('')
+      : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No outstanding tasks</div>';
+
+    const completedList = completedLastWeek.length > 0
+      ? completedLastWeek.map(task =>
+        `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); text-decoration: line-through; color: rgba(0,0,0,0.5);">${task}</div>`
+      ).join('')
+      : '<div style="padding: 8px 0; color: rgba(0,0,0,0.4);">No completed tasks</div>';
+
+    const html = `
+      <div style="font-family: 'Courier', monospace; max-width: 375px; margin: 0 auto; padding: 40px 20px; background: #FBF8E8; color: rgba(0,0,0,0.9);">
+        <h1 style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 14px; font-weight: bold; color: rgba(0,0,0,0.9); margin-bottom: 30px;">
+          Weekly Report
+        </h1>
+        
+        <div style="margin-bottom: 30px;">
+          <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+            Outstanding tasks this week
+          </p>
+          ${outstandingList}
+        </div>
+
+        <div>
+          <p style="text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; font-weight: bold; color: rgba(0,0,0,0.6); margin-bottom: 12px;">
+            Completed tasks last week
+          </p>
+          ${completedList}
+        </div>
+      </div>
+    `;
+
+    // Send email via Resend
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendKey}`
+      },
+      body: JSON.stringify({
+        from: 'mmddyyyy <noreply@mmddyyyy.co>',
+        to: email,
+        subject: `Weekly Report - ${outstandingThisWeek.length} outstanding, ${completedLastWeek.length} completed`,
+        html
+      })
+    });
+
+    if (!emailResponse.ok) {
+      const errorText = await emailResponse.text();
+      console.log('Resend API error response:', errorText);
+      return c.json({ error: 'Failed to send email via Resend', details: errorText }, 500);
+    }
+
+    return c.json({ success: true, message: 'Weekly report triggered successfully' });
+  } catch (err) {
+    console.log('Error triggering weekly report:', err);
+    return c.json({ error: 'Failed to trigger weekly report' }, 500);
+  }
+});
 // Test weekly report endpoint - sends to specific email
 app.post("/make-server-d6a7a206/test-weekly-report", async (c) => {
   const accessToken = c.req.header('Authorization')?.split(' ')[1];

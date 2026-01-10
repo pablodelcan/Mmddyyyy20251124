@@ -77,6 +77,7 @@ export function ProPaywall({
         'Resolutions 2026',
         'Add notes to Life in weeks',
         'Weekly email summaries',
+        ...(isIOSNative ? ['Drawing'] : []),
     ];
 
     return (

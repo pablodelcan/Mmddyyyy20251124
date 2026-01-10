@@ -22,6 +22,7 @@ import { projectId } from './utils/supabase/info';
 import { useTimeOfDay } from './hooks/useTimeOfDay';
 import { secureStorage } from './utils/secureStorage';
 import { Keyboard } from '@capacitor/keyboard';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { Browser } from '@capacitor/browser';
 import { getLocalDateString } from './utils/dateUtils';
 import { useIsMobile } from './components/ui/use-mobile';
@@ -29,6 +30,7 @@ import { WebLayout } from './components/WebLayout';
 import { useSubscription } from './hooks/useSubscription';
 import { useApplePurchases } from './hooks/useApplePurchases';
 import { ProPaywall } from './components/ProPaywall';
+import { DrawingView } from './components/DrawingView';
 
 export interface TodoItem {
   id: string;
@@ -474,6 +476,7 @@ function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [deletedTaskIds, setDeletedTaskIds] = useState<Set<string>>(new Set());
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showDrawing, setShowDrawing] = useState(false);
 
   // Check for subscription success/cancel params
   useEffect(() => {
@@ -552,16 +555,17 @@ function AppContent() {
     // Programmatically set Native Status Bar
     const setStatusBar = async () => {
       try {
-        await StatusBar.setStyle({ style: timeOfDay === 'night' ? Style.Dark : Style.Light });
-        await StatusBar.setBackgroundColor({ color: bgColor });
-        // Ensure overlay is disabled if we want to set color, or enabled if we want transparent
-        // For consistent color, we set the color. If we wanted full content behind, we'd use overlay.
-        // Given contentInset: 'never', we probably want overlay to be TRUE so webview is full screen, 
-        // BUT if we want to FORCE the color, we might need overlay FALSE?
-        // Actually, if contentInset is 'never', webview is full screen.
-        // If we want the webview background to show, we should set StatusBar to transparent or overlay.
-        // BUT, given the bug, let's FORCE the color.
-        await StatusBar.setOverlaysWebView({ overlay: false });
+        if (showDrawing) {
+          // Force dark status bar for drawing view
+          await StatusBar.setStyle({ style: Style.Dark });
+          // With overlay: true, we rely on the view's background. 
+          // But setting background color to black ensures no flicker if there's a gap.
+          // However, overly relies on webview.
+          await StatusBar.setOverlaysWebView({ overlay: true });
+        } else {
+          await StatusBar.setStyle({ style: timeOfDay === 'night' ? Style.Dark : Style.Light });
+          await StatusBar.setOverlaysWebView({ overlay: true });
+        }
       } catch (e) {
         console.error('StatusBar error:', e);
       }
@@ -569,7 +573,7 @@ function AppContent() {
     setStatusBar();
 
     // Control body overflow for full-screen modals
-    if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId || showOnboarding) {
+    if (showLifetimeView || showMeditation || showAuth || showSettings || timerModalTodoId || showOnboarding || showDrawing) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -581,7 +585,7 @@ function AppContent() {
       document.documentElement.style.backgroundColor = '';
       document.body.style.overflow = '';
     };
-  }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId, showOnboarding]);
+  }, [timeOfDay, showLifetimeView, showMeditation, showAuth, showSettings, timerModalTodoId, showOnboarding, showDrawing]);
 
   // Track keyboard visibility (only on mobile/Capacitor)
   useEffect(() => {
@@ -2596,6 +2600,45 @@ function AppContent() {
               )}
 
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                {/* Drawing Button - iOS only, 16.5px gap from meditation */}
+                {isIOSNative && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (isPro) {
+                        setShowDrawing(true);
+                      } else {
+                        setShowPaywall(true);
+                      }
+                    }}
+                    style={{
+                      width: '29.99px',
+                      height: '29.99px',
+                      background: timeOfDay === 'night' ? '#FFFFFF' : '#000000',
+                      borderRadius: '17981000px',
+                      padding: 0,
+                      border: 'none',
+                      marginTop: '-18px',
+                      marginRight: '4.5px', // Adjusts total gap to ~16.5px with the existing 12px
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Rectangle icon inside 16x21 */}
+                    <div
+                      style={{
+                        width: '16px',
+                        height: '21px', // Requested 16x21
+                        backgroundColor: timeOfDay === 'night' ? '#000000' : '#FFFFFF', // Filled rectangle
+                        borderRadius: '1px', // Slight radius for aesthetics
+                      }}
+                    />
+                  </Button>
+                )}
+
+                {/* Meditation Button */}
                 <Button
                   variant="ghost"
                   onClick={() => setShowMeditation(true)}
@@ -2725,6 +2768,14 @@ function AppContent() {
             )
           }
 
+          {/* Drawing View Modal - iOS only */}
+          {showDrawing && (
+            <DrawingView
+              onClose={() => setShowDrawing(false)}
+              timeOfDay={timeOfDay as 'day' | 'night'}
+            />
+          )}
+
           {
             showLifetimeView && (
               <motion.div
@@ -2820,6 +2871,7 @@ function AppContent() {
             onRestorePurchases={restorePurchases}
             timeOfDay={timeOfDay as 'day' | 'night'}
           />
+          <Toaster position="top-center" />
         </>
       )}
     </div >

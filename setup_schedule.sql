@@ -24,7 +24,7 @@ select
 select
   cron.schedule(
     'send-weekly-report', -- name of the cron job
-    '0 10 * * 0',         -- schedule (Every Sunday at 10:00 AM UTC)
+    '0 10 * * *',         -- schedule (Every day at 10:00 AM UTC - logic inside checks for correct day)
     $$
     select
       net.http_post(
